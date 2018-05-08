@@ -8,14 +8,10 @@
 #ifndef SCHEDULE_H_
 #define SCHEDULE_H_
 
+#include "IMRTProblem.h"
+
 namespace imrt {
 
-
-class Station {
-	double angle;
-	int ap_mid[N];
-	int ap_ext[N];
-};
 
 /**
  *
@@ -26,7 +22,9 @@ public:
 	Schedule();
 	virtual ~Schedule();
 
-	double eval();
+	double eval(IMRT_Problem& p){
+		
+	}
 
 private:
 	Station stations;
