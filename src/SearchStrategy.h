@@ -9,7 +9,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <list>
-#include "Schedule.h"
+
+#include "Plan.h"
 
 #ifndef SEARCHSTRATEGY_H_
 #define SEARCHSTRATEGY_H_
@@ -18,10 +19,12 @@ using namespace std;
 
 namespace imrt {
 
-
+/* The Search Strategy
+ *
+ */
 class SearchStrategy {
 public:
-	SearchStrategy() : timelimit(0.0), begin_time(clock()), best_shedule(NULL) {} ;
+	SearchStrategy() : timelimit(0.0), begin_time(clock()) {} ;
 
 	virtual ~SearchStrategy() {
 
@@ -31,30 +34,17 @@ public:
 		return (double(clock()-begin_time)/double(CLOCKS_PER_SEC));
     }
 
-	/*
-	 * Initialize the variables of the specific strategy
-	 */
+	// Initialize the variables of the specific strategy
 	virtual void initialize()=0;
 
-	/**
-	 * Run the strategy
-	 */
+	// Run the strategy
 	virtual double run(double timelimit=99999.9, clock_t bt=clock())=0;
 
-	virtual double get_best_value() const {
-		if(best_shedule)
-			return best_shedule->get_value();
-		else return 0;
-	}
 
-	virtual const Schedule* get_best_shedule() {
-		return best_shedule;
-	}
 
 
 private:
 	double timelimit;
-	Schedule* best_shedule;
 	clock_t begin_time;
 
 

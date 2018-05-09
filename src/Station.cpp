@@ -9,11 +9,6 @@
 
 namespace imrt {
 
-Station::Station() {
-	// TODO Auto-generated constructor stub
-
-}
-
 Station::~Station() {
 	// TODO Auto-generated destructor stub
 }

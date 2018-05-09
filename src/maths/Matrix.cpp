@@ -60,6 +60,7 @@ void Matrix::clear()
 
 Matrix& Matrix::operator=(const Matrix& m)
 {
+
     if (this == &m) {
         return *this;
     }

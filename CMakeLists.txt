@@ -14,13 +14,16 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 # ADD_DEFINITION(-g -pg)
 
 ADD_LIBRARY(
-maths
+imrt
+src/Station.cpp
+src/EvaluationFunction.cpp
 src/maths/Matrix.cpp
 )
 
+
 ADD_EXECUTABLE(TEST main/test.cpp)
 
-target_link_libraries(TEST maths)
+target_link_libraries(TEST imrt)
 
 IF (INTERNAL_ADD_POSTFIX_EXECUTABLE_NAMES)
 			SET_TARGET_PROPERTIES(AppHelloWorld PROPERTIES  DEBUG_POSTFIX "_Debug")
