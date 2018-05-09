@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='utf-8'?>
+<class id="imrt::Station" name="Station" xmlns="http://jessevdk.github.com/cldoc/1.0">
+  <brief> An IMRT station</brief>
+  <doc>A station consists in a beam (matrix of beamlets), an angle, an aperture
+and an intensisty
+</doc>
+  <field id="imrt::Station::switched_lets" name="switched_lets">
+    <brief>set of beamlets switched from the last evaluation</brief>
+    <type name="std::__1::set&lt;int, std::__1::less&lt;int&gt;, std::__1::allocator&lt;int&gt; &gt;" />
+  </field>
+  <field id="imrt::Station::beamlets" name="beamlets">
+    <brief>the beamlets in a vector representation required for the evaluation function</brief>
+    <type name="std::__1::vector&lt;bool, std::__1::allocator&lt;bool&gt; &gt;" />
+  </field>
+  <constructor id="imrt::Station::Station" name="Station">
+    <brief>The Station constructor</brief>
+    <argument id="imrt::Station::Station::nb_beamrow" name="nb_beamrow">
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="imrt::Station::Station::nb_beamcol" name="nb_beamcol">
+      <type builtin="yes" name="int" />
+    </argument>
+  </constructor>
+  <destructor id="imrt::Station::~Station" name="~Station" virtual="yes" />
+  <method id="imrt::Station::close_aperture" name="close_aperture">
+    <brief>Close all the beamlets</brief>
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+  </method>
+  <method id="imrt::Station::get_angle" name="get_angle">
+    <return>
+      <type builtin="yes" name="double" />
+    </return>
+  </method>
+  <method id="imrt::Station::get_intensity" name="get_intensity">
+    <return>
+      <type builtin="yes" name="int" />
+    </return>
+  </method>
+  <method id="imrt::Station::set_angle" name="set_angle">
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+    <argument id="imrt::Station::set_angle::ang" name="ang">
+      <type builtin="yes" name="double" />
+    </argument>
+  </method>
+  <method id="imrt::Station::set_aperture" name="set_aperture">
+    <brief>The aperture is set, and the corresponding beamlets are open/closed</brief>
+    <return>
+      <type builtin="yes" name="bool" />
+    </return>
+    <argument id="imrt::Station::set_aperture::i" name="i">
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="imrt::Station::set_aperture::ini" name="ini">
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="imrt::Station::set_aperture::fin" name="fin">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+  <method id="imrt::Station::set_intensity" name="set_intensity">
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+    <argument id="imrt::Station::set_intensity::intens" name="intens">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+  <method id="imrt::Station::switch_beamlet" name="switch_beamlet">
+    <brief>Turn on/off the beamlet b</brief>
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+    <argument id="imrt::Station::switch_beamlet::b" name="b">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+</class>

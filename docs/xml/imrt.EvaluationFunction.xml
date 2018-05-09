@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='utf-8'?>
+<class id="imrt::EvaluationFunction" name="EvaluationFunction" xmlns="http://jessevdk.github.com/cldoc/1.0">
+  <brief> The Evaluation Function</brief>
+  <doc>The evaluation function based on [this paper](https://drive.google.com/file/d/1YfMNk4GhBK97gSQ0nvpJAnyM6A3EPv61/view).
+Basically it penalizes voxels with doses larger than Zmax (healthy organs), and with doses smaller than Zmin (tumor)
+</doc>
+  <constructor id="imrt::EvaluationFunction::EvaluationFunction" name="EvaluationFunction">
+    <brief>Constructor of the evaluator.</brief>
+    <argument id="imrt::EvaluationFunction::EvaluationFunction::nb_organs" name="nb_organs">
+      <doc>number of organs (includes the tumor)</doc>
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::EvaluationFunction::nb_beamlets" name="nb_beamlets">
+      <doc>number of beamleats in each station</doc>
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::EvaluationFunction::nb_voxels" name="nb_voxels">
+      <doc>number of voxels of organ i</doc>
+      <type name="std::__1::vector&lt;int, std::__1::allocator&lt;int&gt; &gt;" qualifier=" &amp;" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::EvaluationFunction::w" name="w">
+      <doc>penalization related to the organ i</doc>
+      <type name="std::__1::vector&lt;double, std::__1::allocator&lt;double&gt; &gt;" qualifier=" &amp;" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::EvaluationFunction::Zmin" name="Zmin">
+      <doc>minimum acceptable dose for the organ i (0.0 if it is a healthy organ)</doc>
+      <type name="std::__1::vector&lt;double, std::__1::allocator&lt;double&gt; &gt;" qualifier=" &amp;" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::EvaluationFunction::Zmax" name="Zmax">
+      <doc>maximum acceptable dose for the organ i</doc>
+      <type name="std::__1::vector&lt;double, std::__1::allocator&lt;double&gt; &gt;" qualifier=" &amp;" />
+    </argument>
+  </constructor>
+  <destructor id="imrt::EvaluationFunction::~EvaluationFunction" name="~EvaluationFunction" virtual="yes" />
+  <method id="imrt::EvaluationFunction::eval" name="eval">
+    <brief>Eval the cost F based on the dose deposition matrix Z</brief>
+    <return>
+      <type builtin="yes" name="double" />
+    </return>
+    <argument id="imrt::EvaluationFunction::eval::p" name="p">
+      <type name="Plan" qualifier=" const &amp;" ref="imrt::Plan#imrt::Plan" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::eval::genZ" name="genZ">
+      <type builtin="yes" name="bool" />
+    </argument>
+  </method>
+  <method id="imrt::EvaluationFunction::generate_Z" name="generate_Z">
+    <brief>Generate the dose distribution matrices Z for each organ</brief>
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+    <argument id="imrt::EvaluationFunction::generate_Z::p" name="p">
+      <type name="Plan" qualifier=" const &amp;" ref="imrt::Plan#imrt::Plan" />
+    </argument>
+  </method>
+  <method id="imrt::EvaluationFunction::incremental_eval" name="incremental_eval">
+    <brief>Incremental evaluation of F based on the modified beamlets of the station S</brief>
+    <return>
+      <type builtin="yes" name="double" />
+    </return>
+    <argument id="imrt::EvaluationFunction::incremental_eval::S" name="S">
+      <type name="Station" qualifier=" &amp;" ref="imrt::Station#imrt::Station" />
+    </argument>
+  </method>
+  <method id="imrt::EvaluationFunction::set_deposition_matrix" name="set_deposition_matrix">
+    <brief>Initialize the deposition matrix Z[id] from a file</brief>
+    <doc>This matrices should be generated automatically from the original organs
+and the given angle
+</doc>
+    <return>
+      <type builtin="yes" name="bool" />
+    </return>
+    <argument id="imrt::EvaluationFunction::set_deposition_matrix::angle" name="angle">
+      <type builtin="yes" name="double" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::set_deposition_matrix::id_organ" name="id_organ">
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="imrt::EvaluationFunction::set_deposition_matrix::file" name="file">
+      <type name="std::__1::string" />
+    </argument>
+  </method>
+</class>

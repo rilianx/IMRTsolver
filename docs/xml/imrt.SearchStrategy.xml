@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<class abstract="true" id="imrt::SearchStrategy" name="SearchStrategy" xmlns="http://jessevdk.github.com/cldoc/1.0">
+  <brief> The Search Strategy</brief>
+  <constructor id="imrt::SearchStrategy::SearchStrategy" name="SearchStrategy" />
+  <destructor id="imrt::SearchStrategy::~SearchStrategy" name="~SearchStrategy" virtual="yes" />
+  <method id="imrt::SearchStrategy::get_time" name="get_time">
+    <return>
+      <type builtin="yes" name="double" />
+    </return>
+  </method>
+  <method abstract="yes" id="imrt::SearchStrategy::initialize" name="initialize" virtual="yes">
+    <brief>Initialize the variables of the specific strategy</brief>
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+  </method>
+  <method abstract="yes" id="imrt::SearchStrategy::run" name="run" virtual="yes">
+    <brief>Run the strategy</brief>
+    <return>
+      <type builtin="yes" name="double" />
+    </return>
+    <argument id="imrt::SearchStrategy::run::timelimit" name="timelimit">
+      <type builtin="yes" name="double" />
+    </argument>
+    <argument id="imrt::SearchStrategy::run::bt" name="bt">
+      <type name="clock_t" />
+    </argument>
+  </method>
+</class>

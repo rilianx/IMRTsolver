@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='utf-8'?>
+<class abstract="true" id="maths::Matrix" name="Matrix" xmlns="http://jessevdk.github.com/cldoc/1.0">
+  <doc>
+ * matrix.h
+</doc>
+  <constructor abstract="yes" id="maths::Matrix::Matrix" name="Matrix">
+    <argument id="maths::Matrix::Matrix::" name="">
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="maths::Matrix::Matrix::" name="">
+      <type builtin="yes" name="int" />
+    </argument>
+  </constructor>
+  <constructor abstract="yes" id="maths::Matrix::Matrix" name="Matrix" />
+  <constructor abstract="yes" id="maths::Matrix::Matrix" name="Matrix">
+    <argument id="maths::Matrix::Matrix::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </constructor>
+  <destructor abstract="yes" id="maths::Matrix::~Matrix" name="~Matrix" />
+  <method abstract="yes" id="maths::Matrix::augment" name="augment" static="yes">
+    <brief>functions on augmented matrices</brief>
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::augment::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::Matrix::augment::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::bandSolve" name="bandSolve" static="yes">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::bandSolve::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::Matrix::bandSolve::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::Matrix::bandSolve::" name="">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::clear" name="clear">
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+  </method>
+  <method abstract="yes" id="maths::Matrix::createIdentity" name="createIdentity" static="yes">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::createIdentity::" name="">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::dotProduct" name="dotProduct" static="yes">
+    <brief>functions on vectors</brief>
+    <return>
+      <type builtin="yes" name="double" />
+    </return>
+    <argument id="maths::Matrix::dotProduct::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::Matrix::dotProduct::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::gaussianEliminate" name="gaussianEliminate">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+  </method>
+  <method abstract="yes" id="maths::Matrix::inverse" name="inverse">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+  </method>
+  <method id="maths::Matrix::nb_cols" name="nb_cols">
+    <return>
+      <type builtin="yes" name="int" />
+    </return>
+  </method>
+  <method id="maths::Matrix::nb_rows" name="nb_rows">
+    <return>
+      <type builtin="yes" name="int" />
+    </return>
+  </method>
+  <method id="maths::Matrix::operator()" name="operator()">
+    <return>
+      <type builtin="yes" name="double" qualifier=" &amp;" />
+    </return>
+    <argument id="maths::Matrix::operator()::x" name="x">
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="maths::Matrix::operator()::y" name="y">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::operator*=" name="operator*=">
+    <return>
+      <type name="Matrix" qualifier=" &amp;" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::operator*=::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::operator*=" name="operator*=">
+    <return>
+      <type name="Matrix" qualifier=" &amp;" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::operator*=::" name="">
+      <type builtin="yes" name="double" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::operator+=" name="operator+=">
+    <return>
+      <type name="Matrix" qualifier=" &amp;" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::operator+=::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::operator-=" name="operator-=">
+    <return>
+      <type name="Matrix" qualifier=" &amp;" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::operator-=::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::operator/=" name="operator/=">
+    <return>
+      <type name="Matrix" qualifier=" &amp;" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::operator/=::" name="">
+      <type builtin="yes" name="double" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::operator=" name="operator=">
+    <return>
+      <type name="Matrix" qualifier=" &amp;" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::operator=::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::operator^" name="operator^">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::operator^::" name="">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::readSolutionsFromRREF" name="readSolutionsFromRREF">
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+    <argument id="maths::Matrix::readSolutionsFromRREF::os" name="os">
+      <type name="std::__1::ostream" qualifier=" &amp;" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::rowReduceFromGaussian" name="rowReduceFromGaussian">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+  </method>
+  <method abstract="yes" id="maths::Matrix::solve" name="solve" static="yes">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::Matrix::solve::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::Matrix::solve::" name="">
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::swapRows" name="swapRows">
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+    <argument id="maths::Matrix::swapRows::" name="">
+      <type builtin="yes" name="int" />
+    </argument>
+    <argument id="maths::Matrix::swapRows::" name="">
+      <type builtin="yes" name="int" />
+    </argument>
+  </method>
+  <method abstract="yes" id="maths::Matrix::transpose" name="transpose">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+  </method>
+</class>

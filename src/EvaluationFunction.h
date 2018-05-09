@@ -36,13 +36,12 @@ class EvaluationFunction {
 public:
 
 	/*Constructor of the evaluator.
-	 *
 	 * @nb_organs 	number of organs (includes the tumor)
-	 * @nb_beamlets 	number of beamleats in each station
-	 * @nb_voxels[i] 	number of voxels of organ i
-	 * @w[i]			penalization related to the organ i
-	 * @Zmin[i]		minimum acceptable dose for the organ i (0.0 if it is a healthy organ)
-	 * @Zmax[i]		maximum acceptable dose for the organ i
+	 * @nb_beamlets number of beamleats in each station
+	 * @nb_voxels 	number of voxels of organ i
+	 * @w			penalization related to the organ i
+	 * @Zmin		minimum acceptable dose for the organ i (0.0 if it is a healthy organ)
+	 * @Zmax		maximum acceptable dose for the organ i
 	 */
 
 	EvaluationFunction(int nb_organs, int nb_beamlets, vector<int>& nb_voxels, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);

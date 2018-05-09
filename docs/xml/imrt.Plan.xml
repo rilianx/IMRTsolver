@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<class id="imrt::Plan" name="Plan" xmlns="http://jessevdk.github.com/cldoc/1.0">
+  <brief> An IMRT plan</brief>
+  <doc>It consists in a list of stations, each station corresponds to an
+angle, an aperture and an intensity
+</doc>
+  <field id="imrt::Plan::stations" name="stations">
+    <brief>The list of stations</brief>
+    <type name="std::__1::list&lt;imrt::Station *, std::__1::allocator&lt;imrt::Station *&gt; &gt;" />
+  </field>
+  <constructor id="imrt::Plan::Plan" name="Plan" />
+  <destructor id="imrt::Plan::~Plan" name="~Plan" virtual="yes" />
+  <method id="imrt::Plan::add_station" name="add_station">
+    <brief>Adds a new station to the plan</brief>
+    <return>
+      <type builtin="yes" name="void" />
+    </return>
+    <argument id="imrt::Plan::add_station::s" name="s">
+      <type name="Station" qualifier=" &amp;" ref="imrt::Station#imrt::Station" />
+    </argument>
+  </method>
+</class>

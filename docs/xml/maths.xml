@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='utf-8'?>
+<namespace id="maths" name="maths" xmlns="http://jessevdk.github.com/cldoc/1.0">
+  <class name="Matrix" ref="maths::Matrix#maths::Matrix" />
+  <function id="maths::operator*" name="operator*">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::operator*::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::operator*::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </function>
+  <function id="maths::operator*" name="operator*">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::operator*::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::operator*::" name="">
+      <type builtin="yes" name="double" />
+    </argument>
+  </function>
+  <function id="maths::operator*" name="operator*">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::operator*::" name="">
+      <type builtin="yes" name="double" />
+    </argument>
+    <argument id="maths::operator*::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </function>
+  <function id="maths::operator+" name="operator+">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::operator+::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::operator+::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </function>
+  <function id="maths::operator-" name="operator-">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::operator-::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::operator-::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+  </function>
+  <function id="maths::operator/" name="operator/">
+    <return>
+      <type name="Matrix" ref="maths::Matrix#maths::Matrix" />
+    </return>
+    <argument id="maths::operator/::" name="">
+      <type name="Matrix" qualifier=" const &amp;" ref="maths::Matrix#maths::Matrix" />
+    </argument>
+    <argument id="maths::operator/::" name="">
+      <type builtin="yes" name="double" />
+    </argument>
+  </function>
+</namespace>

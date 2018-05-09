@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<index xmlns="http://jessevdk.github.com/cldoc/1.0">
+  <namespace name="imrt" ref="imrt#imrt">
+    <class name="EvaluationFunction" ref="imrt::EvaluationFunction#imrt::EvaluationFunction">
+      <brief> The Evaluation Function</brief>
+    </class>
+    <class name="Plan" ref="imrt::Plan#imrt::Plan">
+      <brief> An IMRT plan</brief>
+    </class>
+    <class name="SearchStrategy" ref="imrt::SearchStrategy#imrt::SearchStrategy">
+      <brief> The Search Strategy</brief>
+    </class>
+    <class name="Station" ref="imrt::Station#imrt::Station">
+      <brief> An IMRT station</brief>
+    </class>
+  </namespace>
+  <namespace name="maths" ref="maths#maths">
+    <class name="Matrix" ref="maths::Matrix#maths::Matrix" />
+  </namespace>
+</index>
