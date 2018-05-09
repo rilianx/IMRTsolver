@@ -1,6 +1,18 @@
 IMRT Solver
 -----------
 
+**Cómo correr un ejemplo:**
+
+Compilar:
+
+cmake .
+make
+
+Correr:
+./TEST
+
+----
+
 **Directories:**
 
 
@@ -27,6 +39,8 @@ IMRT Solver
 **EvaluationFuncion:**
  The evaluation function based on [this paper](https://drive.google.com/file/d/1YfMNk4GhBK97gSQ0nvpJAnyM6A3EPv61/view).
  Basically it penalizes voxels with doses larger than Zmax (healthy organs), and with doses smaller than Zmin (tumor).
+ 
+
  
  
 **Command for generating documentation:**
