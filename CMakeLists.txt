@@ -5,13 +5,15 @@ cmake_minimum_required(VERSION 3.5)
 project(imrt)
 
 
-set(SOURCES src/EvaluationFunction.cpp src/Station.cpp src/maths/Matrix.cpp)
-set(HEADERS src/EvaluationFunction.h src/Plan.h src/Station.h)
+set(SOURCES src/plan/EvaluationFunction.cpp src/plan/Station.cpp src/base/Collimator.cpp src/tools/Matrix.cpp src/base/Volume.cpp)
+set(HEADERS src/plan/EvaluationFunction.h src/plan/Plan.h src/plan/Station.h src/base/Collimator.h src/base/Volume.h)
 
 INCLUDE_DIRECTORIES(
 src
 main
-src/maths
+src/tools
+src/base
+src/plan
 )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
@@ -24,4 +26,3 @@ ADD_LIBRARY(imrt ${SOURCES})
 ADD_EXECUTABLE(TEST main/test.cpp)
 
 target_link_libraries(TEST imrt)
-

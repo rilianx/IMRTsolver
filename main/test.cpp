@@ -6,8 +6,11 @@
  */
 
 #include <iostream>
-#include "EvaluationFunction.h"
-#include "Plan.h"
+
+#include "../src/plan/EvaluationFunction.h"
+#include "../src/plan/Plan.h"
+#include "Collimator.h"
+#include "Volume.h"
 #include "args.hxx"
 
 
@@ -49,34 +52,57 @@ int main(int argc, char** argv){
 	string file=_file.Get();
 
 
+
+
+	vector< pair<int, string> > coord_files(5);
+  coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
+  coord_files[1]=(make_pair(70,"data/CERR_Prostate/CoordinatesBeam_70.txt"));
+  coord_files[2]=(make_pair(140,"data/CERR_Prostate/CoordinatesBeam_140.txt"));
+  coord_files[3]=(make_pair(210,"data/CERR_Prostate/CoordinatesBeam_210.txt"));
+  coord_files[4]=(make_pair(280,"data/CERR_Prostate/CoordinatesBeam_280.txt"));
+
+  vector<string> organ_files;
+  organ_files.push_back("data/CERR_Prostate/DAO_DDM_BLADDER.dat");
+  organ_files.push_back("data/CERR_Prostate/DAO_DDM_PTVHD.dat");
+  organ_files.push_back("data/CERR_Prostate/DAO_DDM_RECTUM.dat");
+
+  	Collimator collimator(coord_files);
+  	collimator.printAxisValues();
+  	collimator.printActiveBeam();
+
+	vector<Volume> volumes;
+
+  for (int i=0; i<organ_files.size(); i++) {
+	  volumes.push_back(Volume(collimator, organ_files[i]));
+	}
+
+   //volumes[0].print_deposition();
+
+	 cout << volumes[0].getDepositionMatrix(0)(0,0) << endl;
+
+
+   Station station(collimator,volumes, 0, 10);
+   station.generateIntensity();
+   station.printIntensity();
+
+   Station station2(collimator,volumes, 70, 10);
+   station2.generateIntensity();
+   station2.printIntensity();
+
+   EvaluationFunction F(volumes);
+
+   Plan P(F);
+
+   P.add_station(station);
+   P.add_station(station2);
+
 	vector<double> w={1,1,1};
 	vector<double> Zmin={70,0,0};
 	vector<double> Zmax={90,20,20};
-	vector<int> nb_voxels={13081,8500,19762};
 
-	EvaluationFunction F(3, 330, nb_voxels, w, Zmin, Zmax);
-	F.set_deposition_matrix(0,0,"data/65429427DDM_LECHOPROST.dat");
-	F.set_deposition_matrix(0,1,"data/65429427DDM_RECTO.dat");
-	F.set_deposition_matrix(0,2,"data/65429427DDM_VEJIGA.dat");
+	cout << "ev:" << P.eval(w,Zmin,Zmax) << endl;
 
-	Station S(33,10);
-	Plan P;
-	P.add_station(S);
-	S.set_intensity(10);
-
-	cout << "ev:" << F.eval(P) << endl;
-
-	S.set_aperture(10,4,6);  //xxxx--xxxx
-	cout << "incr_ev:" << F.incremental_eval(S) << endl;
-	cout << "ev:" << F.eval(P) << endl;
-
-	S.set_aperture(11,4,9);  //xxxx-----x
-	cout << "incr_ev:" << F.incremental_eval(S) << endl;
-	cout << "ev:" << F.eval(P) << endl;
-
-	S.close_aperture();
-	cout << "incr_ev:" << F.incremental_eval(S) << endl;
-	cout << "ev:" << F.eval(P) << endl;
 
 	return 0;
+
 }
