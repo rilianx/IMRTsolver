@@ -31,7 +31,9 @@ public:
 	}
 
 	double eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
-		return ev.eval(*this,w,Zmin,Zmax);
+		double eval=ev.eval(*this,w,Zmin,Zmax);
+		ev.generate_voxel_dose_functions ();
+		return eval;
 	}
 
 	const list<Station*>& get_stations() const{

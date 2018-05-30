@@ -26,6 +26,8 @@ class Matrix {
 
         inline double& operator()(int x, int y) { return p[x][y]; }
 
+        inline double operator()(int x, int y) const { return p[x][y]; }
+
         Matrix& operator+=(const Matrix&);
         Matrix& operator-=(const Matrix&);
         Matrix& operator*=(const Matrix&);

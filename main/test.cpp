@@ -63,8 +63,8 @@ int main(int argc, char** argv){
 
   vector<string> organ_files;
   organ_files.push_back("data/CERR_Prostate/DAO_DDM_BLADDER.dat");
-  organ_files.push_back("data/CERR_Prostate/DAO_DDM_PTVHD.dat");
   organ_files.push_back("data/CERR_Prostate/DAO_DDM_RECTUM.dat");
+  organ_files.push_back("data/CERR_Prostate/DAO_DDM_PTVHD.dat");
 
   	Collimator collimator(coord_files);
   	collimator.printAxisValues();
@@ -80,27 +80,68 @@ int main(int argc, char** argv){
 
 	 cout << volumes[0].getDepositionMatrix(0)(0,0) << endl;
 
+   vector<Station*> stations(5);
+   Station* station;
+   for(int i=0;i<5;i++){
+	   station = new Station(collimator,volumes, i*70, 10);
+	   station->generateIntensity();
+	   station->printIntensity();
+	   stations[i]=station;
+   }
 
-   Station station(collimator,volumes, 0, 10);
-   station.generateIntensity();
-   station.printIntensity();
-
-   Station station2(collimator,volumes, 70, 10);
-   station2.generateIntensity();
-   station2.printIntensity();
 
    EvaluationFunction F(volumes);
 
    Plan P(F);
+   for(int i=0;i<5;i++)
+	   P.add_station(*stations[i]);
 
-   P.add_station(station);
-   P.add_station(station2);
 
 	vector<double> w={1,1,1};
-	vector<double> Zmin={70,0,0};
-	vector<double> Zmax={90,20,20};
+	vector<double> Zmin={0,0,70};
+	vector<double> Zmax={50,50,1000};
 
-	cout << "ev:" << P.eval(w,Zmin,Zmax) << endl;
+
+	double best_eval=F.eval(P,w,Zmin,Zmax);
+	cout << "ev:" << best_eval << endl;
+
+	F.generate_voxel_dose_functions();
+
+
+	while(1){
+		double r=rand()%5;
+
+		pair<int,int> worst_voxel=F.get_worst_voxel();
+		int beamlet=F.best_beamlet(*stations[r],worst_voxel);
+		if(beamlet==-1){
+			F.eval(P,w,Zmin,Zmax);
+			continue;
+		}
+
+		double increase;
+		double inc=rand()%4+1;
+		double ratio=rand()%2+1;
+		if(worst_voxel.first==2)//tumor
+			increase=inc;
+		else
+			increase=-inc;
+		stations[r]->increaseIntensity(beamlet,increase,ratio);
+
+		double eval=F.eval(P,w,Zmin,Zmax);
+		cout << "ev:" << eval << endl;
+		if(eval > best_eval){ //reject the move
+			stations[r]->increaseIntensity(beamlet,-increase,ratio);
+		}else{ //accept the move
+			best_eval=eval;
+			F.generate_voxel_dose_functions();
+			stations[r]->printIntensity();
+		}
+
+		getchar();
+	}
+
+
+
 
 
 	return 0;

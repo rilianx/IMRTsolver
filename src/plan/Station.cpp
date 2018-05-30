@@ -11,7 +11,7 @@ namespace imrt {
 
 
   Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures):
-		collimator(collimator), angle(_angle) , max_apertures(max_apertures){
+		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures), intensity(max_apertures){
 
     for (int i=0; i<volumes.size(); i++)
       D[i]=&volumes[i].getDepositionMatrix(angle);
@@ -34,8 +34,8 @@ namespace imrt {
       for (int j=0; j<collimator.getXdim(); j++) {
         aux.push_back(collimator.getActiveRange(j,angle));
       }
-      A.push_back(aux);
-      intensity.push_back(1);
+      A[i]=aux;
+      intensity[i]=1;
     }
 
 
@@ -68,7 +68,7 @@ namespace imrt {
 
   // Function to be used to get the position
   // in the matrix I of a beam column of matrix D
-  pair<int,int> Station::getPos(int index) {
+  pair<int,int> Station::getPos(int index) const{
     return(collimator.indexToPos(index, angle));
   }
 
@@ -92,8 +92,8 @@ namespace imrt {
     }
   }
 
-  Matrix& Station::getDepositionMatrix(int o){
-    return *D[o];
+  const Matrix& Station::getDepositionMatrix(int o) const{
+    return *(D.find(o)->second);
   }
 
 }

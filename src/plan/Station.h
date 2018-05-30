@@ -46,7 +46,7 @@ private:
   int angle;
 
   // Dose deposition matrices for each volume
-  map<int, Matrix*> D;
+  map<int, const Matrix*> D;
 
   // Maximum number of apertures
   int max_apertures;
@@ -77,12 +77,24 @@ public:
 
   // Function to be used to get the index in the location
   // in the matrix I of the rows of matrix D
-  pair<int,int> getPos(int beam);
+  pair<int,int> getPos(int beam) const;
 
   // Get intensity of beam
-  int getIntensity(int beam){
+  int getIntensity(int beam) const{
     pair<int,int> p = getPos(beam);
     return I(p.first,p.second);
+  }
+
+  // Get intensity of beam
+  void increaseIntensity(int beam, double intensity, int ratio=0){
+    pair<int,int> p = getPos(beam);
+    int x=p.first, y=p.second;
+    for(int i=max(x-ratio,0); i<min(x+ratio+1,collimator.getXdim()-1); i++){
+    	for(int j=max(y-ratio,0); j<min(y+ratio+1,collimator.getYdim()-1); j++){
+    		I(i,j)+=intensity;
+    	}
+    }
+
   }
 
 
@@ -94,11 +106,11 @@ public:
 
   void printApertures();
 
-  Matrix& getDepositionMatrix(int o);
+  const Matrix& getDepositionMatrix(int o) const;
 
   int getAngle(){ return angle;}
 
-  int getNbBeamlets(){
+  int getNbBeamlets() const{
     return collimator.getNangleBeamlets(angle);
   }
 
