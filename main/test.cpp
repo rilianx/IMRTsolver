@@ -52,16 +52,16 @@ int main(int argc, char** argv){
 	string file=_file.Get();
 
 	vector< pair<int, string> > coord_files(5);
-  coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
-  coord_files[1]=(make_pair(70,"data/CERR_Prostate/CoordinatesBeam_70.txt"));
-  coord_files[2]=(make_pair(140,"data/CERR_Prostate/CoordinatesBeam_140.txt"));
-  coord_files[3]=(make_pair(210,"data/CERR_Prostate/CoordinatesBeam_210.txt"));
-  coord_files[4]=(make_pair(280,"data/CERR_Prostate/CoordinatesBeam_280.txt"));
+	coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
+	coord_files[1]=(make_pair(70,"data/CERR_Prostate/CoordinatesBeam_70.txt"));
+	coord_files[2]=(make_pair(140,"data/CERR_Prostate/CoordinatesBeam_140.txt"));
+	coord_files[3]=(make_pair(210,"data/CERR_Prostate/CoordinatesBeam_210.txt"));
+	coord_files[4]=(make_pair(280,"data/CERR_Prostate/CoordinatesBeam_280.txt"));
 
-  vector<string> organ_files;
-  organ_files.push_back("data/CERR_Prostate/DAO_DDM_BLADDER.dat");
-  organ_files.push_back("data/CERR_Prostate/DAO_DDM_RECTUM.dat");
-  organ_files.push_back("data/CERR_Prostate/DAO_DDM_PTVHD.dat");
+	vector<string> organ_files;
+	organ_files.push_back("data/CERR_Prostate/DAO_DDM_BLADDER.dat");
+	organ_files.push_back("data/CERR_Prostate/DAO_DDM_RECTUM.dat");
+	organ_files.push_back("data/CERR_Prostate/DAO_DDM_PTVHD.dat");
 
   	Collimator collimator(coord_files);
   //	collimator.printAxisValues();
@@ -74,8 +74,6 @@ int main(int argc, char** argv){
 	}
 
    //volumes[0].print_deposition();
-
-	 cout << volumes[0].getDepositionMatrix(0)(0,0) << endl;
 
    vector<Station*> stations(5);
    Station* station;
@@ -115,7 +113,6 @@ int main(int argc, char** argv){
 		double ratio=rand()%3;
 		if(worst_voxel.first!=2)// no es tumor
 			intensity=-intensity;
-
 
 
 		auto diff=stations[r]->increaseIntensity(beamlet,intensity,ratio);
