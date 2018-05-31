@@ -8,9 +8,10 @@ ax1 = fig.add_subplot(1,1,1)
 
 def animate(i):
     ax1.clear()
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk("./plotter"):
         files = [ fi for fi in files if fi.endswith(".txt") ]
         for filename in files:
+            filename = "./plotter/" + filename
             pullData = open(filename,"r").read()
             dataArray = pullData.split('\n')
             xar = []

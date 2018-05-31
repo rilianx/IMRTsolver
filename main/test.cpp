@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-#include "../src/plan/EvaluationFunction.h"
-#include "../src/plan/Plan.h"
+#include "EvaluationFunction.h"
+#include "Plan.h"
 #include "Collimator.h"
 #include "Volume.h"
 #include "args.hxx"
@@ -51,9 +51,6 @@ int main(int argc, char** argv){
 
 	string file=_file.Get();
 
-
-
-
 	vector< pair<int, string> > coord_files(5);
   coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
   coord_files[1]=(make_pair(70,"data/CERR_Prostate/CoordinatesBeam_70.txt"));
@@ -67,8 +64,8 @@ int main(int argc, char** argv){
   organ_files.push_back("data/CERR_Prostate/DAO_DDM_PTVHD.dat");
 
   	Collimator collimator(coord_files);
-  	collimator.printAxisValues();
-  	collimator.printActiveBeam();
+  //	collimator.printAxisValues();
+  //	collimator.printActiveBeam();
 
 	vector<Volume> volumes;
 
@@ -83,12 +80,11 @@ int main(int argc, char** argv){
    vector<Station*> stations(5);
    Station* station;
    for(int i=0;i<5;i++){
-	   station = new Station(collimator,volumes, i*70, 10);
+	   station = new Station(collimator,volumes, i*70, 4);
 	   station->generateIntensity();
 	   station->printIntensity();
 	   stations[i]=station;
    }
-
 
    EvaluationFunction F(volumes);
 
@@ -105,44 +101,40 @@ int main(int argc, char** argv){
 	double best_eval=F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
 
-	F.generate_voxel_dose_functions();
-
-
-	while(1){
+	for(int i=0;i<200;i++){
 		double r=rand()%5;
 
 		pair<int,int> worst_voxel=F.get_worst_voxel();
-		int beamlet=F.best_beamlet(*stations[r],worst_voxel);
+		int beamlet=F.max_beamlet_dose(*stations[r],worst_voxel);
 		if(beamlet==-1){
-			F.eval(P,w,Zmin,Zmax);
+			F.pop_worst_voxel();
 			continue;
 		}
 
-		double increase;
-		double inc=rand()%4+1;
-		double ratio=rand()%2+1;
-		if(worst_voxel.first==2)//tumor
-			increase=inc;
-		else
-			increase=-inc;
-		stations[r]->increaseIntensity(beamlet,increase,ratio);
+		double intensity=rand()%3+1;
+		double ratio=rand()%3;
+		if(worst_voxel.first!=2)// no es tumor
+			intensity=-intensity;
 
-		double eval=F.eval(P,w,Zmin,Zmax);
-		cout << "ev:" << eval << endl;
+    stations[r]->clear_changes();
+		stations[r]->increaseIntensity(beamlet,intensity,ratio);
+		double eval=F.incremental_eval(*stations[r],w,Zmin,Zmax);
+
 		if(eval > best_eval){ //reject the move
-			stations[r]->increaseIntensity(beamlet,-increase,ratio);
+			stations[r]->revert();
+			eval=F.incremental_eval(*stations[r],w,Zmin,Zmax);
 		}else{ //accept the move
 			best_eval=eval;
-			F.generate_voxel_dose_functions();
-			stations[r]->printIntensity();
 		}
-
-		getchar();
 	}
 
+	for(int i=0;i<5;i++)
+		stations[i]->printIntensity();
 
+	cout << "best_eval:" << best_eval << endl;
 
-
+  F.generate_voxel_dose_functions ();
+  system("python plotter/plot.py");
 
 	return 0;
 

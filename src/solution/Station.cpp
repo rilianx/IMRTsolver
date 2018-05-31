@@ -69,14 +69,20 @@ namespace imrt {
   // Function to be used to get the position
   // in the matrix I of a beam column of matrix D
   pair<int,int> Station::getPos(int index) const{
-    return(collimator.indexToPos(index, angle));
+    auto pos = beam2pos.find(index);
+    if(pos==beam2pos.end()){
+      beam2pos[index]=collimator.indexToPos(index, angle);
+      pos2beam[beam2pos[index]]=index;
+      return beam2pos[index];
+    }
+    return(pos->second);
   }
 
   void Station::printIntensity() {
     cout << "Angle "<< angle <<" intensity matrix:"<< endl;
     for (int i=0; i<collimator.getXdim();i++) {
       for (int j=0; j<collimator.getYdim(); j++) {
-        cout << I(i,j)<< ",";
+        printf("%2.0f ", I(i,j));
       }
       cout << endl;
     }
@@ -94,6 +100,23 @@ namespace imrt {
 
   const Matrix& Station::getDepositionMatrix(int o) const{
     return *(D.find(o)->second);
+  }
+
+  void Station::increaseIntensity(int beam, double intensity, int ratio=0){
+    pair<int,int> p = getPos(beam);
+    int x=p.first, y=p.second;
+    for(int i=max(x-ratio,0); i<min(x+ratio+1,collimator.getXdim()-1); i++){
+      for(int j=max(y-ratio,0); j<min(y+ratio+1,collimator.getYdim()-1); j++){
+        if(I(i,j)<-intensity) intensity=-I(i,j);
+        I(i,j)+=intensity;
+
+        if(changed_lets.find(make_pair(i,j))!=changed_lets.end())
+          changed_lets[make_pair(i,j)]+=intensity;
+        else
+          changed_lets[make_pair(i,j)]=intensity;
+
+      }
+    }
   }
 
 }

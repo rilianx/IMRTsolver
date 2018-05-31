@@ -63,6 +63,9 @@ private:
    // intensity of an aperture i
    vector<double> intensity;
 
+   mutable map <int, pair<int,int> > beam2pos;
+
+
    //  Apertures (representation 2):
    // Intensity for each beam of the collimator
    Matrix I;
@@ -85,16 +88,14 @@ public:
     return I(p.first,p.second);
   }
 
-  // Get intensity of beam
-  void increaseIntensity(int beam, double intensity, int ratio=0){
-    pair<int,int> p = getPos(beam);
-    int x=p.first, y=p.second;
-    for(int i=max(x-ratio,0); i<min(x+ratio+1,collimator.getXdim()-1); i++){
-    	for(int j=max(y-ratio,0); j<min(y+ratio+1,collimator.getYdim()-1); j++){
-    		I(i,j)+=intensity;
-    	}
-    }
 
+  //revert the last change
+  //should be followed by a call to the incremental_eval procedure
+  void revert(){
+    for(auto let:changed_lets){
+      I(let.first.first, let.first.second) -= let.second;
+      changed_lets[let.first] = -let.second;
+    }
   }
 
 
@@ -114,6 +115,17 @@ public:
     return collimator.getNangleBeamlets(angle);
   }
 
+  // Increase the intensity of a set of beams
+  // (possible movement of a local search algorithm)
+  void increaseIntensity(int beam, double intensity, int ratio=0);
+
+  void clear_changes(){
+    changed_lets.clear();
+  }
+
+  map< pair<int,int>, double > changed_lets;
+
+  mutable map <pair<int,int>, int > pos2beam;
 
 };
 }

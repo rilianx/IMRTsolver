@@ -5,15 +5,15 @@ cmake_minimum_required(VERSION 3.5)
 project(imrt)
 
 
-set(SOURCES src/plan/EvaluationFunction.cpp src/plan/Station.cpp src/base/Collimator.cpp src/tools/Matrix.cpp src/base/Volume.cpp)
-set(HEADERS src/plan/EvaluationFunction.h src/plan/Plan.h src/plan/Station.h src/base/Collimator.h src/base/Volume.h)
+set(SOURCES src/solution/EvaluationFunction.cpp src/solution/Station.cpp src/base/Collimator.cpp src/tools/Matrix.cpp src/base/Volume.cpp)
+set(HEADERS src/solution/EvaluationFunction.h src/solution/Plan.h src/solution/Station.h src/base/Collimator.h src/base/Volume.h)
 
 INCLUDE_DIRECTORIES(
 src
 main
 src/tools
 src/base
-src/plan
+src/solution
 )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
