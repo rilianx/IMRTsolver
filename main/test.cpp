@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include <iterator>
 
 #include "EvaluationFunction.h"
 #include "Plan.h"
@@ -85,7 +86,6 @@ int main(int argc, char** argv){
    }
 
    EvaluationFunction F(volumes);
-
    Plan P(F);
    for(int i=0;i<5;i++)
 	   P.add_station(*stations[i]);
@@ -95,31 +95,32 @@ int main(int argc, char** argv){
 	vector<double> Zmin={0,0,70};
 	vector<double> Zmax={50,50,1000};
 
-
 	double best_eval=F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
 
-	for(int i=0;i<200;i++){
-		double r=rand()%5;
-
-		pair<int,int> worst_voxel=F.get_worst_voxel();
-		int beamlet=F.max_beamlet_dose(*stations[r],worst_voxel);
-		if(beamlet==-1){
-			F.pop_worst_voxel();
-			continue;
-		}
-
-		double intensity=rand()%3+1;
-		double ratio=rand()%3;
-		if(worst_voxel.first!=2)// no es tumor
-			intensity=-intensity;
+	for(int i=0;i<1000;i++){
+		list< pair<int,int> > worst_voxels=F.get_worst_voxels(10);
+		vector<double> ww={-1,-1,1};
 
 
-		auto diff=stations[r]->increaseIntensity(beamlet,intensity,ratio);
-		double eval=F.incremental_eval(*stations[r],w,Zmin,Zmax, diff);
+		auto sb=F.best_beamlets(P, worst_voxels, ww, 10);
+		auto it=sb.begin();
+		std::advance(it,rand()%sb.size());
+		Station*s = it->second.first; int beamlet=it->second.second;
+
+
+		//cout << eval_beamlet << endl;
+
+		double intensity=-2 + rand()%5;
+		double ratio= rand()%3 ;
+		//if(eval_beamlet<0) intensity=-intensity;
+
+
+		auto diff=s->increaseIntensity(beamlet,intensity,ratio);
+		double eval=F.incremental_eval(*s,w,Zmin,Zmax, diff);
 
 		if(eval > best_eval){ //reject the move
-			stations[r]->revert(diff);
+			s->revert(diff);
 			F.undo_last_eval();
 		}else{ //accept the move
 			cout << eval << endl;
@@ -131,6 +132,9 @@ int main(int argc, char** argv){
 		stations[i]->printIntensity();
 
 	cout << "best_eval:" << best_eval << endl;
+
+	best_eval=F.eval(P,w,Zmin,Zmax);
+		cout << "ev:" << best_eval << endl;
 
   F.generate_voxel_dose_functions ();
   system("python plotter/plot.py");

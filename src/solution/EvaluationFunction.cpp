@@ -7,10 +7,11 @@
 
 #include "EvaluationFunction.h"
 #include <string>
+#include <functional>
 
 namespace imrt {
 
-EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0),
+EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F(0.0),
 	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(100)) {
 
 	for(int i=0; i<nb_organs; i++){
@@ -38,7 +39,7 @@ void EvaluationFunction::generate_Z(const Plan& p){
 			 for(int k=0; k<nb_voxels[o]; k++){
 			   double dose=0.0;
 			   for(int b=0; b<station->getNbBeamlets(); b++)
-					    dose +=  D(k,b)*station->getIntensity( b );
+					 dose +=  D(k,b)*station->getIntensity( b );
 			   Z[o][k] += dose;
 			 }
 		}
@@ -48,9 +49,6 @@ void EvaluationFunction::generate_Z(const Plan& p){
 
 double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
 	sorted_voxels.clear();
-
-	for(int o=0; o<nb_organs; o++)
-	 	 std::fill(P[o].begin(), P[o].end(), 0.0);
 
 	generate_Z(p);
 
@@ -158,9 +156,15 @@ void EvaluationFunction::undo_last_eval(){
 
 
 
-pair<int,int> EvaluationFunction::get_worst_voxel(){
-	 auto voxel=*sorted_voxels.begin();
-	 return voxel.second;
+list < pair<int,int> > EvaluationFunction::get_worst_voxels(int n){
+	list < pair<int,int> > voxels;
+	int i=0;
+	for(auto voxel:sorted_voxels){
+		voxels.push_back(voxel.second);
+		i++;
+		if(i==n) break;
+	}
+	return voxels;
 }
 
 void EvaluationFunction::pop_worst_voxel(){
@@ -168,18 +172,28 @@ void EvaluationFunction::pop_worst_voxel(){
 }
 
 
-int EvaluationFunction::max_beamlet_dose(const Station& s, pair<int,int>& voxel){
-	const Matrix&  D = s.getDepositionMatrix(voxel.first);
-	int k=voxel.second;
-	int bestb=-1; double max_dose=0.0;
+set < pair< double, pair<Station*, int> >, std::greater< pair< double, pair<Station*, int> > > >
+EvaluationFunction::best_beamlets(Plan& p, list <pair<int,int> >& voxels, vector<double>& w, int n){
 
-	for(int b=0; b<s.getNbBeamlets(); b++){
-		double dose=D(k,b);
-		if(dose>max_dose){
-			max_dose=dose;
-			bestb=b;
+	set < pair< double, pair<Station*, int> >, std::greater< pair< double, pair<Station*, int> > > > bestb;
+
+	double max_ev=0.0;
+	for(auto s:p.get_stations()){
+		for(int b=0; b<s->getNbBeamlets(); b++){
+			double ev=0;
+			for(auto voxel:voxels){
+				const Matrix&  D = s->getDepositionMatrix(voxel.first);
+				int k=voxel.second;
+				ev+=D(k,b)*w[voxel.first];
+			}
+
+
+			if( bestb.size() < n || abs(ev)>bestb.rbegin()->first){
+				bestb.insert(make_pair(abs(ev), make_pair(s,b)));
+			}
 		}
 	}
+
 	return bestb;
 }
 

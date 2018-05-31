@@ -63,13 +63,15 @@ public:
 	// Generate files in the plotter directory with the voxel_dose functions for each organ
 	void generate_voxel_dose_functions ();
 
-	//returns the voxel (o,k) which penalize most the function F
-	pair<int,int> get_worst_voxel();
+	//returns the n voxels (o,k) which penalize most the function F
+	list < pair<int,int> > get_worst_voxels(int n);
 
 	void pop_worst_voxel();
 
-	//returns the beamlet of the station which maximize the dose per intensity in the voxel
-	int max_beamlet_dose(const Station& s, pair<int,int>& voxel);
+	//returns the beamlet which maximizes:
+	//w[0]*dose_in_voxels[0] + w[1]*dose_in_voxels[1]+...
+	set < pair< double, pair<Station*, int> >, std::greater< pair< double, pair<Station*, int> > > >
+	best_beamlets(Plan& p, list <pair<int,int> >& voxels, vector<double>& w, int n);
 
 
 private:

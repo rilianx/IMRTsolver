@@ -36,7 +36,7 @@ void Volume::set_data(string file) {
   while (getline (myfile,line) )
     lines.push_back(line);
   myfile.close();
-  nb_voxels = lines.size();
+  nb_voxels = lines.size()-1;
   ss.str(lines[0]);
 
   for(auto angle:collimator.getAngles())
