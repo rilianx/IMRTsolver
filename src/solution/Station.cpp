@@ -102,21 +102,21 @@ namespace imrt {
     return *(D.find(o)->second);
   }
 
-  void Station::increaseIntensity(int beam, double intensity, int ratio=0){
+  list< pair< int, double > > Station::increaseIntensity(int beam, double intensity, int ratio){
+
+	list< pair< int, double > > diff;
     pair<int,int> p = getPos(beam);
     int x=p.first, y=p.second;
     for(int i=max(x-ratio,0); i<min(x+ratio+1,collimator.getXdim()-1); i++){
       for(int j=max(y-ratio,0); j<min(y+ratio+1,collimator.getYdim()-1); j++){
         if(I(i,j)<-intensity) intensity=-I(i,j);
         I(i,j)+=intensity;
-
-        if(changed_lets.find(make_pair(i,j))!=changed_lets.end())
-          changed_lets[make_pair(i,j)]+=intensity;
-        else
-          changed_lets[make_pair(i,j)]=intensity;
-
+        diff.push_back(make_pair(pos2beam[make_pair(i,j)], intensity));
       }
     }
+    return diff;
   }
+
+
 
 }

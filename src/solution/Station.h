@@ -63,9 +63,6 @@ private:
    // intensity of an aperture i
    vector<double> intensity;
 
-   mutable map <int, pair<int,int> > beam2pos;
-
-
    //  Apertures (representation 2):
    // Intensity for each beam of the collimator
    Matrix I;
@@ -91,10 +88,10 @@ public:
 
   //revert the last change
   //should be followed by a call to the incremental_eval procedure
-  void revert(){
-    for(auto let:changed_lets){
-      I(let.first.first, let.first.second) -= let.second;
-      changed_lets[let.first] = -let.second;
+  void revert(list< pair< int, double > >& diff){
+    for(auto let:diff){
+      pair <int,int> a = beam2pos[let.first];
+      I(a.first, a.second) -= let.second;
     }
   }
 
@@ -117,15 +114,12 @@ public:
 
   // Increase the intensity of a set of beams
   // (possible movement of a local search algorithm)
-  void increaseIntensity(int beam, double intensity, int ratio=0);
+  // return a list with the changed beamlets an their changes to be used by the incremental evaluation
+  list< pair< int, double > > increaseIntensity(int beam, double intensity, int ratio=0);
 
-  void clear_changes(){
-    changed_lets.clear();
-  }
-
-  map< pair<int,int>, double > changed_lets;
 
   mutable map <pair<int,int>, int > pos2beam;
+  mutable map <int, pair<int,int> > beam2pos;
 
 };
 }

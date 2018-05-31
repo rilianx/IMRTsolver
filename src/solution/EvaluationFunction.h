@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <set>
 #include <queue>
+#include <functional>
 
 #include "Plan.h"
 #include "Volume.h"
@@ -52,8 +53,10 @@ public:
 	// Eval the cost F based on the dose deposition matrix Z
 	double eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
-	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
+	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
+			list< pair< int, double > >& diff);
 
+	void undo_last_eval();
 
   //Additional functions
 
@@ -82,16 +85,21 @@ private:
 	//number of voxels for each organ
 	vector<int> nb_voxels;
 
-  //Last evaluation of F, for incremental evaluation
-	double last_F;
+	double F;
+
+    //Evaluation of F before the last incremental evaluation
+	double prev_F;
 
   //Extra data
 
 	// all the voxels sorted by penalty (may be useful for algorithms)
-  std::priority_queue< pair <double, pair<int,int> > > sorted_voxels;
+    set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > sorted_voxels;
 
 	//Matrix of penalties for each organ and voxel (may be useful for algorithms)
 	vector< vector<double> > P;
+
+	list < pair < pair<int,int>, pair<double,double> > > ZP_diff;
+
 
 };
 

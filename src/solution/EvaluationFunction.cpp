@@ -10,7 +10,7 @@
 
 namespace imrt {
 
-EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : last_F(0.0),
+EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0),
 	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(100)) {
 
 	for(int i=0; i<nb_organs; i++){
@@ -42,20 +42,19 @@ void EvaluationFunction::generate_Z(const Plan& p){
 			   Z[o][k] += dose;
 			 }
 		}
-		station->changed_lets.clear();
 	}
 }
 
 
 double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
-	sorted_voxels = priority_queue< pair <double, pair<int,int> > >();
+	sorted_voxels.clear();
 
 	for(int o=0; o<nb_organs; o++)
 	 	 std::fill(P[o].begin(), P[o].end(), 0.0);
 
 	generate_Z(p);
 
-	double F=0.0;
+	F=0.0;
 
 	for(int o=0; o<nb_organs; o++)
 		for(int k=0; k<nb_voxels[o]; k++){
@@ -67,39 +66,40 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 				 pen = w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
 			F+= pen;
 
-			sorted_voxels.push(make_pair(pen,make_pair(o,k)));
+			sorted_voxels.insert(make_pair(pen,make_pair(o,k)));
 			P[o][k]=pen;
 		}
 
-	last_F=F;
+
 	return F;
 }
 
 double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
-	vector<double>& Zmin, vector<double>& Zmax){
-	/* Another option is recomputing F with the modified Z instead of computing delta_F */
+	vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
 
+  prev_F=F; ZP_diff.clear();
   double delta_F=0.0;
 
   //for each voxel we compute the change produced by the modified beamlets
   //while at the same time we compute the variation in the function F produced by all these changes
 
   for(int o=0; o<nb_organs; o++){
-			const Matrix&  D = station.getDepositionMatrix(o);
-	for(int k=0; k<nb_voxels[o]; k++){
+		const Matrix&  D = station.getDepositionMatrix(o);
+		for(int k=0; k<nb_voxels[o]; k++){
 
 		//we compute the change in the delivered dose in voxel k of the organ o
 		double delta=0.0;
 
 		//cout << station.changed_lets.size() << endl;
-		for (auto let:station.changed_lets){
-		    int b=station.pos2beam[let.first];
-			  if(D(k,b)==0.0) continue;
+		for (auto let:diff){
+		    int b=let.first;
+			if(D(k,b)==0.0) continue;
 				delta+= D(k,b)*let.second;
 		}
 
 
 		if(delta==0.0) continue; //no change in the voxel
+
 
 		double pen=0.0;
 		//with the change in the dose of a voxel we can incrementally modify the value of F
@@ -118,32 +118,53 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 			pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
 
 		delta_F += pen;
-		P[o][k] +=pen;
-		sorted_voxels.push(make_pair(P[o][k],make_pair(o,k)));
-
 		Z[o][k]+=delta;
+
+		//we update the set of sorted voxels
+		sorted_voxels.erase(make_pair(P[o][k],make_pair(o,k)));
+		P[o][k] +=pen;
+		sorted_voxels.insert(make_pair(P[o][k],make_pair(o,k)));
+
+		//we save the last changes (see undo_last_eval)
+		ZP_diff.push_back(make_pair(make_pair(o,k),make_pair(delta,pen)));
 	}
   }
 
 
-  last_F+=delta_F;
-  return last_F;
+  F+=delta_F;
+  return F;
 
   //return eval(p, false);
 
 }
 
-pair<int,int> EvaluationFunction::get_worst_voxel(){
-	while(sorted_voxels.size()>0){
-		 auto voxel=sorted_voxels.top();
-		 if(voxel.first != P[voxel.second.first][voxel.second.second])
-			 	sorted_voxels.pop();
-			else return voxel.second;
+void EvaluationFunction::undo_last_eval(){
+	for(auto z:ZP_diff){
+		int o=z.first.first;
+		int k=z.first.second;
+		Z[o][k]-=z.second.first;
+
+		//we update the set of sorted voxels
+		sorted_voxels.erase(make_pair(P[o][k],make_pair(o,k)));
+		P[o][k]-=z.second.second;
+		sorted_voxels.insert(make_pair(P[o][k],make_pair(o,k)));
 	}
+	F=prev_F;
+	prev_F=F; ZP_diff.clear();
+
+
+
+}
+
+
+
+pair<int,int> EvaluationFunction::get_worst_voxel(){
+	 auto voxel=*sorted_voxels.begin();
+	 return voxel.second;
 }
 
 void EvaluationFunction::pop_worst_voxel(){
-	sorted_voxels.pop();
+	sorted_voxels.erase(sorted_voxels.begin());
 }
 
 

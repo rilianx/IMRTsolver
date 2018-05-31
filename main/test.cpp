@@ -116,14 +116,16 @@ int main(int argc, char** argv){
 		if(worst_voxel.first!=2)// no es tumor
 			intensity=-intensity;
 
-    stations[r]->clear_changes();
-		stations[r]->increaseIntensity(beamlet,intensity,ratio);
-		double eval=F.incremental_eval(*stations[r],w,Zmin,Zmax);
+
+
+		auto diff=stations[r]->increaseIntensity(beamlet,intensity,ratio);
+		double eval=F.incremental_eval(*stations[r],w,Zmin,Zmax, diff);
 
 		if(eval > best_eval){ //reject the move
-			stations[r]->revert();
-			eval=F.incremental_eval(*stations[r],w,Zmin,Zmax);
+			stations[r]->revert(diff);
+			F.undo_last_eval();
 		}else{ //accept the move
+			cout << eval << endl;
 			best_eval=eval;
 		}
 	}
