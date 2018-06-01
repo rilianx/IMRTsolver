@@ -69,7 +69,9 @@ public:
 	//the return data includes the absolute evaluation and its sign
 	set < pair< pair<double,bool>, pair<Station*, int> >,
 	std::greater< pair< pair<double,bool>, pair<Station*, int> > > >
-	best_beamlets(Plan& p, int n, int nv);
+
+	//mode=1: decrease F by reducing intensity, mode=-1: decrease F by increasing intensity 
+	best_beamlets(Plan& p, int n, int nv, int mode=0);
 
 
 private:
@@ -96,6 +98,8 @@ private:
   set< pair <double, pair<int,int> > > tumor_voxels;
 
   set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > voxels;
+
+  set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > o_voxels;
 
 	//Matrix of derivatives for each organ and voxel (may be useful for algorithms)
 	//How much increase/decrease F increasing the voxe in one unity.

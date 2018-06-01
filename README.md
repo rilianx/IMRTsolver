@@ -10,7 +10,23 @@ make
 
 Para correr:
 
-./TEST
+./IAS {OPTIONS}
+
+    ********* IMRT-Solver *********
+
+  OPTIONS:
+
+      -h, --help                        Display this help menu
+      --bsize=[int]                     Number of considered beamlets for
+                                        selection (5)
+      --vsize=[int]                     Number of considered worst voxels (20)
+      --int0=[int]                      Initial intensity for beams (4.000000)
+      --maxiter=[int]                   Number of iterations (100)
+
+    An IMRT Solver.
+
+Por ejemplo:
+./IAS --vsize=30 --bsize=10 --int0=3 --maxiter=1000 --help
 
 ----
 

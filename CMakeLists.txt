@@ -24,7 +24,7 @@ ADD_LIBRARY(imrt ${SOURCES})
 
 
 ADD_EXECUTABLE(TEST main/test.cpp)
-ADD_EXECUTABLE(TEST2 main/test2.cpp)
+ADD_EXECUTABLE(IAS main/intensity_aperture_solver.cpp)
 
 target_link_libraries(TEST imrt)
-target_link_libraries(TEST2 imrt)
+target_link_libraries(IAS imrt)

@@ -20,12 +20,20 @@ using namespace imrt;
 
 int main(int argc, char** argv){
 
+  int vsize=20;
+  int bsize=5;
+  double int0=4.0;
+  int maxiter=100;
+
 	args::ArgumentParser parser("********* IMRT-Solver *********", "An IMRT Solver.");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
-	//args::ValueFlag<double> _min_fr(parser, "double", "Minimum volume occupied by a block (proportion)", {"min_fr"});
+	args::ValueFlag<int> _bsize(parser, "int", "Number of considered beamlets for selection ("+to_string(bsize)+")", {"bsize"});
+	args::ValueFlag<int> _vsize(parser, "int", "Number of considered worst voxels ("+to_string(vsize)+")", {"vsize"});
+  args::ValueFlag<int> _int0(parser, "int", "Initial intensity for beams  ("+to_string(int0)+")", {"int0"});
+  args::ValueFlag<int> _maxiter(parser, "int", "Number of iterations ("+to_string(maxiter)+")", {"maxiter"});
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
-	args::Positional<std::string> _file(parser, "instance", "Instance");
+	//args::Positional<std::string> _file(parser, "instance", "Instance");
 
 	try
 	{
@@ -50,7 +58,10 @@ int main(int argc, char** argv){
 		return 1;
 	}
 
-	string file=_file.Get();
+  if(_bsize) bsize=_bsize.Get();
+  if(_vsize) vsize=_vsize.Get();
+  if(_int0) int0=_int0.Get();
+  if(_maxiter) maxiter=_maxiter.Get();
 
 	vector< pair<int, string> > coord_files(5);
 	coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
@@ -79,7 +90,7 @@ int main(int argc, char** argv){
    vector<Station*> stations(5);
    Station* station;
    for(int i=0;i<5;i++){
-	   station = new Station(collimator,volumes, i*70, 4);
+	   station = new Station(collimator,volumes, i*70, int0);
 	   station->generateIntensity();
 	   station->printIntensity();
 	   stations[i]=station;
@@ -98,22 +109,22 @@ int main(int argc, char** argv){
 	double best_eval=F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
 
-	for(int i=0;i<100;i++){
-		auto sb=F.best_beamlets(P, 10, 10);
+	for(int i=0;i<maxiter;i++){
+		auto sb=F.best_beamlets(P, bsize, vsize);
+
 		auto it=sb.begin();
 		std::advance(it,rand()%sb.size());
 
 		Station*s = it->second.first; int beamlet=it->second.second;
-		bool sign=it->first.second;
+		bool sign=it->first.second; //(-) is the tumor
+
 
 		//cout << eval_beamlet << endl;
 
-		double intensity=rand()%3;
+		double intensity= rand()%3+1;
 		if(sign) intensity*=-1;
 
-		double ratio= rand()%5 ;
-		//if(eval_beamlet<0) intensity=-intensity;
-
+		double ratio= (sign)? 0 : rand()%5 ;
 
 		auto diff=s->increaseIntensity(beamlet,intensity,ratio);
 		double eval=F.incremental_eval(*s,w,Zmin,Zmax, diff);
