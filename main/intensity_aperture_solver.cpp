@@ -25,7 +25,7 @@ int main(int argc, char** argv){
   double int0=4.0;
   int maxiter=100;
 
-	args::ArgumentParser parser("********* IMRT-Solver *********", "An IMRT Solver.");
+	args::ArgumentParser parser("********* IMRT-Solver (Intensity-aperture solver) *********", "An IMRT Solver.");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
 	args::ValueFlag<int> _bsize(parser, "int", "Number of considered beamlets for selection ("+to_string(bsize)+")", {"bsize"});

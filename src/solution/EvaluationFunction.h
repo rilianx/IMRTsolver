@@ -70,7 +70,9 @@ public:
 	set < pair< pair<double,bool>, pair<Station*, int> >,
 	std::greater< pair< pair<double,bool>, pair<Station*, int> > > >
 
-	//mode=1: decrease F by reducing intensity, mode=-1: decrease F by increasing intensity 
+  //Return the n beamlets with most impact in F taking into account the nv worst voxels.
+	//mode=1: only considers beamlets with positive impact in F
+	//mode=-1: only considers beamlets with negative impact in F
 	best_beamlets(Plan& p, int n, int nv, int mode=0);
 
 
