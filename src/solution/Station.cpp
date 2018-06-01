@@ -50,6 +50,20 @@ namespace imrt {
     }
   };
 
+  void Station::setUniformIntensity(double intensity){
+    for (int a=0 ; a<max_apertures; a++) {
+      for (int i=0; i < collimator.getXdim(); i++) {
+        pair <int,int> aux = collimator.getActiveRange(i,angle);
+        if (aux.first<0) continue;
+        for (int j=aux.first; j<=aux.second; j++) {
+          if (j>=A[a][i].first && j<=A[a][i].second){
+            change_intensity(i, j, intensity);
+          }
+        }
+      }
+    }
+  }
+
   void Station::generateIntensity(){
     pair <int,int>aux;
     clearIntensity();
@@ -59,8 +73,9 @@ namespace imrt {
         aux = collimator.getActiveRange(i,angle);
         if (aux.first<0) continue;
         for (int j=aux.first; j<=aux.second; j++) {
-          if (j>=A[a][i].first && j<=A[a][i].second)
-            I(i,j)+=intensity[a];
+          if (j>=A[a][i].first && j<=A[a][i].second){
+            change_intensity(i, j, I(i,j)+intensity[a]);
+          }
         }
       }
     }
@@ -102,19 +117,101 @@ namespace imrt {
     return *(D.find(o)->second);
   }
 
-  list< pair< int, double > > Station::increaseIntensity(int beam, double intensity, int ratio){
+  void Station::change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff ){
+    if (intensity==I(i,j)) return;
+    if(diff) diff->push_back(make_pair(pos2beam[make_pair(i,j)], intensity-I(i,j)));
+    if(I(i,j)>0.0){
+       if(int2nb[I(i,j)+0.5]==1) int2nb.erase(I(i,j));
+       else int2nb[I(i,j)+0.5]--;
+     }
 
+     I(i,j)=intensity;
+     if(I(i,j)>0.0) int2nb[I(i,j)+0.5]++;
+  }
+
+  list< pair< int, double > > Station::increaseIntensity(int beam, double intensity, int ratio){
 	list< pair< int, double > > diff;
     pair<int,int> p = getPos(beam);
-    int x=p.first, y=p.second;
+    int x=p.first, j=p.second;
     for(int i=max(x-ratio,0); i<min(x+ratio+1,collimator.getXdim()); i++){
-      for(int j=max(y-ratio,0); j<min(y+ratio+1,collimator.getYdim()); j++){
+      //for(int j=max(y-ratio,0); j<min(y+ratio+1,collimator.getYdim()); j++){
     	  if(I(i,j)==-1) continue;
         if(I(i,j)<-intensity) intensity=-I(i,j);
-        I(i,j)+=intensity;
-        diff.push_back(make_pair(pos2beam[make_pair(i,j)], intensity));
-      }
+        change_intensity(i, j, I(i,j)+intensity, &diff);
+      //}
     }
+    return diff;
+  }
+
+  list< pair< int, double > > Station::increaseIntensity_repair(int beam, double intensity, int ratio){
+    list< pair< int, double > > diff=increaseIntensity(beam, intensity, ratio);
+
+    pair<int,int> p = getPos(beam);
+    int x=p.first, y=p.second;
+
+    if(intensity > 0.0) //reparation (phase 1A)
+
+    for(int i=0; i<collimator.getXdim(); i++){
+      int max_j=0; double max_value=-1;
+      for(int j=0; j<collimator.getYdim(); j++)
+         if(I(i,j)>max_value) {max_j=j; max_value=I(i,j);}
+
+      for(int j=1; j<max_j; j++)
+        if(I(i,j) < I(i,j-1))
+            change_intensity(i, j, I(i,j-1), &diff);
+
+      for(int j=collimator.getYdim()-2; j>max_j; j--)
+        if(I(i,j) < I(i,j+1))
+             change_intensity(i, j, I(i,j+1), &diff);
+    }
+
+    else //reparation (phase 1B)
+
+    for(int i=0; i<collimator.getXdim(); i++){
+      int max_j=0; double max_value=-1;
+
+      if(y<collimator.getYdim()/2){
+        for(int j=collimator.getYdim()-1; j>=0; j--)
+          if(I(i,j)>max_value) {max_j=j; max_value=I(i,j);}
+      }else{
+        for(int j=0; j<collimator.getYdim(); j++)
+          if(I(i,j)>max_value) {max_j=j; max_value=I(i,j);}
+      }
+
+      for(int j=max_j+1; j<collimator.getYdim(); j++)
+        if(I(i,j) > I(i,j-1))
+             change_intensity(i, j, I(i,j-1), &diff);
+
+      for(int j=max_j-1; j>=0; j--)
+        if(I(i,j) > I(i,j+1))
+              change_intensity(i, j, I(i,j+1), &diff);
+    }
+
+    //reparation (phase 2)
+    while(int2nb.size()>max_apertures){
+      int from,to, min_diff=10000;
+      int prev=0; int nprev=0;
+      for(auto i:int2nb  ){
+          int n= (prev!=0)? min(i.second,nprev) : i.second;
+          if((i.first-prev)*n < min_diff){
+            min_diff=(i.first-prev)*n;
+            if(nprev<i.second && prev!=0) {from=prev; to=i.first;}
+            else {to=prev; from=i.first;}
+          }
+          prev=i.first;
+          nprev=i.second;
+      }
+    //  printIntensity();
+      for(int i=0; i<collimator.getXdim(); i++)
+        for(int j=0; j<collimator.getYdim(); j++)
+          if(int(I(i,j)+0.5)==from)
+            change_intensity(i, j, to, &diff);
+    //  printIntensity();
+
+      //cout << int2nb.size() << endl;
+      //if( int2nb.size() ==8) exit(0);
+    }
+
     return diff;
   }
 

@@ -68,6 +68,8 @@ private:
    Matrix I;
 
 
+   void change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff=NULL );
+
    void clearIntensity();
 
 
@@ -91,7 +93,7 @@ public:
   void revert(list< pair< int, double > >& diff){
     for(auto let:diff){
       pair <int,int> a = beam2pos[let.first];
-      I(a.first, a.second) -= let.second;
+      change_intensity(a.first, a.second, I(a.first, a.second) - let.second);
     }
   }
 
@@ -99,6 +101,8 @@ public:
   // Function to generate the intensity matrix from the
   // defined apertures and the intensity vector
   void generateIntensity();
+
+  void setUniformIntensity(double i);
 
   void printIntensity();
 
@@ -116,11 +120,14 @@ public:
   // (possible movement of a local search algorithm)
   // return a list with the changed beamlets an their changes to be used by the incremental evaluation
   list< pair< int, double > > increaseIntensity(int beam, double intensity, int ratio=0);
+  list< pair< int, double > > increaseIntensity_repair(int beam, double intensity, int ratio=0);
 
 
   mutable map <pair<int,int>, int > pos2beam;
   mutable map <int, pair<int,int> > beam2pos;
 
+   //maps from intensity to nb of open beamlets
+   map< int, int > int2nb;
 };
 }
 
