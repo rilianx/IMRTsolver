@@ -65,14 +65,12 @@ public:
 	// Generate files in the plotter directory with the voxel_dose functions for each organ
 	void generate_voxel_dose_functions ();
 
-	//returns the beamlet which maximizes the impacts on the worst nv voxels
-	//the return data includes the absolute evaluation and its sign
-	set < pair< pair<double,bool>, pair<Station*, int> >,
-	std::greater< pair< pair<double,bool>, pair<Station*, int> > > >
-
-  //Return the n beamlets with most impact in F taking into account the nv worst voxels.
+	//Return the n beamlets with most impact in F taking into account the nv worst voxels.
 	//mode=1: only considers beamlets with positive impact in F
 	//mode=-1: only considers beamlets with negative impact in F
+	//Each returned beamlet is a pair (eval, sign),(station, beamlet)
+	set < pair< pair<double,bool>, pair<Station*, int> >,
+	std::greater< pair< pair<double,bool>, pair<Station*, int> > > >
 	best_beamlets(Plan& p, int n, int nv, int mode=0);
 
 
