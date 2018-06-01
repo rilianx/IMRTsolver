@@ -98,21 +98,20 @@ int main(int argc, char** argv){
 	double best_eval=F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
 
-	for(int i=0;i<1000;i++){
-		list< pair<int,int> > worst_voxels=F.get_worst_voxels(10);
-		vector<double> ww={-1,-1,1};
-
-
-		auto sb=F.best_beamlets(P, worst_voxels, ww, 10);
+	for(int i=0;i<100;i++){
+		auto sb=F.best_beamlets(P, 10, 10);
 		auto it=sb.begin();
 		std::advance(it,rand()%sb.size());
-		Station*s = it->second.first; int beamlet=it->second.second;
 
+		Station*s = it->second.first; int beamlet=it->second.second;
+		bool sign=it->first.second;
 
 		//cout << eval_beamlet << endl;
 
-		double intensity=-2 + rand()%5;
-		double ratio= rand()%3 ;
+		double intensity=rand()%3;
+		if(sign) intensity*=-1;
+
+		double ratio= rand()%5 ;
 		//if(eval_beamlet<0) intensity=-intensity;
 
 
@@ -121,7 +120,7 @@ int main(int argc, char** argv){
 
 		if(eval > best_eval){ //reject the move
 			s->revert(diff);
-			F.undo_last_eval();
+			F.undo_last_eval(w,Zmin,Zmax);
 		}else{ //accept the move
 			cout << eval << endl;
 			best_eval=eval;

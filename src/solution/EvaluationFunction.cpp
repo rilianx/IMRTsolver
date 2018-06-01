@@ -17,7 +17,7 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F
 	for(int i=0; i<nb_organs; i++){
 		nb_voxels[i]=volumes[i].getNbVoxels();
 		Z.insert(Z.end(), vector<double>(nb_voxels[i]));
-		P.insert(P.end(), vector<double>(nb_voxels[i]));
+		D.insert(D.end(), vector<double>(nb_voxels[i]));
 	}
 }
 
@@ -48,7 +48,8 @@ void EvaluationFunction::generate_Z(const Plan& p){
 
 
 double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
-	sorted_voxels.clear();
+	voxels.clear();
+  voxels.clear();
 
 	generate_Z(p);
 
@@ -57,25 +58,39 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 	for(int o=0; o<nb_organs; o++)
 		for(int k=0; k<nb_voxels[o]; k++){
 			double pen=0.0;
-			if(Z[o][k] < Zmin[o] )
+			if(Z[o][k] < Zmin[o] ){
 				 pen = w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
+			 }
 
-			if(Z[o][k] > Zmax[o] )
+			if(Z[o][k] > Zmax[o] ){
 				 pen = w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
+			 }
 			F+= pen;
 
-			sorted_voxels.insert(make_pair(pen,make_pair(o,k)));
-			P[o][k]=pen;
+			update_sorted_voxels(w, Zmin, Zmax, o, k, false);
 		}
 
 
 	return F;
 }
 
+void EvaluationFunction::update_sorted_voxels(vector<double>& w,
+	vector<double>& Zmin, vector<double>& Zmax, int o, int k, bool erase){
+		if(erase) voxels.erase(make_pair(abs(D[o][k]),make_pair(o,k)));
+		if(Zmin[o]>0){
+			 if(Z[o][k] < Zmin[o]) D[o][k]=w[o]*(Z[o][k]-Zmin[o]);
+			 else D[o][k]=0.0;
+		}else{
+			if(Z[o][k] > Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o]);
+			else D[o][k]=0.0;
+		}
+		voxels.insert(make_pair(abs(D[o][k]),make_pair(o,k)));
+}
+
 double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
 
-  prev_F=F; ZP_diff.clear();
+  prev_F=F; Z_diff.clear();
   double delta_F=0.0;
 
   //for each voxel we compute the change produced by the modified beamlets
@@ -118,13 +133,10 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 		delta_F += pen;
 		Z[o][k]+=delta;
 
-		//we update the set of sorted voxels
-		sorted_voxels.erase(make_pair(P[o][k],make_pair(o,k)));
-		P[o][k] +=pen;
-		sorted_voxels.insert(make_pair(P[o][k],make_pair(o,k)));
+		update_sorted_voxels(w, Zmin, Zmax, o, k);
 
 		//we save the last changes (see undo_last_eval)
-		ZP_diff.push_back(make_pair(make_pair(o,k),make_pair(delta,pen)));
+		Z_diff.push_back(make_pair(make_pair(o,k),delta));
 	}
   }
 
@@ -136,60 +148,49 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 
 }
 
-void EvaluationFunction::undo_last_eval(){
-	for(auto z:ZP_diff){
+void EvaluationFunction::undo_last_eval(vector<double>& w,
+	vector<double>& Zmin, vector<double>& Zmax){
+
+	for(auto z:Z_diff){
 		int o=z.first.first;
 		int k=z.first.second;
-		Z[o][k]-=z.second.first;
+		Z[o][k]-=z.second;
 
-		//we update the set of sorted voxels
-		sorted_voxels.erase(make_pair(P[o][k],make_pair(o,k)));
-		P[o][k]-=z.second.second;
-		sorted_voxels.insert(make_pair(P[o][k],make_pair(o,k)));
+		update_sorted_voxels(w, Zmin, Zmax, o, k);
 	}
 	F=prev_F;
-	prev_F=F; ZP_diff.clear();
+	prev_F=F; Z_diff.clear();
 
 
 
 }
 
 
+	set < pair< pair<double,bool>, pair<Station*, int> >,
+	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
+EvaluationFunction::best_beamlets(Plan& p, int n, int nv){
 
-list < pair<int,int> > EvaluationFunction::get_worst_voxels(int n){
-	list < pair<int,int> > voxels;
-	int i=0;
-	for(auto voxel:sorted_voxels){
-		voxels.push_back(voxel.second);
-		i++;
-		if(i==n) break;
-	}
-	return voxels;
-}
-
-void EvaluationFunction::pop_worst_voxel(){
-	sorted_voxels.erase(sorted_voxels.begin());
-}
-
-
-set < pair< double, pair<Station*, int> >, std::greater< pair< double, pair<Station*, int> > > >
-EvaluationFunction::best_beamlets(Plan& p, list <pair<int,int> >& voxels, vector<double>& w, int n){
-
-	set < pair< double, pair<Station*, int> >, std::greater< pair< double, pair<Station*, int> > > > bestb;
+ set < pair< pair<double,bool>, pair<Station*, int> >,
+	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >  bestb;
 
 	double max_ev=0.0;
 	for(auto s:p.get_stations()){
 		for(int b=0; b<s->getNbBeamlets(); b++){
-			double ev=0;
+			double ev=0; int i=0;
 			for(auto voxel:voxels){
-				const Matrix&  D = s->getDepositionMatrix(voxel.first);
-				int k=voxel.second;
-				ev+=D(k,b)*w[voxel.first];
+				int o=voxel.second.first;
+				int k=voxel.second.second;
+				const Matrix&  Dep = s->getDepositionMatrix(o);
+				ev += D[o][k] * Dep(k,b);
+				i++; if(i==nv) break;
 			}
 
-
-			if( bestb.size() < n || abs(ev)>bestb.rbegin()->first){
-				bestb.insert(make_pair(abs(ev), make_pair(s,b)));
+			if( bestb.size() < n || abs(ev) > abs(bestb.rbegin()->first.first)){
+				bestb.insert(make_pair( make_pair(abs(ev), (ev>0)), make_pair(s,b)));
+				if(bestb.size() > n){
+					auto it = bestb.end();  --it;
+					bestb.erase(it);
+				}
 			}
 		}
 	}

@@ -56,22 +56,20 @@ public:
 	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
 			list< pair< int, double > >& diff);
 
-	void undo_last_eval();
+	void undo_last_eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
+	void update_sorted_voxels(vector<double>& w,
+		vector<double>& Zmin, vector<double>& Zmax, int o, int k, bool erase=true);
   //Additional functions
 
 	// Generate files in the plotter directory with the voxel_dose functions for each organ
 	void generate_voxel_dose_functions ();
 
-	//returns the n voxels (o,k) which penalize most the function F
-	list < pair<int,int> > get_worst_voxels(int n);
-
-	void pop_worst_voxel();
-
-	//returns the beamlet which maximizes:
-	//w[0]*dose_in_voxels[0] + w[1]*dose_in_voxels[1]+...
-	set < pair< double, pair<Station*, int> >, std::greater< pair< double, pair<Station*, int> > > >
-	best_beamlets(Plan& p, list <pair<int,int> >& voxels, vector<double>& w, int n);
+	//returns the beamlet which maximizes the impacts on the worst nv voxels
+	//the return data includes the absolute evaluation and its sign
+	set < pair< pair<double,bool>, pair<Station*, int> >,
+	std::greater< pair< pair<double,bool>, pair<Station*, int> > > >
+	best_beamlets(Plan& p, int n, int nv);
 
 
 private:
@@ -94,13 +92,16 @@ private:
 
   //Extra data
 
-	// all the voxels sorted by penalty (may be useful for algorithms)
-    set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > sorted_voxels;
+	// all the tumor voxels sorted by derivative (may be useful for algorithms)
+  set< pair <double, pair<int,int> > > tumor_voxels;
 
-	//Matrix of penalties for each organ and voxel (may be useful for algorithms)
-	vector< vector<double> > P;
+  set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > voxels;
 
-	list < pair < pair<int,int>, pair<double,double> > > ZP_diff;
+	//Matrix of derivatives for each organ and voxel (may be useful for algorithms)
+	//How much increase/decrease F increasing the voxe in one unity.
+	vector< vector<double> > D;
+
+	list < pair < pair<int,int>, double > > Z_diff;
 
 
 };
