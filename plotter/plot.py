@@ -19,8 +19,8 @@ def animate(i):
             for eachLine in dataArray:
                 if len(eachLine)>1:
                     x,y = eachLine.split(',')
-                    xar.append(int(x))
-                    yar.append(int(y))
+                    xar.append(float(x))
+                    yar.append(float(y))
             ax1.plot(xar,yar)
 
 ani = animation.FuncAnimation(fig, animate, interval=1000)

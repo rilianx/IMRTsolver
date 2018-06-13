@@ -104,9 +104,11 @@ public:
 
   void setUniformIntensity(double i);
 
-  void printIntensity();
+  void printIntensity(bool vector_form=false);
 
   void printApertures();
+
+
 
   const Matrix& getDepositionMatrix(int o) const;
 

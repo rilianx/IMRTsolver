@@ -93,14 +93,24 @@ namespace imrt {
     return(pos->second);
   }
 
-  void Station::printIntensity() {
-    cout << "Angle "<< angle <<" intensity matrix:"<< endl;
-    for (int i=0; i<collimator.getXdim();i++) {
-      for (int j=0; j<collimator.getYdim(); j++) {
-        printf("%2.0f ", I(i,j));
-      }
-      cout << endl;
-    }
+  void Station::printIntensity(bool vector_form) {
+	if(!vector_form){
+		cout << "Angle "<< angle <<" intensity matrix:"<< endl;
+		for (int i=0; i<collimator.getXdim();i++) {
+			for (int j=0; j<collimator.getYdim(); j++) {
+				printf("%2.0f ", I(i,j));
+			}
+			cout << endl;
+		}
+	}else{
+		for (int i=0; i<collimator.getXdim();i++) {
+			for (int j=0; j<collimator.getYdim(); j++) {
+				if(I(i,j)!=-1.0) printf("\t%2.1f", I(i,j));
+			}
+		}
+
+	}
+
   }
 
   void Station::printApertures() {

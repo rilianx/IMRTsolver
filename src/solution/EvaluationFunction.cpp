@@ -12,7 +12,7 @@
 namespace imrt {
 
 EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F(0.0),
-	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(100)) {
+	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(150)) {
 
 	for(int i=0; i<nb_organs; i++){
 		nb_voxels[i]=volumes[i].getNbVoxels();
@@ -203,7 +203,7 @@ void EvaluationFunction::generate_voxel_dose_functions (){
 	for(int o=0; o<nb_organs; o++){
 		std::fill(voxel_dose[o].begin(), voxel_dose[o].end(), 0.0);
 		for(int k=0; k<nb_voxels[o]; k++){
-			if(Z[o][k]<100)
+			if(Z[o][k]<150)
 				voxel_dose[o][(int) Z[o][k]]+=1;
 		}
 	}
@@ -214,9 +214,9 @@ void EvaluationFunction::generate_voxel_dose_functions (){
 		myfile.open ("plotter/organ"+std::to_string(o)+".txt");
 
 		double cum=0.0;
-		for(int k=99; k>=0; k--){
+		for(int k=149; k>=0; k--){
 			cum+= voxel_dose[o][k];
-			myfile << k+1 << "," << cum << endl;
+			myfile << k+1 << "," << cum/nb_voxels[o] << endl;
 		}
 
 		myfile.close();

@@ -106,8 +106,8 @@ int main(int argc, char** argv){
 
 
 	vector<double> w={1,1,1};
-	vector<double> Zmin={0,0,80};
-	vector<double> Zmax={60,60,1000};
+	vector<double> Zmin={0,0,76};
+	vector<double> Zmax={65,60,1000};
 
 	double best_eval=F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
@@ -120,7 +120,8 @@ int main(int argc, char** argv){
 
 		Station*s = it->second.first; int beamlet=it->second.second;
 		bool sign=it->first.second; //impact in F (+ or -)
-    double delta_intensity= rand()%3+1;
+
+		double delta_intensity= rand()%3+1;
 		if(sign) delta_intensity*=-1;
 
 		double ratio= rand()% int(3) ;
@@ -137,10 +138,12 @@ int main(int argc, char** argv){
 		}
 	}
 
+	cout << endl;
 	for(int i=0;i<5;i++){
-		stations[i]->printIntensity();
-    cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
-  }
+		stations[i]->printIntensity(true);
+        //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
+    }
+	cout << endl;
 
 	cout << "best_eval:" << best_eval << endl;
 
