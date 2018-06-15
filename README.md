@@ -39,7 +39,7 @@ Por ejemplo:
 
 ----
 
-##El Algoritmo
+## El Algoritmo
 
 
 ´´´
