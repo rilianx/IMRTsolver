@@ -25,6 +25,10 @@ int main(int argc, char** argv){
   double int0=4.0;
   int maxiter=100;
   int max_apertures=4;
+  double alpha=1.0;
+  double beta=1.0;
+  double maxdelta=5.0;
+  double maxratio=3.0;
 
 	args::ArgumentParser parser("********* IMRT-Solver (Intensity-aperture solver) *********", "An IMRT Solver.");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
@@ -33,6 +37,10 @@ int main(int argc, char** argv){
 	args::ValueFlag<int> _vsize(parser, "int", "Number of considered worst voxels ("+to_string(vsize)+")", {"vsize"});
   args::ValueFlag<int> _int0(parser, "int", "Initial intensity for beams  ("+to_string(int0)+")", {"int0"});
   args::ValueFlag<int> _max_apertures(parser, "int", "Initial intensity for the station  ("+to_string(max_apertures)+")", {"max_ap"});
+  args::ValueFlag<int> _maxdelta(parser, "int", "Max delta  ("+to_string(maxdelta)+")", {"maxdelta"});
+  args::ValueFlag<int> _maxratio(parser, "int", "Max ratio  ("+to_string(maxratio)+")", {"maxratio"});
+  args::ValueFlag<double> _alpha(parser, "double", "Initial temperature for intensities  ("+to_string(alpha)+")", {"alpha"});
+  args::ValueFlag<double> _beta(parser, "double", "Initial temperature for ratio  ("+to_string(beta)+")", {"beta"});
   args::ValueFlag<int> _maxiter(parser, "int", "Number of iterations ("+to_string(maxiter)+")", {"max_iter"});
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
 	//args::Positional<std::string> _file(parser, "instance", "Instance");
@@ -62,6 +70,10 @@ int main(int argc, char** argv){
 
   if(_bsize) bsize=_bsize.Get();
   if(_vsize) vsize=_vsize.Get();
+  if(_maxdelta) maxdelta=_maxdelta.Get();
+  if(_maxratio) maxratio=_maxratio.Get();
+  if(_alpha) alpha=_alpha.Get();
+  if(_beta) beta=_beta.Get();
   if(_int0) int0=_int0.Get();
   if(_maxiter) maxiter=_maxiter.Get();
   if(_max_apertures) max_apertures=_max_apertures.Get();
@@ -94,7 +106,7 @@ int main(int argc, char** argv){
    Station* station;
    for(int i=0;i<5;i++){
 	   station = new Station(collimator,volumes, i*70, max_apertures);
-     station->setUniformIntensity(int0);
+       station->setUniformIntensity(int0);
 	   station->printIntensity();
 	   stations[i]=station;
    }
@@ -121,10 +133,17 @@ int main(int argc, char** argv){
 		Station*s = it->second.first; int beamlet=it->second.second;
 		bool sign=it->first.second; //impact in F (+ or -)
 
-		double delta_intensity= rand()%3+1;
+		//double delta_intensity= rand()%3+1;
+
+		double delta_intensity= (maxdelta>0.5)? rand()%int(maxdelta + 0.5) : 1;
+		maxdelta = maxdelta*alpha;
+
 		if(sign) delta_intensity*=-1;
 
-		double ratio= rand()% int(3) ;
+		double ratio= (maxratio>0.5)? rand()%int(maxratio + 0.5) : 0;
+		maxratio = maxratio*beta;
+
+		//cout << maxdelta << "," << maxratio << endl;
 
 		auto diff=s->increaseIntensity_repair(beamlet,delta_intensity,ratio);
 		double eval=F.incremental_eval(*s,w,Zmin,Zmax, diff);
@@ -140,6 +159,7 @@ int main(int argc, char** argv){
 
 	cout << endl;
 	for(int i=0;i<5;i++){
+		//stations[i]->printIntensity();
 		stations[i]->printIntensity(true);
         //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
     }

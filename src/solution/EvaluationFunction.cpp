@@ -53,20 +53,22 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 
 	F=0.0;
 
-	for(int o=0; o<nb_organs; o++)
+	for(int o=0; o<nb_organs; o++){
+		double pen=0.0;
 		for(int k=0; k<nb_voxels[o]; k++){
-			double pen=0.0;
-			if(Z[o][k] < Zmin[o] ){
-				 pen = w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
-			 }
+			if(Z[o][k] < Zmin[o] )
+				 pen += w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
 
-			if(Z[o][k] > Zmax[o] ){
-				 pen = w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
-			 }
-			F+= pen;
+
+			if(Z[o][k] > Zmax[o] )
+				 pen += w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
+
+			//F+= pen;
 
 			update_sorted_voxels(w, Zmin, Zmax, o, k, false);
 		}
+		F+=pen/nb_voxels[o];
+	}
 
 
 	return F;
@@ -77,10 +79,10 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 		if(erase) voxels.erase(make_pair(abs(D[o][k]),make_pair(o,k)));
 
 		if(Zmin[o]>0){
-			 if(Z[o][k] < Zmin[o])  D[o][k]=w[o]*(Z[o][k]-Zmin[o]);
+			 if(Z[o][k] < Zmin[o])  D[o][k]=w[o]*(Z[o][k]-Zmin[o])/nb_voxels[o];
 			 else D[o][k]=0.0;
 		}else{
-			if(Z[o][k] > Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o]);
+			if(Z[o][k] > Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o])/nb_voxels[o];
 			else D[o][k]=0.0;
 		}
 		if(D[o][k]!=0.0)
@@ -131,7 +133,7 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 		else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
 			pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
 
-		delta_F += pen;
+		delta_F += pen/nb_voxels[o];
 		Z[o][k]+=delta;
 
 		update_sorted_voxels(w, Zmin, Zmax, o, k);
@@ -179,7 +181,7 @@ EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
 				int o=voxel.second.first;
 				int k=voxel.second.second;
 				const Matrix&  Dep = s->getDepositionMatrix(o);
- 		    ev += D[o][k] * Dep(k,b);
+				ev += D[o][k] * Dep(k,b);
 				i++; if(i==nv) break;
 			}
 			if(mode==1 && ev<=0) continue;
@@ -200,12 +202,26 @@ EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
 }
 
 void EvaluationFunction::generate_voxel_dose_functions (){
+
+
+
+
 	for(int o=0; o<nb_organs; o++){
+		std::set<double, std::greater<double> > dose;
 		std::fill(voxel_dose[o].begin(), voxel_dose[o].end(), 0.0);
 		for(int k=0; k<nb_voxels[o]; k++){
+			dose.insert(Z[o][k]);
 			if(Z[o][k]<150)
 				voxel_dose[o][(int) Z[o][k]]+=1;
 		}
+
+		ofstream myfile;
+		myfile.open ("plotter/organ_xls"+std::to_string(o)+".dat");
+		for(auto v:dose){
+			myfile << v << endl;
+		}
+		myfile.close();
+
 	}
 
 
