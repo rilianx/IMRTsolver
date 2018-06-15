@@ -10,12 +10,12 @@ make
 
 Para correr:
 
-´´´
-  ./IAS {OPTIONS}
+
+    ./IAS {OPTIONS}
 
     ********* IMRT-Solver (Intensity-aperture solver) *********
 
-  OPTIONS:
+    OPTIONS:
 
       -h, --help                        Display this help menu
       --bsize=[int]                     Number of considered beamlets for
@@ -31,7 +31,6 @@ Para correr:
       --max_iter=[int]                  Number of iterations (100)
 
     An IMRT Solver.
-´´´
 
 Por ejemplo:
 
@@ -42,30 +41,31 @@ Por ejemplo:
 ## El Algoritmo
 
 
-´´´
-S ← initializeStations (max_apertures, initial_intensity)
-bestF ← eval(S)
+    S ← initializeStations (max_apertures, initial_intensity)
+    bestF ← eval(S)
 
-while i < max_iter:
-   (b,si,increase) ← select_promising_beamlet(bsize,vsize)
-   delta_intensity ← eα (max_iter/i)
-   ratio ← eβ (max_iter/i)
+    while i < max_iter:
 
-   if increase:
-     diff ← increaseIntensity&Repair (b,si,delta_intenisty,ratio)
-   else:
-     diff ← decreaseIntensity&Repair (b,si,delta_intenisty,ratio)
+      (b,si,increase) ← select_promising_beamlet(bsize,vsize)
+      delta_intensity ← random(1,maxdelta)
+      maxdelta ← maxdelta*alpha
+      ratio ← random(0,maxratio)
+      maxratio ← maxratio*beta
+    
+      if increase:
+        diff ← increaseIntensity&Repair (b,si,delta_intenisty,ratio)
+      else:
+        diff ← decreaseIntensity&Repair (b,si,delta_intenisty,ratio)
 
-   F ← incremental_eval (S, diff)
+      F ← incremental_eval (S, diff)
 
-   if F < bestF:
-     bestF ← F
-     bestS ← S
-   else
-     revert_changes(s,diff)
-     undo_last_eval()
-   
-´´´
+      if F < bestF:
+        bestF ← F
+        bestS ← S
+      else
+        revert_changes(s,diff)
+        undo_last_eval()
+
 [Más detalles](https://docs.google.com/document/d/1EGoKoLsmik4TSiY_SslWkxddDCrYvUfFKpPLRpQPV_U/edit#)
 
 
