@@ -67,12 +67,12 @@ private:
    // Intensity for each beam of the collimator
    Matrix I;
 
-
    void change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff=NULL );
 
    void clearIntensity();
-
-
+   
+   pair<pair<int,int>, pair<int,int>> last_mem;
+   list<pair<int,double>> last_diff;
 
 public:
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture);
@@ -87,7 +87,6 @@ public:
     return I(p.first,p.second);
   }
 
-
   //revert the last change
   //should be followed by a call to the incremental_eval procedure
   void revert(list< pair< int, double > >& diff){
@@ -96,7 +95,6 @@ public:
       change_intensity(a.first, a.second, I(a.first, a.second) - let.second);
     }
   }
-
 
   // Function to generate the intensity matrix from the
   // defined apertures and the intensity vector
@@ -107,12 +105,14 @@ public:
   void printIntensity(bool vector_form=false);
 
   void printApertures();
-
-
+  
+  void printAperture(int aperture);
 
   const Matrix& getDepositionMatrix(int o) const;
 
   int getAngle(){ return angle;}
+  
+  int getNbApertures() { return(max_apertures);}
 
   int getNbBeamlets() const{
     return collimator.getNangleBeamlets(angle);
@@ -128,8 +128,17 @@ public:
   mutable map <pair<int,int>, int > pos2beam;
   mutable map <int, pair<int,int> > beam2pos;
 
-   //maps from intensity to nb of open beamlets
-   map< int, int > int2nb;
+  //maps from intensity to nb of open beamlets
+  map< int, int > int2nb;
+   
+  //Aperture info and modification functions
+  bool isOpenBeamlet (int beam, int aperture);
+  bool isActiveBeamlet(int beam); 
+  list<pair<int,double>> openBeamlet(int beam, int aperture);
+  list<pair<int,double>> closeBeamlet(int beam, int aperture, bool lside);
+  void modifyIntensityAperture(int aperture, double size);
+  void updateIntensity(list<pair<int,double>> diff);
+  void undoLast ();
 };
 }
 

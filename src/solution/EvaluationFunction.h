@@ -56,10 +56,13 @@ public:
 	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
 			list< pair< int, double > >& diff);
 
+  double delta_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, 
+      list< pair< int, double > >& diff);
+
 	void undo_last_eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
 	void update_sorted_voxels(vector<double>& w,
-		vector<double>& Zmin, vector<double>& Zmax, int o, int k, bool erase=true);
+	vector<double>& Zmin, vector<double>& Zmax, int o, int k, bool erase=true);
   //Additional functions
 
 	// Generate files in the plotter directory with the voxel_dose functions for each organ

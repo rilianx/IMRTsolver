@@ -1,8 +1,8 @@
-/*
+xc/*
  * main.cpp
  *
- *  Created on: 
- *      Author: leslie
+ *  Created on: 3 may. 2018
+ *      Author: iaraya
  */
 
 #include <iostream>
@@ -18,125 +18,12 @@
 using namespace std;
 using namespace imrt;
 
-double chooseBestClose(int beam, int a, Station& station, double c_eval, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F, Plan& P) {
-  double aux_eval,dev=0;
-  list<pair<int, double>> diff, aux_diff;
-  bool best_left=false;
-  
-  aux_diff = station.closeBeamlet(beam, a, true);
-  aux_eval = F.delta_eval(station, w, Zmin, Zmax, aux_diff);
-  dev=F.eval(P,w,Zmin,Zmax);
-  
-  cout << "  Closing eval: " << aux_eval << " real: " << dev << endl; 
-  if ( aux_eval <c_eval ) {
-    best_left=true;
-    c_eval = aux_eval;      
-  } 
-  station.undoLast();
-  
-  aux_diff = station.closeBeamlet(beam, a, false);
-  aux_eval = F.delta_eval(station, w, Zmin, Zmax, aux_diff);
-  dev=F.eval(P,w,Zmin,Zmax);  
-  cout << "  Closing eval: " << aux_eval << " real: " << dev << endl; 
-  
-  if ( aux_eval >= c_eval ) {
-    if (best_left) {
-      aux_diff = station.closeBeamlet(beam, a, true);
-    } else {
-      station.undoLast();    
-    }    
-  } 
-  return(c_eval);
-}
-
-double chooseBestOpen(int beam, int a, Station& station, double c_eval, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F, Plan& P) {
-  double aux_eval=0, dev;
-  list<pair<int, double>> aux_diff;
-
-  aux_diff = station.openBeamlet(beam, a);
-  aux_eval = F.delta_eval(station, w, Zmin, Zmax, aux_diff);
-  dev=F.eval(P,w,Zmin,Zmax);
-  
-  cout << "  Opening eval: " << aux_eval << " real: " << dev << endl; 
-  if ( aux_eval < c_eval ) {
-    c_eval = aux_eval;      
-  } else{
-    station.undoLast();
-  }
-
-  return(c_eval);
-}
-
-
-double searchFirstAperture(int beam, Station& station, double c_eval, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F, bool close_beamlet, Plan & P) {
-  double current=c_eval, aux_eval=0;
-  list<pair<int, double>> diff, aux_diff;
-  int a=0, last_a=station.getNbApertures()-1;
-  bool flag=true;
-  // Check every aperture 
-  while(flag) {
-    // Left op
-    if (close_beamlet) {
-      aux_eval=chooseBestClose(beam, a, station, c_eval, w, Zmin, Zmax, F, P); 
-    } else {
-      aux_eval=chooseBestOpen(beam, a, station, c_eval, w, Zmin, Zmax, F, P);
-    }
-    
-    if (current> aux_eval) {
-      current=aux_eval; 
-      last_a=a;
-    } 
-        
-    if (a==(station.getNbApertures()-1)) a=0;
-    else a+=1;
-    
-    if (last_a==a) flag=false;
-  }
-  return(current);
-}
-
-double searchFirstIntensity(int beam, Station& station, double c_eval, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F, bool close_beamlet, Plan & P) {
-  double current=c_eval, aux_eval=0;
-  list<pair<int, double>> diff, aux_diff;
-  int a=0, last_a=station.getNbApertures()-1;
-  bool flag=true;
-  // Check every aperture 
-  while(flag) {
-    // Left op
-    if (close_beamlet) {
-      station.modifyIntensityAperture(a, 1);
-      aux_eval=F.eval(P,w,Zmin,Zmax); 
-      cout << "  Increasing intensity aperture: " << a <<" eval: " << aux_eval<< endl;
-    } else {
-      station.modifyIntensityAperture(a, -1);
-      aux_eval=F.eval(P,w,Zmin,Zmax); 
-      cout << "  Reducing intensity aperture: " << a <<" eval: " << aux_eval<< endl;
-    }
-    
-    if (current> aux_eval) {
-      current=aux_eval; 
-      last_a=a;
-    } else {
-      if (close_beamlet) 
-        station.modifyIntensityAperture(a, -1);
-      else
-        station.modifyIntensityAperture(a, 1);
-      
-      if (a==(station.getNbApertures()-1)) a=0;
-      else a+=1;
-      if (last_a==a) flag=false;
-    }
-    
-  }
-  return(current);
-}
-
 int main(int argc, char** argv){
 
   int vsize=20;
   int bsize=5;
   double int0=4.0;
-  int maxiter=10;
+  int maxiter=1;
   int max_apertures=4;
   double alpha=1.0;
   double beta=1.0;
@@ -241,39 +128,26 @@ int main(int argc, char** argv){
 	auto it=sb.begin();
 	Station*s = it->second.first; 
 	int beamlet=it->second.second;
-	bool sign=it->first.second;
+	bool sign=it->first.second; 
 	
-	//Print initial intensity
 	s->printIntensity();
 	s->printAperture(0);
 	
-	/*
-	
-	list<pair<int,double>> aux;
-	
-	beamlet=57;
-	aux = s->closeBeamlet(beamlet, 0, true);
+	list<pair<int,double>> aux = s->closeBeamlet(beamlet, 0, true);
+	s->generateIntensity();
+	s->printIntensity();
+	s->printAperture(0);
+
 	cout << "Diff" << endl;
 	for (list<pair<int,double>>::iterator it=aux.begin();it!=aux.end();it++) {
 	  cout << it->first << "," << it->second << endl;
 	}
-	s->printIntensity();
-	s->printAperture(0);
-	
-	beamlet=53;
-	aux = s->openBeamlet(beamlet, 0);
-	cout << "Diff" << endl;
-	for (list<pair<int,double>>::iterator it=aux.begin();it!=aux.end();it++) {
-	  cout << it->first << "," << it->second << endl;
-	}
-	s->printIntensity();
-	s->printAperture(0);*/
-	
 	
 
-	for (int i=0;i<maxiter;i++) {
-	  
+
+	/*for(int i=0;i<maxiter;i++) {
 		auto sb=F.best_beamlets(P, bsize, vsize);
+
 		auto it=sb.begin();
 		std::advance(it,rand()%sb.size());
 
@@ -281,15 +155,28 @@ int main(int argc, char** argv){
 		int beamlet=it->second.second;
 		bool sign=it->first.second; //impact in F (+ or -)
 
-    cout << "Iteration " << (i+1) << " current evaluation: " << best_eval << " evaluating beamlet: " << beamlet << " sign: " << sign << " station: " << s->getAngle() << endl;
-    if (((double) rand() / (RAND_MAX)) < 0.5){
-      best_eval=searchFirstIntensity(beamlet, *s, best_eval, w, Zmin, Zmax, F, !sign, P);
-    } else {
-	    best_eval=searchFirstAperture(beamlet, *s, best_eval, w, Zmin, Zmax, F, !sign, P);
-    }
-    
-    s->printIntensity(false);
+		//double delta_intensity= rand()%3+1;
 
+		double delta_intensity= (maxdelta>0.5)? rand()%int(maxdelta + 0.5) : 1;
+		maxdelta = maxdelta*alpha;
+
+		if(sign) delta_intensity*=-1;
+
+		double ratio= (maxratio>0.5)? rand()%int(maxratio + 0.5) : 0;
+		maxratio = maxratio*beta;
+
+		//cout << maxdelta << "," << maxratio << endl;
+
+		auto diff=s->increaseIntensity_repair(beamlet,delta_intensity,ratio);
+		double eval=F.incremental_eval(*s,w,Zmin,Zmax, diff);
+
+		if(eval > best_eval){ //reject the move
+			s->revert(diff);
+			F.undo_last_eval(w,Zmin,Zmax);
+		}else{ //accept the move
+			cout << eval << endl;
+			best_eval=eval;
+		}
 	}
 
 	cout << endl;
@@ -303,10 +190,10 @@ int main(int argc, char** argv){
 	cout << "best_eval:" << best_eval << endl;
 
 	best_eval=F.eval(P,w,Zmin,Zmax);
-	cout << "ev:" << best_eval << endl;
+		cout << "ev:" << best_eval << endl;
 
   F.generate_voxel_dose_functions ();
-  system("python plotter/plot.py");
+  system("python plotter/plot.py");*/
 
 	return 0;
 

@@ -145,7 +145,6 @@ Collimator::Collimator(vector < pair<int, string> >& coord_files) {
     return(ydim);
   }
 
-
   int Collimator::getNangleBeamlets(int angle) {
     return(nb_angle_beamlets[angle]);
   }
@@ -207,6 +206,5 @@ Collimator::Collimator(vector < pair<int, string> >& coord_files) {
     std::advance(it, i);
     return *it;
   }
-
 
 }

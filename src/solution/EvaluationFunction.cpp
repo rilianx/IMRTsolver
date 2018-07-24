@@ -143,12 +143,55 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 	}
   }
 
-
   F+=delta_F;
   return F;
 
-  //return eval(p, false);
+}
 
+double EvaluationFunction::delta_eval(Station& station, vector<double>& w,
+  vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
+  
+  double delta_F=0.0;
+  
+  //for each voxel we compute the change produced by the modified beamlets
+  //while at the same time we compute the variation in the function F produced by all these changes
+  
+  for(int o=0; o<nb_organs; o++){
+    const Matrix&  D = station.getDepositionMatrix(o);
+  	for(int k=0; k<nb_voxels[o]; k++){
+  		//we compute the change in the delivered dose in voxel k of the organ o
+  		double delta=0.0;
+  
+  		for (auto let:diff){
+  		    int b=let.first;
+  			if(D(k,b)==0.0) continue;
+  				delta+= D(k,b)*let.second;
+  		}
+  
+  		if(delta==0.0) continue; //no change in the voxel
+  
+  		double pen=0.0;
+  		//with the change in the dose of a voxel we can incrementally modify the value of F
+  		if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
+  			pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
+  		else if(Z[o][k] < Zmin[o]) //the penalty disappears
+  			pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
+  		else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
+  			pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
+  
+  		if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
+  			pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
+  		else if(Z[o][k] > Zmax[o]) //the penalty disappears
+  			pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
+  		else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
+  			pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
+  
+  		delta_F += pen/nb_voxels[o];
+  	}
+  }
+  
+  F+=delta_F;
+  return F;
 }
 
 void EvaluationFunction::undo_last_eval(vector<double>& w,
@@ -202,9 +245,6 @@ EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
 }
 
 void EvaluationFunction::generate_voxel_dose_functions (){
-
-
-
 
 	for(int o=0; o<nb_organs; o++){
 		std::set<double, std::greater<double> > dose;
