@@ -76,6 +76,8 @@ public:
 	std::greater< pair< pair<double,bool>, pair<Station*, int> > > >
 	best_beamlets(Plan& p, int n, int nv, int mode=0);
 
+	void generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
+
 
 private:
 	//dose distribution vectors for each organ

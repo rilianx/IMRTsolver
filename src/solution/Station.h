@@ -118,6 +118,8 @@ public:
     return collimator.getNangleBeamlets(angle);
   }
 
+  list<int> open_beamlets(int aperture);
+
   // Increase the intensity of a set of beams
   // (possible movement of a local search algorithm)
   // return a list with the changed beamlets an their changes to be used by the incremental evaluation
@@ -134,8 +136,16 @@ public:
   //Aperture info and modification functions
   bool isOpenBeamlet (int beam, int aperture);
   bool isActiveBeamlet(int beam); 
+
+  /* Function that opens a beamlet from the left, if lside is true, or
+     from the right size otherwise. Return true if the closing was performed.*/
   list<pair<int,double>> openBeamlet(int beam, int aperture);
+
+  /* Function that closes a beamlet from the left, if lside is true, or
+       from the right size otherwise. Return true if the closing was performed.*/
   list<pair<int,double>> closeBeamlet(int beam, int aperture, bool lside);
+
+
   void modifyIntensityAperture(int aperture, double size);
   void updateIntensity(list<pair<int,double>> diff);
   void undoLast ();
