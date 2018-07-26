@@ -40,7 +40,7 @@ public:
 		return stations;
 	}
 
-	void print_open_beamlets(){
+	void write_open_beamlets(){
 		ofstream myfile;
 		myfile.open ("openbeamlets.txt");
 
