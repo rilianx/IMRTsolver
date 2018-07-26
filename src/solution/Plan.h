@@ -40,6 +40,37 @@ public:
 		return stations;
 	}
 
+	void print_open_beamlets(){
+		ofstream myfile;
+		myfile.open ("openbeamlets.txt");
+
+		myfile << "Angles\t";
+		for(auto s:stations)
+			myfile << s->getAngle() << "\t";
+		myfile << endl;
+		int k=0;
+		for(auto s:stations){
+			set<int> open_beamlets;
+			myfile << endl << "Station Angle\t" << s->getAngle() << endl;
+			for(int i=0; i<s->getNbApertures(); i++){
+				myfile << "Aperture\t" << i << endl;
+				myfile << "Intensity\t" << s->intensity[i] << endl;
+
+				myfile << "OpenBeamlets\t" ;
+				bool first=true;
+				for(auto beam:s->open_beamlets(i)){
+					if(!first) myfile << "\t";
+					first=false;
+					myfile << k+beam;
+				}
+				myfile << endl;
+			}
+			k+=s->getNbBeamlets();
+		}
+		myfile.close();
+
+	}
+
 private:
 	//The list of stations
 	list<Station*> stations;

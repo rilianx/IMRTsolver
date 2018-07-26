@@ -60,8 +60,7 @@ private:
    // Range open (x_ini, x_fin) of row "r" for aperture d: A[d][r](x_ini, x_fin)
    vector<vector<pair<int,int> > > A;
 
-   // intensity of an aperture i
-   vector<double> intensity;
+
 
    //  Apertures (representation 2):
    // Intensity for each beam of the collimator
@@ -76,6 +75,10 @@ private:
 
 public:
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture);
+
+
+  // intensity of an aperture i
+  vector<double> intensity;
 
   // Function to be used to get the index in the location
   // in the matrix I of the rows of matrix D
@@ -119,6 +122,8 @@ public:
   }
 
   list<int> open_beamlets(int aperture);
+
+  list<int> closed_beamlets(int aperture);
 
   // Increase the intensity of a set of beams
   // (possible movement of a local search algorithm)

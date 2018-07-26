@@ -125,9 +125,10 @@ int main(int argc, char** argv){
 	double best_eval=F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
 
+	P.print_open_beamlets();
 
 	//F.generate_linear_system(P,w,Zmin,Zmax);
-	//return 1;
+	return 1;
 
 	for(int i=0;i<maxiter;i++){
 		auto sb=F.best_beamlets(P, bsize, vsize);

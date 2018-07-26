@@ -96,6 +96,21 @@ namespace imrt {
       return ob;
   }
 
+  list<int> Station::closed_beamlets(int a){
+	  list<int> ob;
+	  pair <int,int>aux;
+
+      for (int i=0; i < collimator.getXdim(); i++) {
+        aux = collimator.getActiveRange(i,angle);
+        if (aux.first<0) continue;
+        for (int j=aux.first; j<=aux.second; j++)
+          if (j<A[a][i].first || j>A[a][i].second)
+        	  ob.push_back(pos2beam[make_pair(i,j)]);
+
+      }
+      return ob;
+  }
+
   /* Function to be used to get the position
   in the matrix I of a beam column of matrix D*/
   pair<int,int> Station::getPos(int index) const{
