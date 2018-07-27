@@ -29,6 +29,7 @@ namespace imrt {
 
 class Collimator {
 private:
+
   // Overall coordinates
   //  beam_coord[x][y] coordinates as in all files, x rows and y cols
   //  note: in the format of the files
@@ -58,7 +59,7 @@ private:
   map<int, vector<pair<int,int> > > angle_row_beam_active;
 
   // Active beamlets per angle
-  void setActiveBeamlets(map<int,  vector<pair<double,double> > >& coord);
+  void setActiveBeamlets(map<int,  vector <pair<double,double> > >& coord);
 
   // Number of beamlets defined for an angle "a": nb_angle_beamlets[a]
   map<int, int> nb_angle_beamlets;

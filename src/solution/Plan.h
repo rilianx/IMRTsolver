@@ -23,6 +23,7 @@ namespace imrt {
 class Plan {
 public:
 	Plan(EvaluationFunction &ev) : ev(ev) {};
+  Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax) : ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {};
 	virtual ~Plan() {};
 
 	// Adds a new station to the plan
@@ -34,7 +35,13 @@ public:
 		double eval=ev.eval(*this,w,Zmin,Zmax);
 		ev.generate_voxel_dose_functions ();
 		return eval;
-	}
+	};
+	
+	double doEval(){
+	  double eval=ev.eval(*this,w,Zmin,Zmax);
+	  //ev.generate_voxel_dose_functions ();
+	  return eval;
+	};
 
 	const list<Station*>& get_stations() const{
 		return stations;
@@ -45,6 +52,10 @@ private:
 	list<Station*> stations;
 
 	EvaluationFunction& ev;
+	
+	vector<double> w;
+	vector<double> Zmin;
+	vector<double> Zmax;
 };
 
 } /* namespace imrt */

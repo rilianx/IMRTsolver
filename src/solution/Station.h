@@ -71,11 +71,12 @@ private:
 
    void clearIntensity();
    
+   //These auxiliar variables to track last changes
    pair<pair<int,int>, pair<int,int>> last_mem;
    list<pair<int,double>> last_diff;
 
 public:
-  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture);
+  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture, int initial_intensity=1, bool open_setup=true);
 
   // Function to be used to get the index in the location
   // in the matrix I of the rows of matrix D
@@ -136,9 +137,9 @@ public:
   bool isActiveBeamlet(int beam); 
   list<pair<int,double>> openBeamlet(int beam, int aperture);
   list<pair<int,double>> closeBeamlet(int beam, int aperture, bool lside);
-  void modifyIntensityAperture(int aperture, double size);
+  list<pair<int,double>> modifyIntensityAperture(int aperture, double size);
   void updateIntensity(list<pair<int,double>> diff);
-  void undoLast ();
+  list <pair<int,double>> undoLast ();
 };
 }
 
