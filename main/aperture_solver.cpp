@@ -37,7 +37,7 @@ double doClose(int beam, int a, Station& station, double c_eval, vector<double>&
     f_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
     cout << "  Closing right eval: " << f_eval << " list: "; 
     for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-    cout << endl;
+    //cout << endl;
   
     if ( f_eval > t_eval ) {
       aux_diff = station.undoLast();   
@@ -59,10 +59,10 @@ double doOpen(int beam, int a, Station& station, double c_eval, vector<double>& 
   if(aux_diff.size() <1) return(c_eval);
   
   aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-  //if (aux_eval!=dev)
+
   cout << "  Opening eval: " << aux_eval << " size: " << aux_diff.size() << " list: ";
   for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-  cout << endl;
+  //cout << endl;
 
   return(aux_eval);
 }
@@ -73,6 +73,7 @@ double searchFirstAperture(int beam, Station& station, double c_eval, vector<dou
   int a= (int)rand() % station.getNbApertures();
   int last_a = a, local_a;
   bool flag=true; 
+  
   // Check every aperture 
   while(flag) {
     if (!open_beamlet) {

@@ -30,7 +30,7 @@ int main(int argc, char** argv){
   double maxdelta=5.0;
   double maxratio=3.0;
 
-	args::ArgumentParser parser("********* IMRT-Solver (Intensity-aperture solver) *********", "An IMRT Solver.");
+	args::ArgumentParser parser("********* IMRT-Solver (Intensity-aperture solver) *********", "Example:\n./IAS --max_iter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --max_ap=4");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
 	args::ValueFlag<int> _bsize(parser, "int", "Number of considered beamlets for selection ("+to_string(bsize)+")", {"bsize"});
@@ -42,6 +42,7 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _alpha(parser, "double", "Initial temperature for intensities  ("+to_string(alpha)+")", {"alpha"});
   args::ValueFlag<double> _beta(parser, "double", "Initial temperature for ratio  ("+to_string(beta)+")", {"beta"});
   args::ValueFlag<int> _maxiter(parser, "int", "Number of iterations ("+to_string(maxiter)+")", {"max_iter"});
+
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
 	//args::Positional<std::string> _file(parser, "instance", "Instance");
 
@@ -123,6 +124,11 @@ int main(int argc, char** argv){
 
 	double best_eval=F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
+
+	//P.write_open_beamlets();
+
+	//F.generate_linear_system(P,w,Zmin,Zmax);
+	//return 1;
 
 	for(int i=0;i<maxiter;i++){
 		auto sb=F.best_beamlets(P, bsize, vsize);

@@ -60,8 +60,7 @@ private:
    // Range open (x_ini, x_fin) of row "r" for aperture d: A[d][r](x_ini, x_fin)
    vector<vector<pair<int,int> > > A;
 
-   // intensity of an aperture i
-   vector<double> intensity;
+
 
    //  Apertures (representation 2):
    // Intensity for each beam of the collimator
@@ -77,6 +76,10 @@ private:
 
 public:
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture, int initial_intensity=1, bool open_setup=true);
+
+
+  // intensity of an aperture i
+  vector<double> intensity;
 
   // Function to be used to get the index in the location
   // in the matrix I of the rows of matrix D
@@ -119,6 +122,10 @@ public:
     return collimator.getNangleBeamlets(angle);
   }
 
+  list<int> open_beamlets(int aperture);
+
+  list<int> closed_beamlets(int aperture);
+
   // Increase the intensity of a set of beams
   // (possible movement of a local search algorithm)
   // return a list with the changed beamlets an their changes to be used by the incremental evaluation
@@ -135,7 +142,13 @@ public:
   //Aperture info and modification functions
   bool isOpenBeamlet (int beam, int aperture);
   bool isActiveBeamlet(int beam); 
+
+  /* Function that opens a beamlet from the left, if lside is true, or
+     from the right size otherwise. Return true if the closing was performed.*/
   list<pair<int,double>> openBeamlet(int beam, int aperture);
+
+  /* Function that closes a beamlet from the left, if lside is true, or
+       from the right size otherwise. Return true if the closing was performed.*/
   list<pair<int,double>> closeBeamlet(int beam, int aperture, bool lside);
   list<pair<int,double>> modifyIntensityAperture(int aperture, double size);
   void updateIntensity(list<pair<int,double>> diff);

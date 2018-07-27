@@ -24,6 +24,50 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F
 EvaluationFunction::~EvaluationFunction() { }
 
 
+void EvaluationFunction::generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
+	bool flag=false;
+	for(int o=0; o<nb_organs; o++){
+		double pen=0.0;
+		for(int k=0; k<nb_voxels[o]; k++){
+			if(flag) cout << " + ";
+			flag = true;
+			if(k==0) cout << "(";
+			if(Zmin[o] == 0 )
+				cout << "max(Z_" << o << "_" << k << "-" << Zmax[o] << ", 0)^2" ;
+			else
+				cout << "max(" << Zmin[o] << "- Z_" << o << "_" << k << ", 0)^2" ;
+			if(k==nb_voxels[o]-1) cout << ")";
+		}
+		cout << "/" << nb_voxels[o];
+	}
+	cout << endl;
+
+	for(int o=0; o<nb_organs; o++){
+		for(int k=0; k<nb_voxels[o]; k++){
+			cout << "Z_" << o << "_" << k << "=" ;
+			int ap=0; //aperture variable id
+			bool flag = false;
+			for(auto s : p.get_stations()){
+				const Matrix&  D = s->getDepositionMatrix(o);
+				for(int a=0; a<s->getNbApertures(); a++){
+					double ap_dose_per_intensity=0.0;
+					for(auto b: s->open_beamlets(a)) ap_dose_per_intensity+=D(k,b);
+
+					if (ap_dose_per_intensity>0.0){
+						if(flag) cout << " + ";
+						cout << ap_dose_per_intensity << " * I_" << ap;
+						flag = true;
+
+					}
+					ap++;
+				}
+			}
+			cout << endl;
+		}
+	}
+}
+
+
 void EvaluationFunction::generate_Z(const Plan& p){
 
 	const list<Station*>& stations=p.get_stations();
@@ -73,6 +117,8 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 
 	return F;
 }
+
+
 
 void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, int o, int k, bool erase){

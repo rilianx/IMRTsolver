@@ -34,7 +34,7 @@ Para correr:
 
 Por ejemplo:
 
-     ./IAS --max_iter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --max_ap=4 --help
+     ./IAS --max_iter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --max_ap=4
 
 ----
 
