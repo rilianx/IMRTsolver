@@ -416,7 +416,7 @@ int main(int argc, char** argv){
 	
 	cout << "Initial solution: " << best_eval << endl;
 	
-	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity);
+	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity, initial_temperature, 1);
 	ils.search(P, maxiter);
 	
 	/*

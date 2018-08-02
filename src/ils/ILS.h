@@ -42,7 +42,7 @@ public:
       if (target_beam.second.second<0) 
         cout << "ERROR: No beamlet available" << endl;
       
-      cout << "Iteration " << (s+1) << ", best: " << best_eval << ", beamlet: " << target_beam.second.second  << 
+      cout << "Iteration: " << (s+1) << ", best: " << best_eval << ", beamlet: " << target_beam.second.second  << 
               ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
       aux_eval = localSearch (target_beam, current_plan);
       cout << endl;
