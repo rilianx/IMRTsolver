@@ -28,16 +28,21 @@ public:
   //virtual double perturbation(Plan& P)=0;
   //virtual bool perturbate(int no_improvement)=0;
   
-  double search(Plan& P, EvaluationFunction& F, int max_iterations) {
-    Plan best_plan=Plan(P);
+  double search(Plan& P, int max_iterations) {
+    
+    cout << "Staring ILS search." << endl;
+    //Plan best_plan=Plan(P);
     pair<bool, pair<Station*, int>> target_beam;
-    double local_eval, best_eval, aux_eval;
+    double local_eval, aux_eval,  best_eval=P.eval();
     int no_improvement;
     
     no_improvement = 0;
     for (int s=0;s<max_iterations;s++) {
       target_beam = getLSBeamlet(P);
+      
+      cout << "Iteration " << (s+1) << ", best: " << best_eval << ", beamlet: " << target_beam.second.second  << ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
       aux_eval = localSearch (target_beam, P);
+      cout << endl;
       
       if (aux_eval < best_eval) {
         best_eval=aux_eval;
@@ -55,6 +60,7 @@ public:
         no_improvement ++;
       }
       
+      
       //if ( perturbate(no_improvement))
       //  local_eval = perturbation(P);
     }
@@ -63,39 +69,6 @@ public:
     return(best_eval);
   };
   
-  void printHeader() {
-    cout << "************************************************"<< endl;
-    cout << "************************************************"<< endl;
-    cout << "****************** IMRT-Solver  ****************"<< endl;
-    cout << "Iterations: " << maxiter << endl;
-    cout << "Seed: " << seed << endl;
-    cout << "Temperature: " << temperature << endl;
-    if (ls_apertures)
-      cout << "Searching: aperture pattern" << endl;
-    if (ls_intensity)
-      cout << "Searching: intensity" << endl;
-    if (ls_both){
-      cout << "Searching: intensity and aperture pattern" << endl;
-      cout << "Probability intensity ls: " << prob_intensity << endl;
-    }
-    
-    cout << endl << "Colimator configuration: "<< endl;
-    cout << "  Stations: " << stations.size() << endl;
-    cout << "  Angles: ";
-    for (int i=0; i<stations.size();i++) cout << stations[i]->getAngle() << " ";
-    cout << endl;
-    cout << "  Max apertures: " << max_apertures << endl;
-    cout << "  Initial intensity: " << initial_intensity << endl;
-    cout << "  Open initial setup: " << open_setup << endl;
-    
-    
-    cout << endl << "Instance information: "<< endl;
-    cout << "  Volumes: " << volumes.size() << endl;
-    
-    cout << "************************************************"<< endl<< endl;
-    cout << "************************************************"<< endl;
-    cout << "************************************************"<< endl;
-  }
   
 };
 

@@ -9,6 +9,11 @@
 
 namespace imrt {
 
+ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity): 
+ILS(bsize, vsize), search_intensity(search_intensity), search_aperture(search_aperture), prob_intensity(prob_intensity){
+  std::cout <<"Seach ap" << std::endl;
+}
+
 bool ApertureILS::isBeamletModifiable(int beamlet, Station* station, bool open_flag){
   if (!open_flag) {
     if (station->anyOpen(beamlet) && search_aperture)
@@ -234,7 +239,7 @@ double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Pla
   } else if (!search_aperture && search_intensity) {
     aux_eval = firstImprovementIntensity(beamlet, *s, !sign, local_eval, P);
     cout << ", ls intensity, found: " << aux_eval;
-  } else if (!search_aperture && search_intensity) {
+  } else if (search_aperture && search_intensity) {
     if (!sign)
       search_a = s->anyClosed(beamlet);
     else 
@@ -247,7 +252,11 @@ double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Pla
       aux_eval = firstImprovementAperture(beamlet, *s, !sign, local_eval, P);
       cout << ", ls aperture, found: " << aux_eval;
     }
+  } else {
+    cout << "ERROR: Search option not recognized!!!" << endl;
+    
   }
+  
   return(aux_eval);
 }
 

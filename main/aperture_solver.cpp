@@ -12,6 +12,7 @@
 #include "Plan.h"
 #include "Collimator.h"
 #include "Volume.h"
+#include "ApertureILS.h"
 #include "args.hxx"
 
 
@@ -410,9 +411,13 @@ int main(int argc, char** argv){
 	
 	cout << "Initial solution: " << best_eval << endl;
 	
+	ApertureILS ils(bsize, vsize, true, true, 0.2);
+	ils.search(P, 10);
+	
+	/*
 	//From here 
-	/*auto sb=F.best_beamlets(P, bsize, vsize);
-	auto it=sb.begin();*/
+	//auto sb=F.best_beamlets(P, bsize, vsize);
+	//auto it=sb.begin();
 	Station*s; 
 	int beamlet;
 	bool sign;
@@ -464,13 +469,13 @@ int main(int argc, char** argv){
     local_eval=aux_eval;
 	}
 
-	/*cout << endl;
-	for(int i=0;i<5;i++){
-		//stations[i]->printIntensity();
-		stations[i]->printIntensity(false);
-        //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
-    }
-	cout << endl;*/
+	//cout << endl;
+	//for(int i=0;i<5;i++){
+	//	//stations[i]->printIntensity();
+	//	stations[i]->printIntensity(false);
+  //      //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
+  //  }
+	//cout << endl;
 
 	
 	cout << "********   Summary of the results    *********"<< endl;
@@ -478,7 +483,7 @@ int main(int argc, char** argv){
 	cout << "Final solution: " << best_eval << endl << endl;
 
   F.generate_voxel_dose_functions ();
-  system("python plotter/plot.py");
+  system("python plotter/plot.py");*/
 
 	return 0;
 

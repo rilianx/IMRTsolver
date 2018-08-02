@@ -15,6 +15,8 @@ namespace imrt {
 class ApertureILS : public ILS {
 public:
   
+  ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity);
+  
   pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
   
   bool isBeamletModifiable(int beamlet, Station* station, bool open_flag) ;
@@ -33,7 +35,6 @@ public:
   
   double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
   
-  void printHeader();
   
 private:
   bool search_intensity;
