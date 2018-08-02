@@ -55,14 +55,13 @@ public:
       if (aux_eval < local_eval) {
         local_eval = aux_eval;
         no_improvement = 0;
-      } else if (acceptanceCriterion(aux_eval, local_eval)) {
+      } else if (aux_eval!= local_eval && acceptanceCriterion(aux_eval, local_eval)) {
         local_eval = aux_eval;
         no_improvement = 0;
       } else {
         current_plan.undoLast();
         no_improvement ++;
       }
-      
       //if ( perturbate(no_improvement))
       //  local_eval = perturbation(P);
     }

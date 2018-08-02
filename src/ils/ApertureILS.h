@@ -15,7 +15,7 @@ namespace imrt {
 class ApertureILS : public ILS {
 public:
   
-  ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity);
+  ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, int acceptance);
   
   pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
   
@@ -40,6 +40,12 @@ private:
   bool search_intensity;
   bool search_aperture;
   double prob_intensity;
+  
+  double temperature;
+  double initial_tempertature;
+  double max_temperature;
+  
+  int acceptance;
 };
 
 }

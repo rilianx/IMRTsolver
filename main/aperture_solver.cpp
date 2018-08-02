@@ -252,7 +252,7 @@ int main(int argc, char** argv){
   int vsize=50;
   int bsize=20;
   double int0=4.0;
-  int maxiter=10000;
+  int maxiter=5000;
   int max_apertures=5;
   double alpha=1.0;
   double beta=1.0;
@@ -417,7 +417,7 @@ int main(int argc, char** argv){
 	cout << "Initial solution: " << best_eval << endl;
 	
 	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity);
-	ils.search(P, 1000);
+	ils.search(P, maxiter);
 	
 	/*
 	//From here 

@@ -70,6 +70,7 @@ namespace imrt {
   }
   
   void Plan::undoLast() {
+    if (last_changed==NULL) return;
     list< pair< int, double > > diff = last_changed->undoLast();
     if (diff.size()>0)
       incremental_eval (*last_changed, diff);

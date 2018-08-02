@@ -9,9 +9,9 @@
 
 namespace imrt {
 
-ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity): 
-ILS(bsize, vsize), search_intensity(search_intensity), search_aperture(search_aperture), prob_intensity(prob_intensity){
-  std::cout <<"Seach ap" << std::endl;
+ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, double initial_temperature, int acceptance=0): 
+ILS(bsize, vsize), search_intensity(search_intensity), search_aperture(search_aperture), prob_intensity(prob_intensity), initial_temperature(initial_temperature), acceptance(acceptance){
+  temperature=initial_temperature;
 }
 
 bool ApertureILS::isBeamletModifiable(int beamlet, Station* station, bool open_flag) {
@@ -95,8 +95,7 @@ double ApertureILS::firstImprovementIntensity(int beamlet, Station& station, boo
   bool flag = true;
   vector<int> a_list;
   
-  if (!open_beamlet) a_list = station.getOpen(beamlet);
-  else a_list = station.getClosed(beamlet);
+  a_list = station.getOpen(beamlet);
   
   if (a_list.size()<1) {
     cout << endl << "Warning: not possible to make intensity change beamlet:" << beamlet <<endl;
@@ -222,8 +221,15 @@ double ApertureILS::firstImprovementAperture(int beamlet, Station& station, bool
 }
 
 bool ApertureILS::acceptanceCriterion(double new_eval, double prev_eval) {
-  if (new_eval < prev_eval) return(true);
-  return(false);
+  if (acceptance==1){}
+    if (new_eval < prev_eval) return(true);
+     return(false);
+} else if (acceptance==2{
+    double p = exp((double)-(new_eval-prev_eval)/temperature);
+    double r = ((double)rand() / (RAND_MAX));
+    if (r <= p) return(true);
+    return(false);
+  }
 }
 
 double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) {
