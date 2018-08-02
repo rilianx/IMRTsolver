@@ -9,7 +9,7 @@
 
 namespace imrt {
 
-ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, double initial_temperature, int acceptance=0): 
+ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, double initial_temperature=10, int acceptance=0): 
 ILS(bsize, vsize), search_intensity(search_intensity), search_aperture(search_aperture), prob_intensity(prob_intensity), initial_temperature(initial_temperature), acceptance(acceptance){
   temperature=initial_temperature;
 }
@@ -221,10 +221,10 @@ double ApertureILS::firstImprovementAperture(int beamlet, Station& station, bool
 }
 
 bool ApertureILS::acceptanceCriterion(double new_eval, double prev_eval) {
-  if (acceptance==1){}
+  if (acceptance==1){
     if (new_eval < prev_eval) return(true);
      return(false);
-} else if (acceptance==2{
+  } else if (acceptance==2){
     double p = exp((double)-(new_eval-prev_eval)/temperature);
     double r = ((double)rand() / (RAND_MAX));
     if (r <= p) return(true);
