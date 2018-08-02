@@ -43,18 +43,40 @@ namespace imrt {
     }
     
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
-    last_diff.push_back(make_pair(-1,-1));
   }
 
-  Station::Station(Station &s) :collimator(s.collimator), angle(s.angle) , max_apertures(s.max_apertures), max_intensity(s.max_intensity) {
+  Station::Station(const Station &s) :collimator(s.collimator) {
+    angle=s.angle;
+    max_apertures=s.max_apertures;
+    max_intensity=s.max_intensity;
     D=s.D;
     I=s.I;
     intensity=s.intensity;
     A=s.A;
     last_mem=s.last_mem;
     last_diff=s.last_diff;
-    
+    pos2beam=s.pos2beam;
+    beam2pos=s.beam2pos;
+    int2nb=s.int2nb;
   }
+
+  /*Station& Station::operator=(const Station & s) {
+    collimator=s.collimator;
+    angle=s.angle;
+    max_apertures=s.max_apertures;
+    max_intensity=s.max_intensity;
+    D=s.D;
+    I=s.I;
+    intensity=s.intensity;
+    A=s.A;
+    last_mem=s.last_mem;
+    last_diff=s.last_diff;
+    pos2beam=s.pos2beam;
+    beam2pos=s.beam2pos;
+    int2nb=s.int2nb;
+    
+    return(*this);
+  }*/
 
   void Station::clearIntensity() {
     pair<int,int> aux;
@@ -101,30 +123,28 @@ namespace imrt {
 	  list<int> ob;
 	  pair <int,int>aux;
 
-      for (int i=0; i < collimator.getXdim(); i++) {
-        aux = collimator.getActiveRange(i,angle);
-        if (aux.first<0) continue;
-        for (int j=aux.first; j<=aux.second; j++)
-          if (j>=A[a][i].first && j<=A[a][i].second)
-        	  ob.push_back(pos2beam[make_pair(i,j)]);
+    for (int i=0; i < collimator.getXdim(); i++) {
+      aux = collimator.getActiveRange(i,angle);
+      if (aux.first<0) continue;
+      for (int j=aux.first; j<=aux.second; j++)
+        if (j>=A[a][i].first && j<=A[a][i].second)
+        	ob.push_back(pos2beam[make_pair(i,j)]);
 
-      }
-      return ob;
+    }
+    return ob;
   }
 
   list<int> Station::closed_beamlets(int a){
 	  list<int> ob;
 	  pair <int,int>aux;
-
-      for (int i=0; i < collimator.getXdim(); i++) {
-        aux = collimator.getActiveRange(i,angle);
-        if (aux.first<0) continue;
-        for (int j=aux.first; j<=aux.second; j++)
-          if (j<A[a][i].first || j>A[a][i].second)
-        	  ob.push_back(pos2beam[make_pair(i,j)]);
-
-      }
-      return ob;
+    for (int i=0; i < collimator.getXdim(); i++) {
+      aux = collimator.getActiveRange(i,angle);
+      if (aux.first<0) continue;
+      for (int j=aux.first; j<=aux.second; j++)
+        if (j<A[a][i].first || j>A[a][i].second)
+        	 ob.push_back(pos2beam[make_pair(i,j)]);
+    }
+    return ob;
   }
 
   /* Function to be used to get the position
@@ -140,23 +160,21 @@ namespace imrt {
   }
 
   void Station::printIntensity(bool vector_form) {
-	if(!vector_form){
-		cout << "Angle "<< angle <<" intensity matrix:"<< endl;
-		for (int i=0; i<collimator.getXdim();i++) {
-			for (int j=0; j<collimator.getYdim(); j++) {
-				printf("%2.0f ", I(i,j));
-			}
-			cout << endl;
-		}
-	}else{
-		for (int i=0; i<collimator.getXdim();i++) {
-			for (int j=0; j<collimator.getYdim(); j++) {
-				if(I(i,j)!=-1.0) printf("\t%2.1f", I(i,j));
-			}
-		}
-
-	}
-
+	  if(!vector_form){
+		  cout << "Angle "<< angle <<" intensity matrix:"<< endl;
+		  for (int i=0; i<collimator.getXdim();i++) {
+			  for (int j=0; j<collimator.getYdim(); j++) {
+				  printf("%2.0f ", I(i,j));
+			  }
+			  cout << endl;
+		  }
+	  }else{
+		  for (int i=0; i<collimator.getXdim();i++) {
+			  for (int j=0; j<collimator.getYdim(); j++) {
+				  if(I(i,j)!=-1.0) printf("\t%2.1f", I(i,j));
+			  }
+		  }
+	  }
   }
 
   void Station::printApertures() {

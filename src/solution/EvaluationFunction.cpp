@@ -21,7 +21,36 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F
 	}
 }
 
+EvaluationFunction::EvaluationFunction(const EvaluationFunction& ef) {
+  prev_F=ef.prev_F;
+  F=ef.F;
+  nb_organs=ef.nb_organs;
+  nb_voxels=ef.nb_voxels;
+  voxel_dose=ef.voxel_dose;
+  Z=ef.Z;
+  D=ef.D;
+  tumor_voxels=ef.tumor_voxels;
+  voxels=ef.voxels;
+  o_voxels=ef.o_voxels;
+  Z_diff=ef.Z_diff;
+}
+
 EvaluationFunction::~EvaluationFunction() { }
+
+EvaluationFunction & EvaluationFunction::operator=(const EvaluationFunction & ef) {
+  prev_F=ef.prev_F;
+  F=ef.F;
+  nb_organs=ef.nb_organs;
+  nb_voxels=ef.nb_voxels;
+  voxel_dose=ef.voxel_dose;
+  Z=ef.Z;
+  D=ef.D;
+  tumor_voxels=ef.tumor_voxels;
+  voxels=ef.voxels;
+  o_voxels=ef.o_voxels;
+  Z_diff=ef.Z_diff;
+  return *this;
+}
 
 
 void EvaluationFunction::generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
@@ -94,7 +123,6 @@ void EvaluationFunction::generate_Z(const Plan& p){
 double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
 	voxels.clear();
 	generate_Z(p);
-
 	F=0.0;
 
 	for(int o=0; o<nb_organs; o++){
@@ -258,8 +286,8 @@ void EvaluationFunction::undo_last_eval(vector<double>& w,
 	set < pair< pair<double,bool>, pair<Station*, int> >,
 	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
 EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
- //cout << "best" << endl;
- set < pair< pair<double,bool>, pair<Station*, int> >,
+
+  set < pair< pair<double,bool>, pair<Station*, int> >,
 	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >  bestb;
 
 	double max_ev=0.0;
@@ -286,7 +314,6 @@ EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
 			}
 		}
 	}
-
 	return bestb;
 }
 

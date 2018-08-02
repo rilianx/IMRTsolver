@@ -28,25 +28,28 @@ public:
   //virtual double perturbation(Plan& P)=0;
   //virtual bool perturbate(int no_improvement)=0;
   
-  double search(Plan& P, int max_iterations) {
+  double search(Plan& current_plan, int max_iterations) {
     
     cout << "Staring ILS search." << endl;
-    //Plan best_plan=Plan(P);
+    Plan best_plan (current_plan);
     pair<bool, pair<Station*, int>> target_beam;
-    double local_eval, aux_eval,  best_eval=P.eval();
+    double local_eval, aux_eval,  best_eval=current_plan.eval();
     int no_improvement;
-    
     no_improvement = 0;
     for (int s=0;s<max_iterations;s++) {
-      target_beam = getLSBeamlet(P);
+      //cout << "ss"<< endl;
+      target_beam = getLSBeamlet(current_plan);
+      if (target_beam.second.second<0) 
+        cout << "ERROR: No beamlet available" << endl;
       
-      cout << "Iteration " << (s+1) << ", best: " << best_eval << ", beamlet: " << target_beam.second.second  << ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
-      aux_eval = localSearch (target_beam, P);
+      cout << "Iteration " << (s+1) << ", best: " << best_eval << ", beamlet: " << target_beam.second.second  << 
+              ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
+      aux_eval = localSearch (target_beam, current_plan);
       cout << endl;
       
       if (aux_eval < best_eval) {
         best_eval=aux_eval;
-        //best_plan=Plan(P);
+        best_plan.newCopy(current_plan);
       }
       
       if (aux_eval < local_eval) {
@@ -56,16 +59,16 @@ public:
         local_eval = aux_eval;
         no_improvement = 0;
       } else {
-        P.undoLast();
+        current_plan.undoLast();
         no_improvement ++;
       }
-      
       
       //if ( perturbate(no_improvement))
       //  local_eval = perturbation(P);
     }
     
-    //P=Plan(best_plan);
+    aux_eval=best_plan.eval();
+    cout << "comparison:" << aux_eval << " vs "<< best_eval<<endl;
     return(best_eval);
   };
   

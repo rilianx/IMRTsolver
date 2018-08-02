@@ -74,9 +74,13 @@ private:
    list<pair<int,double>> last_diff;
 
 public:
-  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture, int max_intensity=20, int initial_intensity=1, bool open_setup=true);
-
-  Station(Station &s);
+  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, 
+          int _aperture, int max_intensity=20, int initial_intensity=1, 
+          bool open_setup=true);
+  
+  Station(const Station &s);
+  
+  //Station& operator=(const Station & s);
   
   // intensity of an aperture i
   vector<double> intensity;

@@ -44,8 +44,12 @@ public:
 
 	//Constructor of the evaluator.
 	EvaluationFunction(vector<Volume>& volumes);
+  
+  EvaluationFunction(const EvaluationFunction& F);
 
 	virtual ~EvaluationFunction();
+	
+	EvaluationFunction& operator=(const EvaluationFunction & ef);
 
 	// Generate the dose distribution matrices Z for each organ
 	void generate_Z(const Plan& p);

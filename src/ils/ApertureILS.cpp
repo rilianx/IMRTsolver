@@ -14,7 +14,7 @@ ILS(bsize, vsize), search_intensity(search_intensity), search_aperture(search_ap
   std::cout <<"Seach ap" << std::endl;
 }
 
-bool ApertureILS::isBeamletModifiable(int beamlet, Station* station, bool open_flag){
+bool ApertureILS::isBeamletModifiable(int beamlet, Station* station, bool open_flag) {
   if (!open_flag) {
     if (station->anyOpen(beamlet) && search_aperture)
       return(true);
@@ -41,10 +41,11 @@ pair <bool, pair<Station*, int> > ApertureILS::getLSBeamlet(Plan& P){
   int i=0;
   while (!isBeamletModifiable(beamlet, s, !sign)) {
     // If no beamlet was found return -1
-    if (i==sb.size()) return(make_pair(false, make_pair(s,-1)));
-    if (it==sb.end()) it = sb.begin();
-    else it++;
     i++;
+    if (i==sb.size()) return(make_pair(false, make_pair(s,-1)));
+    std::advance(it,1);
+    if (it==sb.end()) it = sb.begin();
+    
     s = it->second.first; 
     beamlet = it->second.second;
     sign = it->first.second; 
@@ -103,18 +104,18 @@ double ApertureILS::firstImprovementIntensity(int beamlet, Station& station, boo
   }
   
   a = (int)rand() % a_list.size();
-  i=1;
-  
+  i=0;
+
   // Check every aperture 
   while(flag) {
     if (open_beamlet) {
-      diff = station.modifyIntensityAperture(a, 1);
+      diff = station.modifyIntensityAperture(a_list[a], 1);
       aux_eval = P.incremental_eval(station, diff);
       //cout << endl<<"  Increasing intensity aperture: " << a <<" eval: " << aux_eval << " list: ";
       //for (list<pair<int,double> >::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
       //cout << endl;
     } else {
-      diff = station.modifyIntensityAperture(a, -1);
+      diff = station.modifyIntensityAperture(a_list[a], -1);
       aux_eval = P.incremental_eval(station, diff);
       //cout << endl<< "  Reducing intensity aperture: " << a <<" eval: " << aux_eval <<  " list: ";
       //for (list<pair<int,double> >::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
@@ -142,10 +143,10 @@ double ApertureILS::firstImprovementIntensity(int beamlet, Station& station, boo
   
   // If no improvement was found, return the best solution found.
   if (!open_beamlet) {
-    diff = station.modifyIntensityAperture(local_a, 1);
+    diff = station.modifyIntensityAperture(a_list[local_a], 1);
     local_best = P.incremental_eval(station, diff);
   } else{
-    diff = station.modifyIntensityAperture(local_a, -1);
+    diff = station.modifyIntensityAperture(a_list[local_a], -1);
     local_best = P.incremental_eval(station, diff);
   }
   return(local_best);
@@ -182,7 +183,7 @@ double ApertureILS::firstImprovementAperture(int beamlet, Station& station, bool
   }
   
   a = (int)rand() % a_list.size();
-  i = 1;
+  i = 0;
   
   // Check every aperture 
   while(flag) {
@@ -232,7 +233,7 @@ double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Pla
   int beamlet = target_beam.second.second;
   Station* s = target_beam.second.first;
   bool sign = target_beam.first;
-  
+
   if (search_aperture && !search_intensity) {
     aux_eval = firstImprovementAperture(beamlet, *s, !sign, local_eval, P);
     cout << ", ls aperture, found: " << aux_eval;
@@ -244,13 +245,15 @@ double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Pla
       search_a = s->anyClosed(beamlet);
     else 
       search_a = s->anyOpen(beamlet);
-    
+
     if (((double) rand() / (RAND_MAX)) <= prob_intensity || !search_a) {
+      cout << ", ls intensity";
       aux_eval = firstImprovementIntensity(beamlet, *s,  !sign, local_eval, P);
-      cout << ", ls intensity, found: " << aux_eval;
+      cout << ", found: " << aux_eval;
     } else {
+      cout << ", ls aperture";
       aux_eval = firstImprovementAperture(beamlet, *s, !sign, local_eval, P);
-      cout << ", ls aperture, found: " << aux_eval;
+      cout << ", found: " << aux_eval;
     }
   } else {
     cout << "ERROR: Search option not recognized!!!" << endl;

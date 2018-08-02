@@ -258,13 +258,15 @@ int main(int argc, char** argv){
   double beta=1.0;
   double maxdelta=5.0;
   double maxratio=3.0;
+  bool search_aperture=false;
+  bool search_intensity=false;
   
  
   int initial_intensity=1;
   int max_intensity=20;
   
   // ls params
-  double prob_intensity=0.05;
+  double prob_intensity=0.2;
   double temperature, initial_temperature=10;
   double min_temperature=0;
 
@@ -292,11 +294,11 @@ int main(int argc, char** argv){
   args::ValueFlag<int> _seed(parser, "int", "Seed  ("+to_string(seed)+")", {"seed"});
   args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial_intensity"});
   args::Flag open_setup(parser, "open_setup", "Initialize apertures as open", {"open_setup"});
-  args::Group ls_type (parser, "Local search type:", args::Group::Validators::Xor);
-  args::Flag ls_apertures(ls_type, "ls_apertures", "Apply aperture local search", {"ls_apertures"});
-  args::Flag ls_intensity(ls_type, "ls_intensity", "Apply intensity local search", {"ls_intensity"});
-  args::Flag ls_both (ls_type, "ls_both", "Apply intensity and aperture local search based in probabilities", {"ls_both"});
-  args::ValueFlag<double> _prob_intensity(parser, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob_intensity"});
+  args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
+  //args::Group ls_type (parser, "Local search type:", args::Group::Validators::Xor);
+  args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls_apertures"});
+  args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls_intensity"});
+  args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob_intensity"});
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
 	//args::Positional<std::string> _file(parser, "instance", "Instance");
@@ -337,7 +339,12 @@ int main(int argc, char** argv){
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
   if(_prob_intensity) prob_intensity=_prob_intensity.Get();
   if(_temperature) temperature=initial_temperature=_temperature.Get();
-
+  if (ls_aperture) search_aperture=true;
+  if (ls_intensity) search_intensity=true;
+  if(!ls_aperture && !ls_intensity){ 
+    search_aperture=true;
+    search_intensity=true;
+  }
 	vector< pair<int, string> > coord_files(5);
 	coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
 	coord_files[1]=(make_pair(70,"data/CERR_Prostate/CoordinatesBeam_70.txt"));
@@ -377,14 +384,12 @@ int main(int argc, char** argv){
   cout << "Iterations: " << maxiter << endl;
   cout << "Seed: " << seed << endl;
   cout << "Temperature: " << temperature << endl;
-  if (ls_apertures)
+  if (search_aperture)
     cout << "Searching: aperture pattern" << endl;
-  if (ls_intensity)
+  if (search_intensity)
     cout << "Searching: intensity" << endl;
-  if (ls_both){
-    cout << "Searching: intensity and aperture pattern" << endl;
-    cout << "Probability intensity ls: " << prob_intensity << endl;
-  }
+  cout << "Probability intensity ls: " << prob_intensity << endl;
+  
   
   cout << endl << "Colimator configuration: "<< endl;
   cout << "  Stations: " << stations.size() << endl;
@@ -399,7 +404,7 @@ int main(int argc, char** argv){
   cout << endl << "Instance information: "<< endl;
   cout << "  Volumes: " << volumes.size() << endl;
 
-  cout << "************************************************"<< endl<< endl;
+  cout << "************************************************"<< endl;
   cout << "************************************************"<< endl;
   cout << "************************************************"<< endl;
   
@@ -411,8 +416,8 @@ int main(int argc, char** argv){
 	
 	cout << "Initial solution: " << best_eval << endl;
 	
-	ApertureILS ils(bsize, vsize, true, true, 0.2);
-	ils.search(P, 10);
+	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity);
+	ils.search(P, 1000);
 	
 	/*
 	//From here 

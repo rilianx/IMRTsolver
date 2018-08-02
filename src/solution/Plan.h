@@ -24,7 +24,12 @@ class Plan {
 public:
 	Plan(EvaluationFunction &ev);
   Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
+  
+  Plan(const Plan &p);
+  
 	virtual ~Plan() {};
+	
+	void newCopy(Plan& p);
 
 	// Adds a new station to the plan
 	void add_station(Station& s);
@@ -55,7 +60,7 @@ private:
   
   Station* last_changed;
 
-	EvaluationFunction& ev;
+	EvaluationFunction ev;
 	
 	vector<double> w;
 	vector<double> Zmin;

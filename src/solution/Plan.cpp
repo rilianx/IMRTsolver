@@ -11,7 +11,35 @@ namespace imrt {
 
   Plan::Plan(EvaluationFunction &ev) : ev(ev) {};
 
-  Plan::Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax) : ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {};
+  Plan::Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax) : ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {
+    last_changed=NULL;
+  };
+  
+  Plan::Plan(const Plan &p): ev(p.ev), w(p.w), Zmin(p.Zmin), Zmax(p.Zmax) {
+    EvaluationFunction aux_ev(p.ev);
+    ev=aux_ev;
+    for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
+      Station aux (**it);
+      if (p.last_changed && p.last_changed->getAngle()==aux.getAngle()) last_changed=&aux;
+      stations.push_back(&aux);
+    }
+    evaluation_fx=p.evaluation_fx;
+  }
+  
+  void Plan::newCopy(Plan& p) {
+    EvaluationFunction aux_ev(p.ev);
+    ev=aux_ev;
+    w=p.w;
+    Zmin=p.Zmin;
+    Zmax=p.Zmax;
+    stations.clear();
+    for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
+      Station* aux = new Station (**it);
+      if (p.last_changed!=NULL && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
+      stations.push_back(aux);
+    }
+    evaluation_fx=p.evaluation_fx;
+  }
   
   void Plan::add_station(Station& s){
     stations.push_back(&s);
