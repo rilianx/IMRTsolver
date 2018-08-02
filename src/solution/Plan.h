@@ -67,7 +67,7 @@ private:
   
   Station* last_changed;
 
-	EvaluationFunction ev;
+	EvaluationFunction& ev;
 	
 	vector<double> w;
 	vector<double> Zmin;

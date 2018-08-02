@@ -12,6 +12,7 @@
 #include "Plan.h"
 #include "Collimator.h"
 #include "Volume.h"
+#include "IntensityILS.h"
 #include "args.hxx"
 
 
@@ -113,16 +114,23 @@ int main(int argc, char** argv){
    }
 
    EvaluationFunction F(volumes);
-   Plan P(F);
-   for(int i=0;i<5;i++)
-	   P.add_station(*stations[i]);
-
+  // Plan P(F);
 
 	vector<double> w={1,1,1};
 	vector<double> Zmin={0,0,76};
 	vector<double> Zmax={65,60,1000};
 
-	double best_eval=F.eval(P,w,Zmin,Zmax);
+	Plan P(F, w, Zmin, Zmax);
+	for(int i=0;i<5;i++)
+	   P.add_station(*stations[i]);
+
+	//IntensityILS ils(bsize, vsize, maxdelta, maxratio, alpha, beta);
+	//ils.search(P,maxiter);
+
+	//return 0;
+
+	double best_eval=P.eval();
+			//F.eval(P,w,Zmin,Zmax);
 	cout << "ev:" << best_eval << endl;
 
 	//P.write_open_beamlets();
@@ -152,7 +160,8 @@ int main(int argc, char** argv){
 		//cout << maxdelta << "," << maxratio << endl;
 
 		auto diff=s->increaseIntensity_repair(beamlet,delta_intensity,ratio);
-		double eval=F.incremental_eval(*s,w,Zmin,Zmax, diff);
+		double eval=P.incremental_eval(*s,diff);
+				//F.incremental_eval(*s,w,Zmin,Zmax, diff);
 
 		if(eval > best_eval){ //reject the move
 			s->revert(diff);
