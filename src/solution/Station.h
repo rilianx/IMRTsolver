@@ -50,6 +50,7 @@ private:
 
   // Maximum number of apertures
   int max_apertures;
+  int max_intensity;
 
   /** Apertures (representation 1):
    * Each aperture is represented by a vector of pairs A[i] = (x_ini, x_fin)
@@ -59,8 +60,6 @@ private:
 
    // Range open (x_ini, x_fin) of row "r" for aperture d: A[d][r](x_ini, x_fin)
    vector<vector<pair<int,int> > > A;
-
-
 
    //  Apertures (representation 2):
    // Intensity for each beam of the collimator
@@ -75,9 +74,10 @@ private:
    list<pair<int,double>> last_diff;
 
 public:
-  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture, int initial_intensity=1, bool open_setup=true);
+  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, int _aperture, int max_intensity=20, int initial_intensity=1, bool open_setup=true);
 
-
+  Station(Station &s);
+  
   // intensity of an aperture i
   vector<double> intensity;
 
@@ -142,7 +142,11 @@ public:
   //Aperture info and modification functions
   bool isOpenBeamlet (int beam, int aperture);
   bool isActiveBeamlet(int beam); 
-
+  vector<int> getClosed(int beam);
+  vector<int> getOpen(int beam);
+  bool anyClosed(int beam);
+  bool anyOpen(int beam);
+  
   /* Function that opens a beamlet from the left, if lside is true, or
      from the right size otherwise. Return true if the closing was performed.*/
   list<pair<int,double>> openBeamlet(int beam, int aperture);
@@ -152,6 +156,9 @@ public:
   list<pair<int,double>> closeBeamlet(int beam, int aperture, bool lside);
   list<pair<int,double>> modifyIntensityAperture(int aperture, double size);
   void updateIntensity(list<pair<int,double>> diff);
+  bool canIncreaseIntensity(int beam);
+  bool canReduceIntensity(int beam);
+  
   list <pair<int,double>> undoLast ();
 };
 }

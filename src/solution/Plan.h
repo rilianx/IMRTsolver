@@ -22,71 +22,46 @@ namespace imrt {
 
 class Plan {
 public:
-	Plan(EvaluationFunction &ev) : ev(ev) {};
-  Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax) : ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {};
+	Plan(EvaluationFunction &ev);
+  Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
 	virtual ~Plan() {};
 
 	// Adds a new station to the plan
-	void add_station(Station& s){
-		stations.push_back(&s);
-	}
+	void add_station(Station& s);
 
-	double eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
-		double eval=ev.eval(*this,w,Zmin,Zmax);
-		ev.generate_voxel_dose_functions ();
-		return eval;
-	};
+	double eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 	
-	double doEval(){
-	  double eval=ev.eval(*this,w,Zmin,Zmax);
-	  //ev.generate_voxel_dose_functions ();
-	  return eval;
-	};
+	double eval();
+	
+	double incremental_eval (Station& station, list< pair< int, double > >& diff);
+	
+	// This function assumes that there are no changes made without evaluation
+	// performed with eval or incrementalEval
+	double getEvaluation();
+	
+	const list<Station*>& get_stations() const;
 
-	const list<Station*>& get_stations() const{
-		return stations;
-	}
-
-	void write_open_beamlets(){
-		ofstream myfile;
-		myfile.open ("openbeamlets.txt");
-
-		myfile << "Angles\t";
-		for(auto s:stations)
-			myfile << s->getAngle() << "\t";
-		myfile << endl;
-		int k=0;
-		for(auto s:stations){
-			set<int> open_beamlets;
-			myfile << endl << "Station Angle\t" << s->getAngle() << endl;
-			for(int i=0; i<s->getNbApertures(); i++){
-				myfile << "Aperture\t" << i << endl;
-				myfile << "Intensity\t" << s->intensity[i] << endl;
-
-				myfile << "OpenBeamlets\t" ;
-				bool first=true;
-				for(auto beam:s->open_beamlets(i)){
-					if(!first) myfile << "\t";
-					first=false;
-					myfile << k+beam;
-				}
-				myfile << endl;
-			}
-			k+=s->getNbBeamlets();
-		}
-		myfile.close();
-
-	}
+	void write_open_beamlets();
+	
+	set < pair< pair<double,bool>, pair<Station*, int> >,
+       std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
+	  best_beamlets(int n, int nv, int mode=0);
+	
+	void undoLast();
 
 private:
 	//The list of stations
 	list<Station*> stations;
+  
+  Station* last_changed;
 
 	EvaluationFunction& ev;
 	
 	vector<double> w;
 	vector<double> Zmin;
 	vector<double> Zmax;
+	
+	double evaluation_fx;
 };
 
 } /* namespace imrt */

@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 3.5)
 project(imrt)
 
 
-set(SOURCES src/solution/EvaluationFunction.cpp src/solution/Station.cpp src/base/Collimator.cpp src/tools/Matrix.cpp src/base/Volume.cpp)
-set(HEADERS src/solution/EvaluationFunction.h src/solution/Plan.h src/solution/Station.h src/base/Collimator.h src/base/Volume.h)
+set(SOURCES src/solution/EvaluationFunction.cpp src/solution/Station.cpp src/base/Collimator.cpp src/tools/Matrix.cpp src/base/Volume.cpp src/solution/Plan.cpp src/ils/ApertureILS.cpp)
+set(HEADERS src/solution/EvaluationFunction.h src/solution/Plan.h src/solution/Station.h src/base/Collimator.h src/base/Volume.h src/ils/ILS.h src/ils/ApertureILS.h)
 
 INCLUDE_DIRECTORIES(
 src
@@ -14,6 +14,7 @@ main
 src/tools
 src/base
 src/solution
+src/ils
 )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")

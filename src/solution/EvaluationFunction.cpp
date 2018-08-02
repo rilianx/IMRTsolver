@@ -194,7 +194,7 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 
 }
 
-double EvaluationFunction::delta_eval(Station& station, vector<double>& w,
+/*double EvaluationFunction::delta_eval(Station& station, vector<double>& w,
   vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
   
   double delta_F=0.0;
@@ -238,7 +238,7 @@ double EvaluationFunction::delta_eval(Station& station, vector<double>& w,
   
   F+=delta_F;
   return F;
-}
+  }*/
 
 void EvaluationFunction::undo_last_eval(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax){

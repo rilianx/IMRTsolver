@@ -10,9 +10,9 @@
 namespace imrt {
 
 
-  Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures, int initial_intensity, bool open_setup):
+  Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures, int max_intensity, int initial_intensity, bool open_setup):
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures), 
-		intensity(max_apertures){
+		intensity(max_apertures), max_intensity(max_intensity){
 
     for (int i=0; i<volumes.size(); i++)
       D[i]=&volumes[i].getDepositionMatrix(angle);
@@ -43,6 +43,17 @@ namespace imrt {
     }
     
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
+    last_diff.push_back(make_pair(-1,-1));
+  }
+
+  Station::Station(Station &s) :collimator(s.collimator), angle(s.angle) , max_apertures(s.max_apertures), max_intensity(s.max_intensity) {
+    D=s.D;
+    I=s.I;
+    intensity=s.intensity;
+    A=s.A;
+    last_mem=s.last_mem;
+    last_diff=s.last_diff;
+    
   }
 
   void Station::clearIntensity() {
@@ -276,7 +287,34 @@ namespace imrt {
   	  return(false);
   	//cout << "Not closed" << endl;
   	return(true);
-  	
+  }
+
+  vector<int> Station::getClosed(int beam) {
+    vector<int> closed;
+    for (int i =0;i<max_apertures;i++){
+      if (!isOpenBeamlet(beam,i)) closed.push_back(i);
+    }
+    return(closed);
+  }
+
+  vector<int> Station::getOpen(int beam){
+    vector<int> open;
+    for (int i =0;i<max_apertures;i++){
+      if (isOpenBeamlet(beam,i)) open.push_back(i);
+    }
+    return(open);    
+  }
+
+  bool Station::anyOpen(int beam){
+    for (int i =0;i<max_apertures;i++)
+      if (isOpenBeamlet(beam,i)) return(true);
+    return(false);    
+  }
+
+  bool Station::anyClosed(int beam){
+    for (int i =0;i<max_apertures;i++)
+      if (!isOpenBeamlet(beam,i)) return(true);
+    return(false);    
   }
   
   bool Station::isActiveBeamlet(int beam) {
@@ -367,9 +405,9 @@ namespace imrt {
 
   list <pair< int,double> > Station::modifyIntensityAperture(int aperture, double size) {
     list < pair <int, double > > diff;
-    if (intensity[aperture]+size < 0 || intensity[aperture]+size>10) {
+    if (intensity[aperture]+size < 0 || intensity[aperture]+size>max_intensity) {
       if (intensity[aperture]+size < 0  && intensity[aperture]!=0) size = intensity[aperture];
-      else if (intensity[aperture]+size>10 && intensity[aperture]!=10) size = 10-intensity[aperture];
+      else if (intensity[aperture]+size>max_intensity && intensity[aperture]!=max_intensity) size = max_intensity-intensity[aperture];
       else return (diff);
     }
     
@@ -396,6 +434,18 @@ namespace imrt {
      // cout << "THIS: " << coord.first << " " << coord.second << endl;
       I(coord.first,coord.second) = I(coord.first,coord.second) + it->second; 
     } 
+  }
+
+  bool Station::canIncreaseIntensity(int beam){
+    for (int i =0;i<max_apertures;i++)
+      if (isOpenBeamlet(beam,i) && intensity[i]<max_intensity) return(true);
+      return(false);    
+  }
+
+  bool Station::canReduceIntensity(int beam){
+    for (int i =0;i<max_apertures;i++)
+      if (isOpenBeamlet(beam,i) && intensity[i]>0) return(true);
+    return(false);    
   }
 
   list <pair<int,double> > Station::undoLast () {
