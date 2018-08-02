@@ -25,10 +25,7 @@ public:
   virtual bool acceptanceCriterion(double new_eval, double prev_eval)=0;
 
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
-	  auto sb=P.ev.best_beamlets(P, bsize, vsize);
-	  auto it=sb.begin();
-	  std::advance(it,rand()%sb.size());
-	  return make_pair(it->second.second, it->second.first);
+	  return P.getLSBeamlet(bsize, vsize);
   }
   //virtual double perturbation(Plan& P)=0;
   //virtual bool perturbate(int no_improvement)=0;
