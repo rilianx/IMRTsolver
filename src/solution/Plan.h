@@ -52,6 +52,13 @@ public:
        std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
 	  best_beamlets(int n, int nv, int mode=0);
 	
+	virtual pair<bool, pair<Station*, int>> getLSBeamlet(int bsize, int vsize){
+		  auto sb=ev.best_beamlets(*this, bsize, vsize);
+		  auto it=sb.begin();
+		  std::advance(it,rand()%sb.size());
+		  return make_pair(it->second.second, it->second);
+	}
+
 	void undoLast();
 
 private:
@@ -60,7 +67,7 @@ private:
   
   Station* last_changed;
 
-	EvaluationFunction ev;
+	EvaluationFunction& ev;
 	
 	vector<double> w;
 	vector<double> Zmin;
