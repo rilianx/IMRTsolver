@@ -26,7 +26,7 @@ public:
   static const int ACCEPT_NONE = 0;
   static const int ACCEPT_SA = 1;
   
-  ILS(int bsize, int vsize, int acceptance): bsize(bsize), vsize(vsize), acceptance(acceptance) {
+  ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance) {
   };
   
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
