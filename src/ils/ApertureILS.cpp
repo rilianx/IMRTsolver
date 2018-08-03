@@ -287,4 +287,51 @@ double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Pla
 }
 
 
+double ApertureILS::perturbation(Plan& P) {
+  list<Station*> stations = P.get_stations();
+  list<Station*>::iterator s;
+  int beamlet, aperture;
+  list<pair<int,double>> diff;
+  double aux_eval;
+  
+  cout << "  Perturbation: ";
+    
+  for (int i=0; i<10; i++) {
+    s=stations.begin();
+    std::advance(s,rand()%stations.size());
+    if (((double) rand() / (RAND_MAX)) > 0.3) {
+      //Modify intensity
+      aperture = (rand()% (*s)->getNbApertures());
+      if (((double) rand() / (RAND_MAX)) > 0.5) 
+        diff = (*s)->modifyIntensityAperture(aperture, -1);
+      else 
+        diff = (*s)->modifyIntensityAperture(aperture, 1);
+      cout << "(" << (*s)->getAngle() << ","<< aperture<<") ";
+    } else {
+      //Modify aperture
+      do { 
+        beamlet = (rand()% (*s)->getNbBeamlets());
+      } while (!(*s)->isActiveBeamlet(beamlet));
+      aperture = (rand()% (*s)->getNbApertures());
+      if ((*s)->isOpenBeamlet(beamlet, aperture)){
+        diff = (*s)->closeBeamlet(beamlet, aperture, false);
+      } else {
+        diff = (*s)->openBeamlet(beamlet, aperture);
+      }
+      
+      cout << "(" << (*s)->getAngle() << "," << aperture<< "," << beamlet << ") ";
+    }
+    (*s)->clearHistory();
+  }
+  
+  aux_eval=P.eval();
+  cout << ", new eval: "<< aux_eval<< endl;
+  return(aux_eval);
+}
+
+bool ApertureILS::perturbate(int no_improvement, int iteration) {
+  if (no_improvement >= ((double) iteration)*0.2 )  return(true);
+  return(false);
+};
+
 }

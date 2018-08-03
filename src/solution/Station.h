@@ -164,6 +164,8 @@ public:
   bool canReduceIntensity(int beam);
   
   list <pair<int,double>> undoLast ();
+  
+  void clearHistory();
 };
 }
 

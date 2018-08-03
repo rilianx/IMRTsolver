@@ -35,8 +35,14 @@ public:
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
   }
-  //virtual double perturbation(Plan& P)=0;
-  //virtual bool perturbate(int no_improvement)=0;
+  
+  virtual double perturbation(Plan& P) {
+    return(P.getEvaluation());
+  };
+  
+  virtual bool perturbate(int no_improvement, int iteration) {
+    return(false);
+  };
 
   virtual void updateTemperature() {};
 
@@ -49,7 +55,7 @@ public:
     double local_eval, aux_eval,  best_eval=current_plan.eval();
     double used_time=0;
     bool flag=true;
-    int no_improvement, iteration=1;
+    int no_improvement, iteration=1, perturbation_iteration=0;
     no_improvement = 0;
 
     local_eval=best_eval;
@@ -59,10 +65,13 @@ public:
     while (flag) {
       //cout << "ss"<< endl;
       target_beam = getLSBeamlet(current_plan);
-      if (target_beam.second.second<0)
-        cout << "ERROR: No beamlet available" << endl;
-
-      cout << "Iteration: " << iteration << ", time: "<< used_time << ", best: " << best_eval <<
+      if (target_beam.second.second < 0) {
+        cout << "NOTE: No beamlet available." << endl;
+        local_eval = perturbation(current_plan);
+        perturbation_iteration=iteration;
+      }
+      
+      cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< used_time << ", best: " << best_eval <<
               ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  <<
               ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
       aux_eval = localSearch (target_beam, current_plan);
@@ -81,9 +90,9 @@ public:
         no_improvement = 0;
       } else {
         current_plan.undoLast2();
+        //current_plan.undoLast();
         no_improvement ++;
       }
-
 
       if (acceptance==ACCEPT_SA)
          updateTemperature();
@@ -95,8 +104,11 @@ public:
       if (max_time!=0 && used_time >= max_time) flag=false;
       if (max_iterations!=0 && iteration>=max_iterations) flag=false;
 
-      //if ( perturbate(no_improvement))
-      //  local_eval = perturbation(P);
+      if ( perturbate(no_improvement, iteration - perturbation_iteration +1)) {
+        local_eval = perturbation(current_plan);
+        perturbation_iteration = iteration;
+        no_improvement=0;
+      }
     }
 
     aux_eval=best_plan.eval();

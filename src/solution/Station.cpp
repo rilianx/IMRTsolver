@@ -487,4 +487,9 @@ namespace imrt {
     
     return(undo_diff);
   }
+
+  void Station::clearHistory() {
+    last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
+    last_diff.clear();
+  }
 }

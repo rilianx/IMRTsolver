@@ -63,6 +63,8 @@ public:
 
 	//Lepi's version
 	void undoLast2();
+	
+	void printIntensity(int station);
 
 private:
 	//The list of stations

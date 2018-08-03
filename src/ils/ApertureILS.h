@@ -37,6 +37,10 @@ public:
   
   void updateTemperature();
   
+  double perturbation(Plan& P);
+  
+  bool perturbate(int no_improvement, int iteration);
+  
 private:
   bool search_intensity;
   bool search_aperture;

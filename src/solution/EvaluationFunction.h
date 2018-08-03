@@ -82,6 +82,7 @@ public:
 
 	void generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
+	static int n_evaluations;
 
 private:
 	//dose distribution vectors for each organ

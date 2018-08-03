@@ -11,6 +11,8 @@
 
 namespace imrt {
 
+int EvaluationFunction::n_evaluations=0;
+
 EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F(0.0),
 	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(150)) {
 
@@ -142,7 +144,7 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 		F+=pen/nb_voxels[o];
 	}
 
-
+	n_evaluations++;
 	return F;
 }
 
@@ -218,6 +220,7 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
   }
 
   F+=delta_F;
+  n_evaluations++;
   return F;
 
 }

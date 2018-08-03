@@ -124,5 +124,10 @@ namespace imrt {
 
     return(ev.best_beamlets(*this, n, nv));
   }
+  
+  void Plan::printIntensity(int station) {
+    list<Station*>::iterator s= stations.begin();
+    (*s)->printIntensity(false);
+  }
 
 }
