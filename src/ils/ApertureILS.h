@@ -21,15 +21,15 @@ public:
   
   bool isBeamletModifiable(int beamlet, Station* station, bool open_flag) ;
   
-  double firstImprovementIntensity(int beamlet, Station& station, bool open_beamlet, 
-                                   double c_eval, Plan &P); 
+  double improvementIntensity(int beamlet, Station& station, bool open_beamlet, 
+                                   double c_eval, Plan &P, bool best_improvement); 
   
   double doOpen(int beamlet, int aperture, Station& station, double c_eval, Plan& P);
   
   double doClose(int beamlet, int aperture, Station& station, double c_eval,  Plan& P);
   
-  double firstImprovementAperture(int beamlet, Station& station, bool open_beamlet, 
-                             double c_eval, Plan& P); 
+  double improvementAperture(int beamlet, Station& station, bool open_beamlet, 
+                             double c_eval, Plan& P, bool best_improvement); 
   
   bool acceptanceCriterion(double new_eval, double prev_eval);
   

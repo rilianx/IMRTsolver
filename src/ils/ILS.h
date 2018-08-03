@@ -85,9 +85,9 @@ public:
       
       if (acceptance==ACCEPT_SA)
          updateTemperature();
-      
       iteration++;
       
+      // Termination criterion
       time_end=clock();
       used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
       if (max_time!=0 && used_time >= max_time) flag=false;
