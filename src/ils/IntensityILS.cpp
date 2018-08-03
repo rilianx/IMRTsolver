@@ -23,7 +23,7 @@ namespace imrt {
 		double ratio= (maxratio>0.5)? rand()%int(maxratio + 0.5) : 0;
 		maxratio = maxratio*beta;
 
-		//cout << maxdelta << "," << maxratio << endl;
+		//cout <<endl<< delta_intensity << "," << ratio << endl;
 
 		auto diff=s->increaseIntensity_repair(beamlet,delta_intensity,ratio);
 		double eval=P.incremental_eval(*s,diff);
@@ -32,4 +32,3 @@ namespace imrt {
 		return eval;
 	}
 }
-

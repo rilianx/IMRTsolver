@@ -24,55 +24,59 @@ class Plan {
 public:
 	Plan(EvaluationFunction &ev);
   Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
-  
+
   Plan(const Plan &p);
-  
+
 	virtual ~Plan() {};
-	
+
 	void newCopy(Plan& p);
 
 	// Adds a new station to the plan
 	void add_station(Station& s);
 
 	double eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
-	
+
 	double eval();
-	
+
 	double incremental_eval (Station& station, list< pair< int, double > >& diff);
-	
+
 	// This function assumes that there are no changes made without evaluation
 	// performed with eval or incrementalEval
 	double getEvaluation();
-	
+
 	const list<Station*>& get_stations() const;
 
 	void write_open_beamlets();
-	
+
 	set < pair< pair<double,bool>, pair<Station*, int> >,
        std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
 	  best_beamlets(int n, int nv, int mode=0);
-	
+
 	virtual pair<bool, pair<Station*, int>> getLSBeamlet(int bsize, int vsize){
 		  auto sb=ev.best_beamlets(*this, bsize, vsize);
 		  auto it=sb.begin();
 		  std::advance(it,rand()%sb.size());
-		  return make_pair(it->second.second, it->second);
+		  return make_pair(it->first.second, it->second);
 	}
 
 	void undoLast();
 
+	//Lepi's version
+	void undoLast2();
+
 private:
 	//The list of stations
 	list<Station*> stations;
-  
+
   Station* last_changed;
+	list< pair< int, double > > last_diff;
 
 	EvaluationFunction& ev;
-	
+
 	vector<double> w;
 	vector<double> Zmin;
 	vector<double> Zmax;
-	
+
 	double evaluation_fx;
 };
 

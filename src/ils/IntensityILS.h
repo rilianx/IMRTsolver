@@ -14,7 +14,7 @@ namespace imrt {
 
 class IntensityILS  : public ILS {
 public:
-	IntensityILS(int bsize, int vsize, bool maxdelta, bool maxratio, bool alpha, bool beta) :
+	IntensityILS(int bsize, int vsize, int maxdelta, int maxratio, double alpha, double beta) :
 		ILS(bsize, vsize), maxdelta(maxdelta), maxratio(maxratio), alpha(alpha), beta(beta) { };
 	virtual ~IntensityILS() { }
 
@@ -26,10 +26,12 @@ public:
 
 	private:
 
-	bool maxdelta;
-	bool maxratio;
-	bool alpha;
-	bool beta;
+	double maxdelta;
+	double maxratio;
+	double alpha;
+	double beta;
+
+
 
 };
 

@@ -108,7 +108,7 @@ int main(int argc, char** argv){
    Station* station;
    for(int i=0;i<5;i++){
 	   station = new Station(collimator,volumes, i*70, max_apertures);
-       station->setUniformIntensity(int0);
+    station->setUniformIntensity(int0);
 	   station->printIntensity();
 	   stations[i]=station;
    }
@@ -124,66 +124,8 @@ int main(int argc, char** argv){
 	for(int i=0;i<5;i++)
 	   P.add_station(*stations[i]);
 
-	//IntensityILS ils(bsize, vsize, maxdelta, maxratio, alpha, beta);
-	//ils.search(P,maxiter);
-
-	//return 0;
-
-	double best_eval=P.eval();
-			//F.eval(P,w,Zmin,Zmax);
-	cout << "ev:" << best_eval << endl;
-
-	//P.write_open_beamlets();
-
-	//F.generate_linear_system(P,w,Zmin,Zmax);
-	//return 1;
-
-	for(int i=0;i<maxiter;i++){
-		auto sb=F.best_beamlets(P, bsize, vsize);
-
-		auto it=sb.begin();
-		std::advance(it,rand()%sb.size());
-
-		Station*s = it->second.first; int beamlet=it->second.second;
-		bool sign=it->first.second; //impact in F (+ or -)
-
-		//double delta_intensity= rand()%3+1;
-
-		double delta_intensity= (maxdelta>0.5)? rand()%int(maxdelta + 0.5) : 1;
-		maxdelta = maxdelta*alpha;
-
-		if(sign) delta_intensity*=-1;
-
-		double ratio= (maxratio>0.5)? rand()%int(maxratio + 0.5) : 0;
-		maxratio = maxratio*beta;
-
-		//cout << maxdelta << "," << maxratio << endl;
-
-		auto diff=s->increaseIntensity_repair(beamlet,delta_intensity,ratio);
-		double eval=P.incremental_eval(*s,diff);
-				//F.incremental_eval(*s,w,Zmin,Zmax, diff);
-
-		if(eval > best_eval){ //reject the move
-			s->revert(diff);
-			F.undo_last_eval(w,Zmin,Zmax);
-		}else{ //accept the move
-			cout << eval << endl;
-			best_eval=eval;
-		}
-	}
-
-	cout << endl;
-	for(int i=0;i<5;i++){
-		//stations[i]->printIntensity();
-		stations[i]->printIntensity(true);
-        //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
-    }
-	cout << endl;
-
-	cout << "best_eval:" << best_eval << endl;
-
-	best_eval=F.eval(P,w,Zmin,Zmax);
-		cout << "ev:" << best_eval << endl;
+	IntensityILS ils(bsize, vsize, maxdelta, maxratio, alpha, beta);
+	ils.search(P,1000,maxiter);
 
   F.generate_voxel_dose_functions ();
   system("python plotter/plot.py");
