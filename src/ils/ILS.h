@@ -1,5 +1,5 @@
 /*
- * ils.h
+ *  ILS.h
  *
  *  Created on: 1 ago. 2018
  *      Author: leslie
@@ -10,6 +10,9 @@
 
 #include "Plan.h"
 
+#define ACCEPT_NONE 0
+#define ACCEPT_SA 1
+
 namespace imrt {
 
 class ILS {
@@ -19,12 +22,17 @@ private:
 public:
   int bsize;
   int vsize;
-  ILS(int bsize, int vsize): bsize(bsize), vsize(vsize) {};
+  int acceptance;
+  
+  ILS(int bsize, int vsize, int acceptance): bsize(bsize), vsize(vsize), acceptance(acceptance) {};
   
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
   virtual bool acceptanceCriterion(double new_eval, double prev_eval)=0;
 
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P) =0;
+  
+  virtual void updateTemperature();
+  
   //virtual double perturbation(Plan& P)=0;
   //virtual bool perturbate(int no_improvement)=0;
   
@@ -36,13 +44,15 @@ public:
     double local_eval, aux_eval,  best_eval=current_plan.eval();
     int no_improvement;
     no_improvement = 0;
+    
+    local_eval=best_eval;
     for (int s=0;s<max_iterations;s++) {
       //cout << "ss"<< endl;
       target_beam = getLSBeamlet(current_plan);
       if (target_beam.second.second<0) 
         cout << "ERROR: No beamlet available" << endl;
       
-      cout << "Iteration: " << (s+1) << ", best: " << best_eval << ", beamlet: " << target_beam.second.second  << 
+      cout << "Iteration: " << (s+1) << ", best: " << best_eval << ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  << 
               ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
       aux_eval = localSearch (target_beam, current_plan);
       cout << endl;
@@ -62,6 +72,10 @@ public:
         current_plan.undoLast();
         no_improvement ++;
       }
+      
+      if (acceptance==1)
+         updateTemperature();
+      
       //if ( perturbate(no_improvement))
       //  local_eval = perturbation(P);
     }

@@ -260,7 +260,6 @@ int main(int argc, char** argv){
   double maxratio=3.0;
   bool search_aperture=false;
   bool search_intensity=false;
-  
  
   int initial_intensity=1;
   int max_intensity=20;
@@ -269,6 +268,7 @@ int main(int argc, char** argv){
   double prob_intensity=0.2;
   double temperature, initial_temperature=10;
   double min_temperature=0;
+  double alphaT=0.95;
 
   int seed=time(NULL);
   
@@ -292,14 +292,18 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _beta(parser, "double", "Initial temperature for ratio  ("+to_string(beta)+")", {"beta"});
   args::ValueFlag<int> _maxiter(parser, "int", "Number of iterations ("+to_string(maxiter)+")", {"maxiter"});
   args::ValueFlag<int> _seed(parser, "int", "Seed  ("+to_string(seed)+")", {"seed"});
-  args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial_intensity"});
-  args::Flag open_setup(parser, "open_setup", "Initialize apertures as open", {"open_setup"});
+  
+  
+  
+  
   args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
-  //args::Group ls_type (parser, "Local search type:", args::Group::Validators::Xor);
+  args::Flag open_setup(parser, "open_setup", "Initialize apertures as open", {"open_setup"});
+  args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial_intensity"});
   args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls_apertures"});
   args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls_intensity"});
   args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob_intensity"});
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
+  args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
 	//args::Positional<std::string> _file(parser, "instance", "Instance");
 
@@ -339,6 +343,7 @@ int main(int argc, char** argv){
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
   if(_prob_intensity) prob_intensity=_prob_intensity.Get();
   if(_temperature) temperature=initial_temperature=_temperature.Get();
+  if(_alphaT) alphaT=_alphaT.Get();
   if (ls_aperture) search_aperture=true;
   if (ls_intensity) search_intensity=true;
   if(!ls_aperture && !ls_intensity){ 
@@ -384,6 +389,7 @@ int main(int argc, char** argv){
   cout << "Iterations: " << maxiter << endl;
   cout << "Seed: " << seed << endl;
   cout << "Temperature: " << temperature << endl;
+  cout << "alpha: " << alpha << endl;
   if (search_aperture)
     cout << "Searching: aperture pattern" << endl;
   if (search_intensity)
@@ -416,7 +422,7 @@ int main(int argc, char** argv){
 	
 	cout << "Initial solution: " << best_eval << endl;
 	
-	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity, initial_temperature, 1);
+	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity, initial_temperature, alphaT, 1);
 	ils.search(P, maxiter);
 	
 	/*

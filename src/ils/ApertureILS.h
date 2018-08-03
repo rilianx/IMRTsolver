@@ -1,5 +1,5 @@
 /*
- * ApertureILS.cpp
+ * ApertureILS.h
  *
  *  Created on: 1 ago. 2018
  *      Author: leslie
@@ -15,7 +15,7 @@ namespace imrt {
 class ApertureILS : public ILS {
 public:
   
-  ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, double initial_temperature, int acceptance);
+  ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, double initial_temperature, double alpha, int acceptance);
   
   pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
   
@@ -35,6 +35,7 @@ public:
   
   double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
   
+  void updateTemperature();
   
 private:
   bool search_intensity;
@@ -44,8 +45,8 @@ private:
   double temperature;
   double initial_temperature;
   double max_temperature;
+  double alpha;
   
-  int acceptance;
 };
 
 }
