@@ -8,51 +8,60 @@
 #ifndef ILS_H_
 #define ILS_H_
 
+#include <ctime>
 #include "Plan.h"
-
-#define ACCEPT_NONE 0
-#define ACCEPT_SA 1
 
 namespace imrt {
 
 class ILS {
 private:
   double max_no_improvement=100;
+  std::clock_t time_begin;
 
 public:
   int bsize;
   int vsize;
   int acceptance;
   
-  ILS(int bsize, int vsize, int acceptance): bsize(bsize), vsize(vsize), acceptance(acceptance) {};
+  static const int ACCEPT_NONE = 0;
+  static const int ACCEPT_SA = 1;
+  
+  ILS(int bsize, int vsize, int acceptance): bsize(bsize), vsize(vsize), acceptance(acceptance) {
+  };
   
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
   virtual bool acceptanceCriterion(double new_eval, double prev_eval)=0;
 
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P) =0;
   
-  virtual void updateTemperature();
+  virtual void updateTemperature() {};
   
   //virtual double perturbation(Plan& P)=0;
   //virtual bool perturbate(int no_improvement)=0;
   
-  double search(Plan& current_plan, int max_iterations) {
+  double search(Plan& current_plan, int max_time, int max_iterations) {
     
     cout << "Staring ILS search." << endl;
+    std::clock_t time_end;
     Plan best_plan (current_plan);
     pair<bool, pair<Station*, int>> target_beam;
     double local_eval, aux_eval,  best_eval=current_plan.eval();
-    int no_improvement;
+    double used_time=0;
+    bool flag=true;
+    int no_improvement, iteration=1;
     no_improvement = 0;
     
     local_eval=best_eval;
-    for (int s=0;s<max_iterations;s++) {
+    //Start time
+    time_begin=clock();
+    
+    while (flag) {
       //cout << "ss"<< endl;
       target_beam = getLSBeamlet(current_plan);
       if (target_beam.second.second<0) 
         cout << "ERROR: No beamlet available" << endl;
       
-      cout << "Iteration: " << (s+1) << ", best: " << best_eval << ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  << 
+      cout << "Iteration: " << iteration << ", time: "<< used_time << ", best: " << best_eval << ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  << 
               ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
       aux_eval = localSearch (target_beam, current_plan);
       cout << endl;
@@ -73,8 +82,15 @@ public:
         no_improvement ++;
       }
       
-      if (acceptance==1)
+      if (acceptance==ACCEPT_SA)
          updateTemperature();
+      
+      iteration++;
+      
+      time_end=clock();
+      used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
+      if (max_time!=0 && used_time >= max_time) flag=false;
+      if (max_iterations!=0 && iteration>=max_iterations) flag=false;
       
       //if ( perturbate(no_improvement))
       //  local_eval = perturbation(P);

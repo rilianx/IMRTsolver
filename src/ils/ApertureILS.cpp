@@ -241,7 +241,6 @@ bool ApertureILS::acceptanceCriterion(double new_eval, double prev_eval) {
 }
 
 void ApertureILS::updateTemperature(){
-  cout << "UPDATE";
   temperature=alpha*temperature;
 }
 

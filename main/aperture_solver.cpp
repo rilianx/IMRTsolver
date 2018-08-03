@@ -253,6 +253,7 @@ int main(int argc, char** argv){
   int bsize=20;
   double int0=4.0;
   int maxiter=5000;
+  int maxtime=0;
   int max_apertures=5;
   double alpha=1.0;
   double beta=1.0;
@@ -263,6 +264,7 @@ int main(int argc, char** argv){
  
   int initial_intensity=1;
   int max_intensity=20;
+  bool acceptance=ILS::ACCEPT_NONE;
   
   // ls params
   double prob_intensity=0.2;
@@ -291,10 +293,8 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _alpha(parser, "double", "Initial temperature for intensities  ("+to_string(alpha)+")", {"alpha"});
   args::ValueFlag<double> _beta(parser, "double", "Initial temperature for ratio  ("+to_string(beta)+")", {"beta"});
   args::ValueFlag<int> _maxiter(parser, "int", "Number of iterations ("+to_string(maxiter)+")", {"maxiter"});
+  args::ValueFlag<int> _maxtime(parser, "int", "Maximum time in seconds ("+to_string(maxtime)+")", {"maxtime"});
   args::ValueFlag<int> _seed(parser, "int", "Seed  ("+to_string(seed)+")", {"seed"});
-  
-  
-  
   
   args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
   args::Flag open_setup(parser, "open_setup", "Initialize apertures as open", {"open_setup"});
@@ -302,6 +302,11 @@ int main(int argc, char** argv){
   args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls_apertures"});
   args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls_intensity"});
   args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob_intensity"});
+  
+  args::Group accept (parser, "Direct aperture local search:", args::Group::Validators::AtMostOne);
+  args::Flag accept_best(accept, "accept-best", "Accept only improvement", {"accept-best"});
+  args::Flag accept_sa(accept, "accept-sa", "Accept as simulated annealing", {"accept-sa"});
+  
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
   args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
@@ -338,6 +343,7 @@ int main(int argc, char** argv){
   if(_beta) beta=_beta.Get();
   if(_int0) int0=_int0.Get();
   if(_maxiter) maxiter=_maxiter.Get();
+  if(_maxtime) maxtime=_maxtime.Get();
   if(_max_apertures) max_apertures=_max_apertures.Get();
   if(_seed) seed=_seed.Get();
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
@@ -350,6 +356,9 @@ int main(int argc, char** argv){
     search_aperture=true;
     search_intensity=true;
   }
+  if (accept_sa) acceptance=ILS::ACCEPT_SA;
+  if (accept_best) acceptance=ILS::ACCEPT_NONE;
+    
 	vector< pair<int, string> > coord_files(5);
 	coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
 	coord_files[1]=(make_pair(70,"data/CERR_Prostate/CoordinatesBeam_70.txt"));
@@ -387,6 +396,7 @@ int main(int argc, char** argv){
   cout << "************************************************"<< endl;
   cout << "******** IMRT-Solver (Aperture solver) *********"<< endl;
   cout << "Iterations: " << maxiter << endl;
+  cout << "Time: " << maxtime << endl;
   cout << "Seed: " << seed << endl;
   cout << "Temperature: " << temperature << endl;
   cout << "alpha: " << alpha << endl;
@@ -422,8 +432,8 @@ int main(int argc, char** argv){
 	
 	cout << "Initial solution: " << best_eval << endl;
 	
-	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity, initial_temperature, alphaT, 1);
-	ils.search(P, maxiter);
+	ApertureILS ils(bsize, vsize, search_intensity, search_aperture, prob_intensity, initial_temperature, alphaT, acceptance);
+	ils.search(P, maxtime, maxiter);
 	
 	/*
 	//From here 
