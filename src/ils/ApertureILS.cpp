@@ -10,8 +10,14 @@
 namespace imrt {
 
 
-ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, int step_intensity , double initial_temperature,  double alpha, int acceptance=0): 
-ILS(bsize, vsize, acceptance), search_intensity(search_intensity), search_aperture(search_aperture), prob_intensity(prob_intensity), step_intensity(step_intensity) , initial_temperature(initial_temperature), alpha(alpha){
+ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, 
+                         double prob_intensity, int step_intensity , double initial_temperature,  
+                         double alpha, int perturbation_size, int acceptance=0): 
+                         ILS(bsize, vsize, acceptance), search_intensity(search_intensity), 
+                         search_aperture(search_aperture), prob_intensity(prob_intensity), 
+                         step_intensity(step_intensity) , initial_temperature(initial_temperature), 
+                         alpha(alpha), perturbation_size(perturbation_size){
+//  cout << "per:" << perturbation_size << endl;
   temperature=initial_temperature;
 }
 
@@ -124,7 +130,7 @@ double ApertureILS::improvementIntensity(int beamlet, Station& station, bool ope
     }
     
     // First improvement
-    if (local_best < 0 || local_best > aux_eval){
+    if (local_best < 0 || (local_best- aux_eval)>0.00001){
       local_best=aux_eval;
       local_a=a;
       i=0; // to support best improvement
@@ -197,7 +203,7 @@ double ApertureILS::improvementAperture(int beamlet, Station& station, bool open
     } 
     
     // First improvement
-    if (local_best < 0 || local_best > aux_eval){
+    if (local_best < 0 || (local_best-aux_eval) >0.00001){
       local_best = aux_eval;
       local_a =a ;
       i=0; // to support best improvement
@@ -208,11 +214,10 @@ double ApertureILS::improvementAperture(int beamlet, Station& station, bool open
     diff = station.undoLast();
     if (diff.size()>0)
       aux_eval = P.incremental_eval(station, diff);
-    
     i++;
     a++;
     if (a==a_list.size()) a=0;
-    if (i==a_list.size()) flag=false;
+    if (i>=a_list.size()) flag=false;
   }
   
   // If no improvement was found, return the best solution found.
@@ -289,23 +294,24 @@ double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Pla
 
 double ApertureILS::perturbation(Plan& P) {
   list<Station*> stations = P.get_stations();
-  list<Station*>::iterator s;
   int beamlet, aperture;
   list<pair<int,double>> diff;
-  double aux_eval;
+  double aux_eval=P.getEvaluation();
   
-  cout << "  Perturbation: ";
+  cout << "##  Perturbation: " ;
     
-  for (int i=0; i<2; i++) {
-    s=stations.begin();
+  for (int i=0; i<perturbation_size; i++) {
+    list<Station*>::iterator s=stations.begin();
     std::advance(s,rand()%stations.size());
     if (((double) rand() / (RAND_MAX)) > 0.3) {
       //Modify intensity
       aperture = (rand()% (*s)->getNbApertures());
-      if (((double) rand() / (RAND_MAX)) > 0.5) 
+      if (((double) rand() / (RAND_MAX)) > 0.5){ 
         diff = (*s)->modifyIntensityAperture(aperture, -step_intensity);
-      else 
+      }else{ 
         diff = (*s)->modifyIntensityAperture(aperture, step_intensity);
+      }
+      aux_eval = P.incremental_eval(*(*s), diff);
       cout << "(" << (*s)->getAngle() << ","<< aperture<<") ";
     } else {
       //Modify aperture
@@ -314,24 +320,27 @@ double ApertureILS::perturbation(Plan& P) {
       } while (!(*s)->isActiveBeamlet(beamlet));
       aperture = (rand()% (*s)->getNbApertures());
       if ((*s)->isOpenBeamlet(beamlet, aperture)){
-        diff = (*s)->closeBeamlet(beamlet, aperture, false);
+        if (((double) rand() / (RAND_MAX)) > 0.5) 
+          diff = (*s)->closeBeamlet(beamlet, aperture, false);
+        else
+          diff = (*s)->closeBeamlet(beamlet, aperture, true);
       } else {
         diff = (*s)->openBeamlet(beamlet, aperture);
       }
-      
+      aux_eval = P.incremental_eval(*(*s), diff);
       cout << "(" << (*s)->getAngle() << "," << aperture<< "," << beamlet << ") ";
     }
     (*s)->clearHistory();
   }
   
-  aux_eval=P.eval();
+  //aux_eval = P.eval();
   cout << ", new eval: "<< aux_eval<< endl;
   return(aux_eval);
 }
 
 bool ApertureILS::perturbate(int no_improvement, int iteration) {
-  //if (no_improvement >= ((double) iteration)*0.2 )  return(true);
-  if (no_improvement==100) return(true);
+  if (no_improvement >= ((double) iteration)*0.3 )  return(true);
+  //if (no_improvement==100) return(true);
   return(false);
 };
 

@@ -196,7 +196,8 @@ namespace imrt {
   }
 
   const Matrix& Station::getDepositionMatrix(int o) const{
-    return *(D.find(o)->second);
+    const Matrix* aux=D.find(o)->second;
+    return (*aux);
   }
 
   void Station::change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff ) {

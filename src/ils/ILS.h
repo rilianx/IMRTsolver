@@ -104,15 +104,14 @@ public:
       if (max_time!=0 && used_time >= max_time) flag=false;
       if (max_iterations!=0 && iteration>=max_iterations) flag=false;
 
-      if ( perturbate(no_improvement, iteration - perturbation_iteration +1)) {
+      if ( perturbate(no_improvement, iteration )) {
         local_eval = perturbation(current_plan);
         perturbation_iteration = iteration;
-        no_improvement=0;
+        no_improvement=no_improvement/2;
       }
     }
-
+    current_plan.newCopy(best_plan);
     aux_eval=best_plan.eval();
-    cout << "comparison:" << aux_eval << " vs "<< best_eval<<endl;
     return(best_eval);
   };
 

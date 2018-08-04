@@ -16,7 +16,7 @@ class ApertureILS : public ILS {
 public:
   
   ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, 
-              int step_intensity, double initial_temperature, double alpha, int acceptance);
+              int step_intensity, double initial_temperature, double alpha, int perturbation_size, int acceptance);
   
   pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
   
@@ -52,7 +52,7 @@ private:
   double initial_temperature;
   double max_temperature;
   double alpha;
-  
+  int perturbation_size;  
 };
 
 }

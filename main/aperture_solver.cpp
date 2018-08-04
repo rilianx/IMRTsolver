@@ -20,235 +20,6 @@
 using namespace std;
 using namespace imrt;
 
-/*
-double doClose(int beam, int a, Station& station, double c_eval, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F, Plan& P) {
-  double aux_eval, t_eval, f_eval;
-  list<pair<int, double> > aux_diff;
-
-  aux_diff = station.closeBeamlet(beam, a, true);
-  if (aux_diff.size()>=1) {
-    c_eval = t_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-    cout << "  Closing left eval: " << c_eval << " list: ";
-    for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-    cout << endl;
-    aux_diff = station.undoLast();
-    aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-  }
-
-  aux_diff = station.closeBeamlet(beam, a, false);
-  if (aux_diff.size()>=1) {
-    f_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-    cout << "  Closing right eval: " << f_eval << " list: ";
-    for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-    //cout << endl;
-
-    if ( f_eval > t_eval ) {
-      aux_diff = station.undoLast();
-      aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-      aux_diff = station.closeBeamlet(beam, a, true);
-      c_eval   = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-    }else{
-      c_eval=f_eval;
-    }
-  }
-  return(c_eval);
-}
-
-double doOpen(int beam, int a, Station& station, double c_eval, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F, Plan& P) {
-  double aux_eval=0;
-  list<pair<int, double> > aux_diff;
-
-  aux_diff = station.openBeamlet(beam, a);
-  if(aux_diff.size() <1) return(c_eval);
-
-  aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-
-  cout << "  Opening eval: " << aux_eval << " size: " << aux_diff.size() << " list: ";
-  for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-  //cout << endl;
-
-  return(aux_eval);
-}
-
-double searchFirstAperture(int beam, Station& station, double c_eval, vector<double>& w,
-                           vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F,
-                           bool open_beamlet, Plan & P, double temperature) {
-  double current=c_eval, aux_eval=0, local_best=-1;
-  list<pair<int, double> > aux_diff;
-  int a, last_a, local_a;
-  bool flag=true;
-  vector<int> a_list;
-
-  if (!open_beamlet) a_list = station.getOpen(beam);
-  else a_list = station.getClosed(beam);
-
-  if (a_list.size()<1) {
-    //tabu_list.push_back(make_pair(beam, make_pair(&station, open_beamlet)));
-    return(c_eval);
-  }
-
-  a = last_a = (int)rand() % a_list.size();
-
-  // Check every aperture
-  while(flag) {
-    if (!open_beamlet) {
-      aux_eval = doClose(beam, a_list[a], station, c_eval, w, Zmin, Zmax, F, P);
-    } else {
-      aux_eval = doOpen(beam, a_list[a], station, c_eval, w, Zmin, Zmax, F, P);
-    }
-
-    if (local_best<0 || aux_eval < local_best){
-      local_best = aux_eval;
-      local_a = a;
-    }
-
-    if (current > aux_eval) {
-      current = aux_eval;
-      last_a=a;
-      return(current);
-    } else {
-      aux_diff = station.undoLast();
-      if (aux_diff.size()>0)
-        aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-    }
-
-    if (a==(a_list.size()-1))  a=0;
-    else  a+=1;
-    if (last_a==a) flag=false;
-  }
-
-  // SA acceptance criterion
-  double p = exp((double)-(local_best-c_eval)/temperature);
-  double r = ((double)rand() / (RAND_MAX));
-  cout << ", eval: " << p << " " << r ;
-  if (abs(current-c_eval)<0.001 & abs(local_best-c_eval)>0.001 &  p > r) {
-    cout << ", accept worst ";
-    if (!open_beamlet) {
-      current = doClose(beam, a_list[local_a], station, c_eval, w, Zmin, Zmax, F, P);
-    } else {
-      current = doOpen(beam, a_list[local_a], station, c_eval, w, Zmin, Zmax, F, P);
-    }
-  }
-
-  //if (abs(current-c_eval)<0.001)
-    //tabu_list.push_back(make_pair(make_pair(beam,&station), make_pair(a_list[local_a], open_beamlet)));
-
-  return(current);
-}
-
-double searchFirstIntensity(int beam, Station& station, double c_eval, vector<double>& w,
-                            vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F,
-                            bool open_beamlet, Plan & P, double temperature) {
-  double current = c_eval, aux_eval=0, local_best=-1;
-  list<pair<int, double> > aux_diff;
-  int a= (int) rand()% station.getNbApertures();
-  int last_a=a, local_a;
-  bool flag=true;
-
-  // Check every aperture
-  while(flag) {
-    // Left op
-    if (open_beamlet) {
-      aux_diff = station.modifyIntensityAperture(a, 1);
-      aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-
-      //cout << endl<<"  Increasing intensity aperture: " << a <<" eval: " << aux_eval << " list: ";
-      //for (list<pair<int,double> >::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-      //cout << endl;
-    } else {
-      aux_diff = station.modifyIntensityAperture(a, -1);
-      aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-
-      //cout << endl<< "  Reducing intensity aperture: " << a <<" eval: " << aux_eval <<  " list: ";
-      //for (list<pair<int,double> >::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-      //cout << endl;
-    }
-
-    if (local_best<0 || local_best> aux_eval){
-      local_best=aux_eval;
-      local_a=a;
-    }
-
-    if (current > aux_eval) {
-      current =aux_eval;
-      last_a = a;
-      return(current);
-    } else {
-      aux_diff = station.undoLast();
-      aux_eval = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-      if (last_a==a)  flag=false;
-    }
-
-    if (a==(station.getNbApertures()-1)) a=0;
-    else a+=1;
-  }
-
-  double p = exp((double)-(local_best-c_eval)/temperature);
-  double r = ((double)rand() / (RAND_MAX));
-  cout << ", p " << p << ", r: " << r;
-  if (abs(current-c_eval) < 0.001 && abs(local_best-c_eval)>0.001 && p > r)  {
-    cout << ", accept worst ";
-    if (!open_beamlet) {
-      aux_diff = station.modifyIntensityAperture(local_a, 1);
-      current = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-    } else{
-      aux_diff = station.modifyIntensityAperture(local_a, -1);
-      current = F.incremental_eval(station, w, Zmin, Zmax, aux_diff);
-    }
-  }
-
-  //if (abs(current-c_eval)<0.001)
-  //  tabu_list.push_back(make_pair(make_pair(beam,&station),open_beamlet));
-
-  return(current);
-}
-
-double coolDownTemperature(double t, double alpha, int iteration) {
-  double new_t;
-  //exponential
-  //new_t=t*pow(alpha,iteration);
-  //logarithmic
-  new_t=t/(1+log(iteration+1));
-  return(new_t);
-
-}
-
-bool isModifiable(int beamlet, Station* station, bool open_flag, bool intensity_flag, bool aperture_flag){
-  if (!open_flag) {
-    if (station->anyOpen(beamlet) && aperture_flag)
-      return(true);
-    if (station->canReduceIntensity(beamlet) && intensity_flag)
-      return(true);
-  } else {
-    if (station->anyClosed(beamlet) && aperture_flag)
-      return(true);
-    if (station->canIncreaseIntensity(beamlet) && intensity_flag)
-      return(true);
-  }
-  return(false);
-}
-
-pair <int, pair<Station*, bool> > getLSBeamlet(Plan& P, EvaluationFunction& F, int bsize, int vsize, bool check_intensity, bool check_aperture) {
-  auto sb = F.best_beamlets(P, bsize, vsize);
-  auto it = sb.begin();
-  std::advance(it,rand()%sb.size());
-  Station * s = it->second.first;
-  int beamlet = it->second.second;
-  bool sign = it->first.second;
-  int i=0;
-  while (!isModifiable(beamlet, s, !sign, check_intensity, check_aperture)) {
-    //cout << "Rejecting " << beamlet << endl;
-    if (i==sb.size()) return(make_pair(-1, make_pair(s,false)));
-    if (it==sb.end()) it = sb.begin();
-    else it++;
-    i++;
-  }
-  s = it->second.first;
-  beamlet = it->second.second;
-  sign = it->first.second;
-  return(make_pair(beamlet, make_pair(s,sign)));
-}*/
-
 
 vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
   ifstream organ_file(organ_filename.c_str(), ios::in);
@@ -303,6 +74,7 @@ int main(int argc, char** argv){
   double temperature, initial_temperature=10;
   double min_temperature=0;
   double alphaT=0.95;
+  int perturbation=2;
 
   int seed=time(NULL);
 
@@ -346,6 +118,7 @@ int main(int argc, char** argv){
 
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
   args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
+  args::ValueFlag<int> _perturbation(parser, "int", "Perturbation size  ("+to_string(perturbation)+")", {"perturbation-size"});
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
 	//args::Positional<std::string> _file(parser, "instance", "Instance");
 
@@ -398,7 +171,8 @@ int main(int argc, char** argv){
   }
   if (accept_sa) acceptance=ILS::ACCEPT_SA;
   if (accept_best) acceptance=ILS::ACCEPT_NONE;
-  
+  if (_perturbation) perturbation=_perturbation.Get();
+
   cout << "##**************************************************************************"<< endl;
   cout << "##**************************************************************************"<< endl;
   if(strategy=="dao_ls")
@@ -447,7 +221,7 @@ int main(int argc, char** argv){
   cout << "##   Initial intensity: " << initial_intensity << endl;
   cout << "##   Max intensity: " << max_intensity << endl;
   cout << "##   Step intensity: " << step_intensity << endl;
-
+  cout << "##   Perturbation size: " << perturbation << endl;
   cout << "##" << endl << "## Colimator configuration: "<< endl;
   cout << "##   Stations: " << collimator.getNbAngles() << endl;
   cout << "##   Angles: ";
@@ -467,16 +241,21 @@ int main(int argc, char** argv){
 
 
  
-	cout << "## Initial solution: " << best_eval << endl;
+  cout << "## Initial solution: " << best_eval << endl;
   cout  << "##" << endl;
   ILS* ils;
-  if(strategy=="dao_ls")
-	     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, prob_intensity, step_intensity, initial_temperature, alphaT, acceptance);
+  if(strategy=="dao_ls")    
+    ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, prob_intensity, step_intensity, initial_temperature, alphaT, perturbation, acceptance);
   else if(strategy=="ibo_ls")
-      ils = new IntensityILS(bsize, vsize, maxdelta, maxratio, alpha, beta);
+    ils = new IntensityILS(bsize, vsize, maxdelta, maxratio, alpha, beta);
 
   ils->search(P, maxtime, maxiter);
-  
+
+  cout << "##**************************************************************************"<< endl;
+  cout << "##******************************* RESULTS **********************************"<< endl;
+  cout << "##**************************************************************************"<< endl;
+  cout << "##"<<endl;
+  cout << "## Best solution found: " <<  P.getEvaluation() << endl; 
 /*
 	//cout << endl;
 	//for(int i=0;i<5;i++){
