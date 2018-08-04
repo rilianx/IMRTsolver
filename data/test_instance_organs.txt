@@ -1,0 +1,3 @@
+data/CERR_Prostate/DAO_DDM_BLADDER.dat
+data/CERR_Prostate/DAO_DDM_RECTUM.dat
+data/CERR_Prostate/DAO_DDM_PTVHD.dat

@@ -10,7 +10,8 @@
 namespace imrt {
 
 
-  Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures, int max_intensity, int initial_intensity, bool open_setup):
+  Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures, 
+                   int max_intensity, int initial_intensity, bool open_setup):
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures), 
 		intensity(max_apertures), max_intensity(max_intensity){
 
@@ -45,7 +46,7 @@ namespace imrt {
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
   }
 
-  Station::Station(const Station &s) :collimator(s.collimator) {
+  Station::Station(const Station &s): collimator(s.collimator){
     angle=s.angle;
     max_apertures=s.max_apertures;
     max_intensity=s.max_intensity;
@@ -60,7 +61,7 @@ namespace imrt {
     int2nb=s.int2nb;
   }
 
-  /*Station& Station::operator=(const Station & s) {
+  Station& Station::operator=(const Station & s) {
     collimator=s.collimator;
     angle=s.angle;
     max_apertures=s.max_apertures;
@@ -76,7 +77,7 @@ namespace imrt {
     int2nb=s.int2nb;
     
     return(*this);
-  }*/
+  }
 
   void Station::clearIntensity() {
     pair<int,int> aux;

@@ -1,0 +1,5 @@
+0;data/CERR_Prostate/CoordinatesBeam_0.txt
+70;data/CERR_Prostate/CoordinatesBeam_70.txt
+140;data/CERR_Prostate/CoordinatesBeam_140.txt
+210;data/CERR_Prostate/CoordinatesBeam_210.txt
+280;data/CERR_Prostate/CoordinatesBeam_280.txt

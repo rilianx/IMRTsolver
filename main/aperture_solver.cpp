@@ -20,6 +20,7 @@
 using namespace std;
 using namespace imrt;
 
+/*
 double doClose(int beam, int a, Station& station, double c_eval, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, EvaluationFunction& F, Plan& P) {
   double aux_eval, t_eval, f_eval;
   list<pair<int, double> > aux_diff;
@@ -246,7 +247,35 @@ pair <int, pair<Station*, bool> > getLSBeamlet(Plan& P, EvaluationFunction& F, i
   beamlet = it->second.second;
   sign = it->first.second;
   return(make_pair(beamlet, make_pair(s,sign)));
+}*/
+
+
+vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
+  ifstream organ_file(organ_filename.c_str(), ios::in);
+  vector<string> organ_files;
+  vector<Volume> volumes;
+  string line;
+  
+  if (! organ_file) 
+    cerr << "ERROR: unable to open instance file: " << organ_filename << ", stopping! \n";
+  
+  cout << "##Reading volume files." << endl;
+  while (organ_file) {
+    getline(organ_file, line);
+    if (line.empty()) continue;
+    cout << "##  " << line << endl;
+    //Assuming one data point
+    organ_files.push_back(line);
+  }
+  organ_file.close();
+  cout << "##  Read " << organ_files.size() << " files"<< endl;
+  
+  for (int i=0; i<organ_files.size(); i++) 
+    volumes.push_back(Volume(collimator, organ_files[i]));
+  
+  return(volumes);
 }
+
 
 int main(int argc, char** argv){
 
@@ -264,8 +293,9 @@ int main(int argc, char** argv){
   bool search_intensity=false;
   string strategy="dao_ls";
 
-  int initial_intensity=1;
-  int max_intensity=20;
+  int initial_intensity=2;
+  int max_intensity=28;
+  int step_intensity=2;
   bool acceptance=ILS::ACCEPT_NONE;
 
   // ls params
@@ -283,7 +313,7 @@ int main(int argc, char** argv){
   int tabusize=10;
 
 
-	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max_ap=4 --seed=0 --int0=1 --open_setup");
+	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max_ap=4 --seed=0 --int0=1 --open-setup");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
   args::ValueFlag<string> _strategy(parser, "string", "Strategy  (dao_ls|ibo_ls)", {'s', "strategy"});
@@ -300,13 +330,17 @@ int main(int argc, char** argv){
   args::ValueFlag<int> _seed(parser, "int", "Seed  ("+to_string(seed)+")", {"seed"});
 
   args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
-  args::Flag open_setup(parser, "open_setup", "Initialize apertures as open", {"open_setup"});
-  args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial_intensity"});
-  args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls_apertures"});
-  args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls_intensity"});
-  args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob_intensity"});
+  args::Flag open_setup(parser, "open_setup", "Initialize apertures as open", {"open-setup"});
+  
+  args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial-intensity"});
+  args::ValueFlag<int> _max_intensity(parser, "int", "Max value aperture intensity  ("+to_string(max_intensity)+")", {"max-intensity"});
+  args::ValueFlag<int> _step_intensity(parser, "int", "Step size for aperture intensity  ("+to_string(step_intensity)+")", {"step-intensity"});
+  
+  args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls-aperture"});
+  args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls-intensity"});
+  args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob-intensity"});
 
-  args::Group accept (parser, "Direct aperture local search:", args::Group::Validators::AtMostOne);
+  args::Group accept (parser, "Acceptance criterion:", args::Group::Validators::AtMostOne);
   args::Flag accept_best(accept, "accept-best", "Accept only improvement", {"accept-best"});
   args::Flag accept_sa(accept, "accept-sa", "Accept as simulated annealing", {"accept-sa"});
 
@@ -351,6 +385,8 @@ int main(int argc, char** argv){
   if(_max_apertures) max_apertures=_max_apertures.Get();
   if(_seed) seed=_seed.Get();
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
+  if(_max_intensity) max_intensity=_max_intensity.Get();
+  if(_step_intensity) step_intensity=_step_intensity.Get();
   if(_prob_intensity) prob_intensity=_prob_intensity.Get();
   if(_temperature) temperature=initial_temperature=_temperature.Get();
   if(_alphaT) alphaT=_alphaT.Get();
@@ -362,147 +398,86 @@ int main(int argc, char** argv){
   }
   if (accept_sa) acceptance=ILS::ACCEPT_SA;
   if (accept_best) acceptance=ILS::ACCEPT_NONE;
-
-	vector< pair<int, string> > coord_files(5);
-	coord_files[0]=(make_pair(0,"data/CERR_Prostate/CoordinatesBeam_0.txt"));
-	coord_files[1]=(make_pair(70,"data/CERR_Prostate/CoordinatesBeam_70.txt"));
-	coord_files[2]=(make_pair(140,"data/CERR_Prostate/CoordinatesBeam_140.txt"));
-	coord_files[3]=(make_pair(210,"data/CERR_Prostate/CoordinatesBeam_210.txt"));
-	coord_files[4]=(make_pair(280,"data/CERR_Prostate/CoordinatesBeam_280.txt"));
-
-	vector<string> organ_files;
-	organ_files.push_back("data/CERR_Prostate/DAO_DDM_BLADDER.dat");
-	organ_files.push_back("data/CERR_Prostate/DAO_DDM_RECTUM.dat");
-	organ_files.push_back("data/CERR_Prostate/DAO_DDM_PTVHD.dat");
-
-  Collimator collimator(coord_files);
-  //	collimator.printAxisValues();
-  //	collimator.printActiveBeam();
-	vector<Volume> volumes;
-  for (int i=0; i<organ_files.size(); i++) {
-	  volumes.push_back(Volume(collimator, organ_files[i]));
-	}
-  //volumes[0].print_deposition();
-
-  vector<Station*> stations(5);
+  
+  cout << "##**************************************************************************"<< endl;
+  cout << "##**************************************************************************"<< endl;
+  if(strategy=="dao_ls")
+    cout << "##******** IMRT-Solver (Direct Aperture Optimization Local Search) *********"<< endl;
+  else if(strategy=="ibo_ls")
+    cout << "##******** IMRT-Solver (Intensity-based Optimization Local Search) *********"<< endl;
+  cout << "##**************************************************************************"<< endl;
+  cout << "##**************************************************************************"<< endl;
+  
+  vector<double> w={1,1,1};
+  vector<double> Zmin={0,0,76};
+  vector<double> Zmax={65,60,1000};
+  
+  Collimator collimator("data/test_instance_coordinates.txt");
+  vector<Volume> volumes= createVolumes ("data/test_instance_organs.txt", collimator);
+  
+  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, open_setup);
+  double best_eval=P.getEvaluation();
+  
+  
+  /*vector<Station*> stations(5);
   Station* station;
   for(int i=0;i<5;i++){
 	  station = new Station(collimator,volumes, i*70, max_apertures, max_intensity, initial_intensity, open_setup);
     //station = new Station(collimator,volumes, i*70, max_apertures);
 	  station->generateIntensity();
 	  stations[i]=station;
-  }
-
-  vector<double> w={1,1,1};
-  vector<double> Zmin={0,0,76};
-  vector<double> Zmax={65,60,1000};
-
-  cout << "************************************************"<< endl;
-  cout << "************************************************"<< endl;
-  if(strategy=="dao_ls")
-     cout << "******** IMRT-Solver (Direct Aperture Optimization Local Search) *********"<< endl;
-  else if(strategy=="ibo_ls")
-     cout << "******** IMRT-Solver (Intensity-based Optimization Local Search) *********"<< endl;
-
-  cout << "Iterations: " << maxiter << endl;
-  cout << "Time: " << maxtime << endl;
-  cout << "Seed: " << seed << endl;
-  cout << "Temperature: " << temperature << endl;
-  cout << "alpha: " << alpha << endl;
+  }*/
+  
+  
+  cout << "##" << endl << "##**************************************************************************"<< endl;
+  cout << "##*********************************** INFO *********************************"<< endl;
+  cout << "##**************************************************************************"<< endl;
+  cout << "##" << endl << "## Solver: "<< endl;
+  cout << "##   Iterations: " << maxiter << endl;
+  cout << "##   Time: " << maxtime << endl;
+  cout << "##   Seed: " << seed << endl;
+  cout << "##   Temperature: " << temperature << endl;
+  cout << "##   alpha: " << alpha << endl;
   if (search_aperture)
-    cout << "Searching: aperture pattern" << endl;
+    cout << "##   Searching: aperture pattern" << endl;
   if (search_intensity)
-    cout << "Searching: intensity" << endl;
-  cout << "Probability intensity ls: " << prob_intensity << endl;
+    cout << "##   Searching: intensity" << endl;
+  cout << "##   Probability intensity ls: " << prob_intensity << endl;
+  cout << "##   Open initial setup: " << open_setup << endl;
+  cout << "##   Initial intensity: " << initial_intensity << endl;
+  cout << "##   Max intensity: " << max_intensity << endl;
+  cout << "##   Step intensity: " << step_intensity << endl;
 
-
-  cout << endl << "Colimator configuration: "<< endl;
-  cout << "  Stations: " << stations.size() << endl;
-  cout << "  Angles: ";
-  for (int i=0; i<stations.size();i++) cout << stations[i]->getAngle() << " ";
+  cout << "##" << endl << "## Colimator configuration: "<< endl;
+  cout << "##   Stations: " << collimator.getNbAngles() << endl;
+  cout << "##   Angles: ";
+  for (int i=0; i<collimator.getNbAngles();i++) cout << collimator.getAngle(i) << " ";
   cout << endl;
-  cout << "  Max apertures: " << max_apertures << endl;
-  cout << "  Initial intensity: " << initial_intensity << endl;
-  cout << "  Open initial setup: " << open_setup << endl;
+  cout << "##   Apertures: " << max_apertures << endl;
+  
+ 
 
 
-  cout << endl << "Instance information: "<< endl;
-  cout << "  Volumes: " << volumes.size() << endl;
+  cout << "##" << endl << "## Instance information: "<< endl;
+  cout << "##   Volumes: " << volumes.size() << endl;
 
-  cout << "************************************************"<< endl;
-  cout << "************************************************"<< endl;
-  cout << "************************************************"<< endl;
+  cout << "##" << endl << "##**************************************************************************"<< endl;
+  cout << "##********************************** SEARCH ********************************"<< endl;
+  cout << "##**************************************************************************"<< endl;
 
-  EvaluationFunction F(volumes);
-  Plan P(F, w, Zmin, Zmax);
-  for(int i=0;i<5;i++)
-	  P.add_station(*stations[i]);
-	double best_eval=P.eval();
 
-	cout << "Initial solution: " << best_eval << endl;
-
+ 
+	cout << "## Initial solution: " << best_eval << endl;
+  cout  << "##" << endl;
   ILS* ils;
   if(strategy=="dao_ls")
-	     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, prob_intensity, initial_temperature, alphaT, acceptance);
+	     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, prob_intensity, step_intensity, initial_temperature, alphaT, acceptance);
   else if(strategy=="ibo_ls")
       ils = new IntensityILS(bsize, vsize, maxdelta, maxratio, alpha, beta);
 
   ils->search(P, maxtime, maxiter);
-	/*
-	//From here
-	//auto sb=F.best_beamlets(P, bsize, vsize);
-	//auto it=sb.begin();
-	Station*s;
-	int beamlet;
-	bool sign;
-	bool search_a;
-
-  double local_eval, aux_eval;
-  local_eval=best_eval;
-	for (int i=0;i<maxiter;i++) {
-	  pair <int, pair<Station*, bool> > aux_beam = getLSBeamlet(P, F, bsize, vsize, (ls_intensity || ls_both), (ls_apertures || ls_both));
-	  if (aux_beam.first <0){
-	    cout << "No more possible movements"<< endl;
-	    return 0;
-	  }
-
-	  s = aux_beam.second.first;
-	  beamlet=aux_beam.first;
-	  sign=aux_beam.second.second;
-
-		//tabu_list.search(make_pair<beamlet, make>)
-
-    cout << "Iteration " << (i+1) << ", best: " << best_eval << ", beamlet: " << beamlet  << ", station: " << s->getAngle() << ", +-: " << sign << ", t: " << temperature;
-    if (ls_apertures) {
-      aux_eval = searchFirstAperture(beamlet, *s, local_eval, w, Zmin, Zmax, F, !sign, P, temperature);
-      cout << ", ls aperture, found: " << aux_eval;
-    } else if (ls_intensity) {
-      aux_eval = searchFirstIntensity(beamlet, *s, local_eval, w, Zmin, Zmax, F, !sign, P, temperature);
-      cout << ", ls intensity, found: " << aux_eval;
-    } else if (ls_both) {
-      if (!sign)
-        search_a = s->anyClosed(beamlet);
-      else
-        search_a = s->anyOpen(beamlet);
-
-      if (((double) rand() / (RAND_MAX)) <= prob_intensity || !search_a){
-        aux_eval = searchFirstIntensity(beamlet, *s, local_eval, w, Zmin, Zmax, F, !sign, P, temperature);
-        cout << ", ls intensity, found: " << aux_eval;
-      } else {
-	      aux_eval = searchFirstAperture(beamlet, *s, local_eval, w, Zmin, Zmax, F, !sign, P, temperature);
-        cout << ", ls aperture, found: " << aux_eval;
-      }
-    }
-    cout  <<endl;
-    //s->printIntensity(false);
-    if (aux_eval==local_eval)
-      temperature=coolDownTemperature(temperature, 1, i+1);
-    else
-      temperature=initial_temperature;
-    if (aux_eval < best_eval) best_eval=aux_eval;
-    local_eval=aux_eval;
-	}
-
+  
+/*
 	//cout << endl;
 	//for(int i=0;i<5;i++){
 	//	//stations[i]->printIntensity();

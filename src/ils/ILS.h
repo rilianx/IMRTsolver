@@ -48,7 +48,7 @@ public:
 
   double search(Plan& current_plan, int max_time, int max_iterations) {
 
-    cout << "Staring ILS search." << endl;
+    cout << "## Staring ILS search." << endl;
     std::clock_t time_end;
     Plan best_plan (current_plan);
     pair<bool, pair<Station*, int>> target_beam;
@@ -71,7 +71,7 @@ public:
         perturbation_iteration=iteration;
       }
       
-      cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< used_time << ", best: " << best_eval <<
+      cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
               ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  <<
               ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
       aux_eval = localSearch (target_beam, current_plan);
@@ -89,8 +89,8 @@ public:
         local_eval = aux_eval;
         no_improvement = 0;
       } else {
-        current_plan.undoLast2();
-        //current_plan.undoLast();
+        //current_plan.undoLast2();
+        current_plan.undoLast();
         no_improvement ++;
       }
 

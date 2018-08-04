@@ -23,7 +23,11 @@ namespace imrt {
 class Plan {
 public:
 	Plan(EvaluationFunction &ev);
+  
   Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
+  
+  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator, vector<Volume>& volumes, 
+       int max_apertures, int max_intensity, int initial_intensity,  bool open_setup);
 
   Plan(const Plan &p);
 
@@ -68,12 +72,15 @@ public:
 
 private:
 	//The list of stations
+	list<Station> real_stations;
 	list<Station*> stations;
+  
+  int n_stations;
 
   Station* last_changed;
 	list< pair< int, double > > last_diff;
 
-	EvaluationFunction& ev;
+	EvaluationFunction ev;
 
 	vector<double> w;
 	vector<double> Zmin;

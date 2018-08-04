@@ -46,6 +46,8 @@ public:
 	EvaluationFunction(vector<Volume>& volumes);
   
   EvaluationFunction(const EvaluationFunction& F);
+  
+  EvaluationFunction() {};
 
 	virtual ~EvaluationFunction();
 	

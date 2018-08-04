@@ -10,8 +10,8 @@
 namespace imrt {
 
 
-ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, double initial_temperature, double alpha, int acceptance=0): 
-ILS(bsize, vsize, acceptance), search_intensity(search_intensity), search_aperture(search_aperture), prob_intensity(prob_intensity), initial_temperature(initial_temperature), alpha(alpha){
+ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, double prob_intensity, int step_intensity , double initial_temperature,  double alpha, int acceptance=0): 
+ILS(bsize, vsize, acceptance), search_intensity(search_intensity), search_aperture(search_aperture), prob_intensity(prob_intensity), step_intensity(step_intensity) , initial_temperature(initial_temperature), alpha(alpha){
   temperature=initial_temperature;
 }
 
@@ -88,7 +88,7 @@ double ApertureILS::doClose(int beamlet, int aperture, Station& station, double 
 }
 
 double ApertureILS::improvementIntensity(int beamlet, Station& station, bool open_beamlet, 
-                                              double c_eval, Plan & P, bool best_improvement) {
+                                         double c_eval, Plan & P, bool best_improvement) {
   
   double local_best =-1, aux_eval=0;
   list<pair<int, double> > diff;
@@ -110,13 +110,13 @@ double ApertureILS::improvementIntensity(int beamlet, Station& station, bool ope
   // Check every aperture 
   while(flag) {
     if (open_beamlet) {
-      diff = station.modifyIntensityAperture(a_list[a], 1);
+      diff = station.modifyIntensityAperture(a_list[a], step_intensity);
       aux_eval = P.incremental_eval(station, diff);
       //cout << endl<<"  Increasing intensity aperture: " << a <<" eval: " << aux_eval << " list: ";
       //for (list<pair<int,double> >::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
       //cout << endl;
     } else {
-      diff = station.modifyIntensityAperture(a_list[a], -1);
+      diff = station.modifyIntensityAperture(a_list[a], -step_intensity);
       aux_eval = P.incremental_eval(station, diff);
       //cout << endl<< "  Reducing intensity aperture: " << a <<" eval: " << aux_eval <<  " list: ";
       //for (list<pair<int,double> >::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
@@ -296,16 +296,16 @@ double ApertureILS::perturbation(Plan& P) {
   
   cout << "  Perturbation: ";
     
-  for (int i=0; i<10; i++) {
+  for (int i=0; i<2; i++) {
     s=stations.begin();
     std::advance(s,rand()%stations.size());
     if (((double) rand() / (RAND_MAX)) > 0.3) {
       //Modify intensity
       aperture = (rand()% (*s)->getNbApertures());
       if (((double) rand() / (RAND_MAX)) > 0.5) 
-        diff = (*s)->modifyIntensityAperture(aperture, -1);
+        diff = (*s)->modifyIntensityAperture(aperture, -step_intensity);
       else 
-        diff = (*s)->modifyIntensityAperture(aperture, 1);
+        diff = (*s)->modifyIntensityAperture(aperture, step_intensity);
       cout << "(" << (*s)->getAngle() << ","<< aperture<<") ";
     } else {
       //Modify aperture
@@ -330,7 +330,8 @@ double ApertureILS::perturbation(Plan& P) {
 }
 
 bool ApertureILS::perturbate(int no_improvement, int iteration) {
-  if (no_improvement >= ((double) iteration)*0.2 )  return(true);
+  //if (no_improvement >= ((double) iteration)*0.2 )  return(true);
+  if (no_improvement==100) return(true);
   return(false);
 };
 

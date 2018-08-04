@@ -51,6 +51,7 @@ private:
   // Maximum number of apertures
   int max_apertures;
   int max_intensity;
+  int step_intensity;
 
   /** Apertures (representation 1):
    * Each aperture is represented by a vector of pairs A[i] = (x_ini, x_fin)
@@ -75,12 +76,12 @@ private:
 
 public:
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, 
-          int _aperture, int max_intensity=20, int initial_intensity=1, 
+          int _aperture, int max_intensity=28, int initial_intensity=2, 
           bool open_setup=true);
   
   Station(const Station &s);
   
-  //Station& operator=(const Station & s);
+  Station& operator=(const Station & s);
   
   // intensity of an aperture i
   vector<double> intensity;

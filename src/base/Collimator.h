@@ -11,6 +11,7 @@
 #include <list>
 #include <iterator>
 #include <cmath>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -65,10 +66,19 @@ private:
   map<int, int> nb_angle_beamlets;
 
   list<int> angles;
+  
+  int n_angles;
+  
+  vector< pair<int, string> > coord_files;
 
 public:
+  Collimator(){};
+  Collimator(string coord_filename);
   Collimator(vector< pair<int, string> >& coord_files);
+  Collimator(const Collimator& c);
+  Collimator& operator=(Collimator& c);
 
+  void initializeCoordinates(vector < pair<int, string> >& coord_files);
   // Overall coordinates pair (x,y)
   void printCoordinates();
   // Values of the overall coordinates axis
@@ -95,6 +105,10 @@ public:
   list<int>& getAngles();
 
   int getAngle(int i);
+  
+  int getNbAngles();
+  
+  static string delimiter;
 };
 }
 

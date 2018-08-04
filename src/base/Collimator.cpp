@@ -8,16 +8,43 @@
 #include "Collimator.h"
 
 namespace imrt {
-  // There is a coordinate file per angle per angle
-Collimator::Collimator(vector < pair<int, string> >& coord_files) {
+
+  string Collimator::delimiter=";";
+
+  Collimator::Collimator(string coord_filename) {
+    ifstream coord_file(coord_filename.c_str(), ios::in);
+    string line, aux;
+    int angle;
+  
+    if (! coord_file) 
+      cerr << "ERROR: unable to open instance file: " << coord_filename << ", stopping! \n";
+  
+    cout << "##Reading collimator coordinates info." << endl;
+    while (coord_file) {
+      getline(coord_file, line);
+      if (line.empty()) continue;
+      aux   = line.substr(0, line.find(delimiter));
+      angle = atoi(aux.c_str());
+      line.erase(0, line.find(delimiter) + delimiter.length());
+      cout << "##  " << line << " a:" << angle << endl;
+      coord_files.push_back(make_pair(angle,line));
+    }
+    coord_file.close();
+    n_angles=coord_files.size();
+    initializeCoordinates(coord_files);
+    cout << "##  Read " << coord_files.size()<< " files."<< endl;
+  }
+  
+  // Remove this later
+  Collimator::Collimator(vector < pair<int, string> >& coord_files) {
     ifstream myfile;
     string line, linec;
     stringstream ss;
     double x, y;
     bool flag;
-
+    
     //nb_angles=coord_files.size();
-
+    
     for (int i=0 ; i < coord_files.size(); i++) {
       // Open file
       int angle = coord_files[i].first;
@@ -25,7 +52,7 @@ Collimator::Collimator(vector < pair<int, string> >& coord_files) {
       myfile.open(coord_files[i].second);
       if (!myfile.is_open())
         throw runtime_error("error reading file.");
-
+      
       // Read lines of the file
       while (getline (myfile,line)) {
         flag=false;
@@ -35,10 +62,10 @@ Collimator::Collimator(vector < pair<int, string> >& coord_files) {
         x = atof(linec.c_str());
         getline (ss,linec,'\t');
         y = atof(linec.c_str());
-
-
+        
+        
         angle_coord[angle].push_back(make_pair(x,y));
-
+        
         if (beam_coord.find(x) == beam_coord.end()) {
           // New x coordinate
           beam_coord[x].push_back(y);
@@ -65,10 +92,102 @@ Collimator::Collimator(vector < pair<int, string> >& coord_files) {
     ydim = ycoord.size();
     nb_beamlets= xdim*ydim;
     //printCoordinates();
-
+    
     setActiveBeamlets(angle_coord);
     //printActiveBeam();
   }
+  
+  Collimator::Collimator(const Collimator& c){
+    beam_coord=c.beam_coord;
+    angle_coord=c.angle_coord;
+    xcoord=c.xcoord;
+    ycoord=c.ycoord;
+    nb_beamlets=c.nb_beamlets;
+    xdim=c.xdim;
+    ydim=c.ydim;
+    angle_row_beam_active=c.angle_row_beam_active;
+    nb_angle_beamlets=c.nb_angle_beamlets;
+    angles=c.angles;
+    n_angles=c.n_angles;
+    coord_files=c.coord_files;
+  }
+  
+  Collimator& Collimator::operator=(Collimator& c){
+    beam_coord=c.beam_coord;
+    angle_coord=c.angle_coord;
+    xcoord=c.xcoord;
+    ycoord=c.ycoord;
+    nb_beamlets=c.nb_beamlets;
+    xdim=c.xdim;
+    ydim=c.ydim;
+    angle_row_beam_active=c.angle_row_beam_active;
+    nb_angle_beamlets=c.nb_angle_beamlets;
+    angles=c.angles;
+    n_angles=c.n_angles;
+    coord_files=c.coord_files;
+  }
+  
+  // There is a coordinate file per angle per angle
+  void Collimator::initializeCoordinates(vector < pair<int, string> >& coord_files) {
+  ifstream myfile;
+  string line, linec;
+  stringstream ss;
+  double x, y;
+  bool flag;
+  
+  //nb_angles=coord_files.size();
+  
+  for (int i=0 ; i < coord_files.size(); i++) {
+    // Open file
+    int angle = coord_files[i].first;
+    angles.push_back(angle);
+    myfile.open(coord_files[i].second);
+    if (!myfile.is_open())
+      throw runtime_error("error reading file.");
+    
+    // Read lines of the file
+    while (getline (myfile,line)) {
+      flag=false;
+      ss.clear(); ss.str(line);
+      getline (ss,linec,'\t'); //the first number is discarded (beamlet id)
+      getline (ss,linec,'\t');
+      x = atof(linec.c_str());
+      getline (ss,linec,'\t');
+      y = atof(linec.c_str());
+      
+      
+      angle_coord[angle].push_back(make_pair(x,y));
+      
+      if (beam_coord.find(x) == beam_coord.end()) {
+        // New x coordinate
+        beam_coord[x].push_back(y);
+        insertXorder(x);
+        insertYorder(y);
+      } else {
+        if (find(beam_coord[x].begin(), beam_coord[x].end(), y) != beam_coord[x].end())
+          flag=true;
+        // New y coordinate: insert in order
+        for (int j=0; j < beam_coord[x].size() && !flag; j++) {
+          if (beam_coord[x][j] > y) {
+            beam_coord[x].insert(beam_coord[x].begin()+j, y);
+            flag=true;
+          }
+        }
+        if (!flag) beam_coord[x].push_back(y);
+        insertYorder(y);
+      }
+    }
+    myfile.close();
+    nb_angle_beamlets[angle]=(angle_coord[angle].size());
+  }
+  xdim = xcoord.size();
+  ydim = ycoord.size();
+  nb_beamlets= xdim*ydim;
+  //printCoordinates();
+  
+  setActiveBeamlets(angle_coord);
+  //printActiveBeam();
+}
 
   // Active beamlets per angle
   void Collimator::setActiveBeamlets(map<int,  vector<pair<double,double> > >& coord){
@@ -205,6 +324,10 @@ Collimator::Collimator(vector < pair<int, string> >& coord_files) {
     std::list<int>::iterator it = angles.begin();
     std::advance(it, i);
     return *it;
+  }
+
+  int Collimator::getNbAngles(){
+    return(n_angles);
   }
 
 }
