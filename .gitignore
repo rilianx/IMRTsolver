@@ -12,3 +12,10 @@
 /libmaths.a
 /libimrt.a
 /out.txt
+plotter/organ0.txt
+plotter/organ1.txt
+plotter/organ2.txt
+plotter/organ_xls0.dat
+plotter/organ_xls1.dat
+plotter/organ_xls2.dat
+

@@ -24,6 +24,10 @@ public:
 		return false;
 	}
 
+	virtual void undoLast(Plan& p){
+		p.undoLast2();
+	}
+
 	private:
 
 	double maxdelta;

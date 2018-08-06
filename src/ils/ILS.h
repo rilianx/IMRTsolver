@@ -44,6 +44,10 @@ public:
     return(false);
   };
 
+  virtual void undoLast(Plan& p){
+	  p.undoLast();
+  }
+
   virtual void updateTemperature() {};
 
   double search(Plan& current_plan, int max_time, int max_iterations) {
@@ -89,8 +93,7 @@ public:
         local_eval = aux_eval;
         no_improvement = 0;
       } else {
-        current_plan.undoLast2();
-        //current_plan.undoLast();
+        undoLast(current_plan);
         no_improvement ++;
       }
 
