@@ -75,9 +75,12 @@ private:
    list<pair<int,double>> last_diff;
 
 public:
+
+   // Constructs a new Station
+   // initial_open_apertures: number of open apertures
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, 
-          int _aperture, int max_intensity=28, int initial_intensity=2, 
-          bool open_setup=true);
+          int max_apertures, int max_intensity=28, int intensity_per_aperture=2,
+          int open_apertures=-1);
   
   Station(const Station &s);
   

@@ -52,10 +52,10 @@ int main(int argc, char** argv){
 
   int vsize=50;
   int bsize=20;
-  double int0=4.0;
   int maxiter=5000;
   int maxtime=0;
   int max_apertures=5;
+  int open_apertures=-1;
   double alpha=1.0;
   double beta=1.0;
   double maxdelta=5.0;
@@ -85,14 +85,13 @@ int main(int argc, char** argv){
   int tabusize=10;
 
 
-	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max_ap=4 --seed=0 --int0=1 --open-setup");
+	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
   args::ValueFlag<string> _strategy(parser, "string", "Strategy  (dao_ls|ibo_ls)", {'s', "strategy"});
 	args::ValueFlag<int> _bsize(parser, "int", "Number of considered beamlets for selection ("+to_string(bsize)+")", {"bsize"});
 	args::ValueFlag<int> _vsize(parser, "int", "Number of considered worst voxels ("+to_string(vsize)+")", {"vsize"});
-  args::ValueFlag<int> _int0(parser, "int", "Initial intensity for beams  ("+to_string(int0)+")", {"int0"});
-  args::ValueFlag<int> _max_apertures(parser, "int", "Initial intensity for the station  ("+to_string(max_apertures)+")", {"max_ap"});
+ // args::ValueFlag<int> _int0(parser, "int", "Initial intensity for beams  ("+to_string(int0)+")", {"int0"});
   args::ValueFlag<int> _maxdelta(parser, "int", "Max delta  ("+to_string(maxdelta)+")", {"maxdelta"});
   args::ValueFlag<int> _maxratio(parser, "int", "Max ratio  ("+to_string(maxratio)+")", {"maxratio"});
   args::ValueFlag<double> _alpha(parser, "double", "Initial temperature for intensities  ("+to_string(alpha)+")", {"alpha"});
@@ -102,8 +101,8 @@ int main(int argc, char** argv){
   args::ValueFlag<int> _seed(parser, "int", "Seed  ("+to_string(seed)+")", {"seed"});
 
   args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
-  args::Flag open_setup(parser, "open_setup", "Initialize apertures as open", {"open-setup"});
-  
+  args::ValueFlag<int> _max_apertures(parser, "int", "Initial intensity for the station  ("+to_string(max_apertures)+")", {"max-apertures"});
+  args::ValueFlag<int> _open_apertures(parser, "int", "Number of initialized open apertures (-1: all, default:"+to_string(open_apertures)+")", {"open-apertures"});
   args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial-intensity"});
   args::ValueFlag<int> _max_intensity(parser, "int", "Max value aperture intensity  ("+to_string(max_intensity)+")", {"max-intensity"});
   args::ValueFlag<int> _step_intensity(parser, "int", "Step size for aperture intensity  ("+to_string(step_intensity)+")", {"step-intensity"});
@@ -152,10 +151,10 @@ int main(int argc, char** argv){
   if(_maxratio) maxratio=_maxratio.Get();
   if(_alpha) alpha=_alpha.Get();
   if(_beta) beta=_beta.Get();
-  if(_int0) int0=_int0.Get();
   if(_maxiter) maxiter=_maxiter.Get();
   if(_maxtime) maxtime=_maxtime.Get();
   if(_max_apertures) max_apertures=_max_apertures.Get();
+  if(_open_apertures) open_apertures=_open_apertures.Get();
   if(_seed) seed=_seed.Get();
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
   if(_max_intensity) max_intensity=_max_intensity.Get();
@@ -189,7 +188,7 @@ int main(int argc, char** argv){
   Collimator collimator("data/test_instance_coordinates.txt");
   vector<Volume> volumes= createVolumes ("data/test_instance_organs.txt", collimator);
   
-  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, open_setup);
+  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, open_apertures);
   double best_eval=P.getEvaluation();
   
   
@@ -217,7 +216,7 @@ int main(int argc, char** argv){
   if (search_intensity)
     cout << "##   Searching: intensity" << endl;
   cout << "##   Probability intensity ls: " << prob_intensity << endl;
-  cout << "##   Open initial setup: " << open_setup << endl;
+  cout << "##   Open initial setup: " << open_apertures << endl;
   cout << "##   Initial intensity: " << initial_intensity << endl;
   cout << "##   Max intensity: " << max_intensity << endl;
   cout << "##   Step intensity: " << step_intensity << endl;

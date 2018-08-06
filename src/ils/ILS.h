@@ -89,8 +89,8 @@ public:
         local_eval = aux_eval;
         no_improvement = 0;
       } else {
-        //current_plan.undoLast2();
-        current_plan.undoLast();
+        current_plan.undoLast2();
+        //current_plan.undoLast();
         no_improvement ++;
       }
 

@@ -11,9 +11,11 @@ namespace imrt {
 
 
   Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures, 
-                   int max_intensity, int initial_intensity, bool open_setup):
+                   int max_intensity, int initial_intensity, int open_apertures):
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures), 
 		intensity(max_apertures), max_intensity(max_intensity){
+
+	if(open_apertures==-1) open_apertures=max_apertures;
 
     for (int i=0; i<volumes.size(); i++)
       D[i]=&volumes[i].getDepositionMatrix(angle);
@@ -34,13 +36,14 @@ namespace imrt {
     for (int i=0; i<max_apertures; i++) {
       vector<pair<int,int> > aux;
       for (int j=0; j<collimator.getXdim(); j++) {
-        if (open_setup)
+        if (open_apertures>0)
           aux.push_back(collimator.getActiveRange(j,angle));
-        else 
+        else
           aux.push_back(make_pair(-1,-1));
       }
       A[i]=aux;
       intensity[i]=initial_intensity;
+      open_apertures--;
     }
     
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
