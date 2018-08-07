@@ -46,7 +46,6 @@ namespace imrt {
       A[i]=aux;
       intensity[i]=initial_intensity;
       open_apertures--;
-<<<<<<< HEAD
     }*/
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
   }
@@ -95,7 +94,7 @@ namespace imrt {
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++)
           aux.push_back(collimator.getActiveRange(j,angle));
-	A[i] =aux;
+	      A[i] =aux;
       }
     } else if (type==CLOSED_MAX_SETUP || type==CLOSED_MIN_SETUP) {
       for (int i=0; i<max_apertures; i++){
@@ -106,7 +105,6 @@ namespace imrt {
       }
     } else if (type==RAND_RAND_SETUP) {
       for (int i=0; i<max_apertures; i++) {
-       cout <<"a:" << i << endl;
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++) {
           pair<int, int> range = collimator.getActiveRange(j,angle);
@@ -114,13 +112,11 @@ namespace imrt {
             aux.push_back(make_pair(-1,-1));
             continue;
           }
-          int index1 = range.first + rand() % (range.second-range.first);
-          cout << range.first << ","<< range.second << "  " << index1<< endl;
-          if ((range.first+index1) == range.second) {
+          int index1 = range.first + rand() % (range.second-range.first+1);
+          if (index1 == range.second) {
             aux.push_back(make_pair(range.second,range.second));
           } else {
-            int index2 = index1 + rand() % (range.second-(range.first+index1));
-            cout << "this:" << index2 << endl;
+            int index2 = index1 + rand() % (range.second-index1+1);
             aux.push_back(make_pair(index1,index2));
           }
         }
@@ -193,6 +189,7 @@ namespace imrt {
         //for (int j=aux.first; j<=aux.second; j++) {
         for (int j=A[a][i].first; j<=A[a][i].second; j++) {
           //if (j>=A[a][i].first && j<=A[a][i].second){
+            //cout << "a:" <<a << " i:" << i << " j:" <<j << " to add:" <<  intensity[a] << " on:" << I(i,j) <<  endl;
             change_intensity(i, j, I(i,j)+intensity[a]);
           //}
         }
@@ -513,7 +510,6 @@ namespace imrt {
     }
 
     intensity[aperture]=intensity[aperture]+size;
-    //generateIntensity();
 
     for (int i=0; i<collimator.getXdim(); i++) {
       if (A[aperture][i].first<0) continue;

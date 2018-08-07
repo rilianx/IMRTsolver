@@ -81,8 +81,8 @@ public:
    // Constructs a new Station
    // initial_open_apertures: number of open apertures
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, 
-          int max_apertures, int max_intensity=28, int initial_intensity=0, int step_intensity=2,
-          int open_apertures=-1, int setup=6);
+          int max_apertures, int max_intensity=28, int initial_intensity=0, 
+          int step_intensity=2, int open_apertures=-1, int setup=6);
   
   Station(const Station &s);
   
