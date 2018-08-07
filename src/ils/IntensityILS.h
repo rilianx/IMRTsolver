@@ -28,6 +28,18 @@ public:
 		p.undoLast2();
 	}
 
+/*
+	virtual double perturbation(Plan& P) {
+		P.newCopy(*init_plan);
+		double eval=P.eval();
+
+		return(eval);
+	};
+
+	virtual bool perturbate(int no_improvement, int iteration) {
+		return (no_improvement>200);
+	};
+*/
 	private:
 
 	int step_intensity;

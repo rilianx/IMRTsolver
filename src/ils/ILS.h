@@ -26,7 +26,7 @@ public:
   static const int ACCEPT_NONE = 0;
   static const int ACCEPT_SA = 1;
 
-  ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance) {
+  ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance){
   };
 
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
@@ -35,11 +35,11 @@ public:
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
   }
-  
+
   virtual double perturbation(Plan& P) {
     return(P.getEvaluation());
   };
-  
+
   virtual bool perturbate(int no_improvement, int iteration) {
     return(false);
   };
@@ -50,11 +50,20 @@ public:
 
   virtual void updateTemperature() {};
 
+//  Plan* init_plan;
   double search(Plan& current_plan, int max_time, int max_iterations) {
 
     cout << "## Staring ILS search." << endl;
     std::clock_t time_end;
+
+    time_begin=clock();
+
+  //  if(init_plan) delete init_plan;
+  //  init_plan = new Plan(current_plan);
+
+
     Plan best_plan (current_plan);
+
     pair<bool, pair<Station*, int>> target_beam;
     double local_eval, aux_eval,  best_eval=current_plan.eval();
     double used_time=0;
@@ -64,7 +73,7 @@ public:
 
     local_eval=best_eval;
     //Start time
-    time_begin=clock();
+
 
     while (flag) {
       //cout << "ss"<< endl;
@@ -74,7 +83,7 @@ public:
         local_eval = perturbation(current_plan);
         perturbation_iteration=iteration;
       }
-      
+
       cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
               ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  <<
               ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
@@ -110,7 +119,7 @@ public:
       if ( perturbate(no_improvement, iteration )) {
         local_eval = perturbation(current_plan);
         perturbation_iteration = iteration;
-        no_improvement=no_improvement/2;
+        no_improvement/2;
       }
     }
     current_plan.newCopy(best_plan);

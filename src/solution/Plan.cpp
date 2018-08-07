@@ -9,14 +9,15 @@
 
 namespace imrt {
 
-  Plan::Plan(EvaluationFunction &ev) : ev(ev) {};
+  Plan::Plan(EvaluationFunction &ev) : ev(ev), last_changed(NULL) {};
 
   Plan::Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax): ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {
     last_changed=NULL;
   }
 
   Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,  vector<Volume>& volumes,
-             int max_apertures, int max_intensity, int initial_intensity, int open_apertures) : ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax) {
+             int max_apertures, int max_intensity, int initial_intensity, int open_apertures) :
+             ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax), last_changed(NULL) {
 
     cout << "##Initilizing plan."<< endl;
 
@@ -34,7 +35,7 @@ namespace imrt {
     last_changed=NULL;
   };
 
-  Plan::Plan(const Plan &p): ev(p.ev), w(p.w), Zmin(p.Zmin), Zmax(p.Zmax) {
+  Plan::Plan(const Plan &p): ev(p.ev), w(p.w), Zmin(p.Zmin), Zmax(p.Zmax), last_changed(NULL) {
     //EvaluationFunction aux_ev(p.ev);
     //ev=aux_ev;
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
@@ -47,6 +48,7 @@ namespace imrt {
   }
 
   void Plan::newCopy(Plan& p) {
+    last_changed=NULL;
     EvaluationFunction aux_ev(p.ev);
     ev=aux_ev;
     w=p.w;
