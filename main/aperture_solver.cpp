@@ -118,7 +118,7 @@ int main(int argc, char** argv){
   int tabusize=10;
 
 
-	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4");
+	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n.../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4 --step-intensity=1 --file-dep=data/Equidistantes/equidist00.txt --file-coord=data/Equidistantes/equidist-coord.txt");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
   args::ValueFlag<string> _strategy(parser, "string", "Strategy  (dao_ls|ibo_ls)", {'s', "strategy"});
@@ -152,8 +152,8 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
   args::ValueFlag<int> _perturbation(parser, "int", "Perturbation size  ("+to_string(perturbation)+")", {"perturbation-size"});
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
-  args::Positional<std::string> _file(parser, "File with the deposition matrix", "Instance");
-  args::Positional<std::string> _file2(parser, "File with the beam coordinates", "Instance");
+  args::ValueFlag<string> _file(parser, "string", "File with the deposition matrix", {"file-dep"});
+  args::ValueFlag<string> _file2(parser, "string", "File with the beam coordinates", {"file-coord"});
 
 	try
 	{
@@ -206,6 +206,7 @@ int main(int argc, char** argv){
   if (accept_best) acceptance=ILS::ACCEPT_NONE;
   if (_perturbation) perturbation=_perturbation.Get();
   if (_file) file=_file.Get();
+  if (_file2) file2=_file2.Get();
 
   cout << "##**************************************************************************"<< endl;
   cout << "##**************************************************************************"<< endl;
