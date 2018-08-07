@@ -9,6 +9,7 @@
 #include <iterator>
 #include <set>
 #include <stack>
+#include <unistd.h>
 
 #include "EvaluationFunction.h"
 #include "Plan.h"
@@ -109,6 +110,8 @@ int main(int argc, char** argv){
   string file="data/testinstance_0_70_140_210_280.txt";
   string file2="data/test_instance_coordinates.txt";
 
+  string path=".";
+
   int seed=time(NULL);
 
   // Tabu list <<beam,station*>, open> for intensity
@@ -154,6 +157,8 @@ int main(int argc, char** argv){
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
   args::ValueFlag<string> _file(parser, "string", "File with the deposition matrix", {"file-dep"});
   args::ValueFlag<string> _file2(parser, "string", "File with the beam coordinates", {"file-coord"});
+
+  args::ValueFlag<string> _path(parser, "string", "Absolute path of the executable (if it is executed from other directory)", {"path"});
 
 	try
 	{
@@ -207,6 +212,9 @@ int main(int argc, char** argv){
   if (_perturbation) perturbation=_perturbation.Get();
   if (_file) file=_file.Get();
   if (_file2) file2=_file2.Get();
+  if (_path) path=_path.Get();
+
+  chdir(path.c_str());
 
   cout << "##**************************************************************************"<< endl;
   cout << "##**************************************************************************"<< endl;
@@ -289,21 +297,28 @@ int main(int argc, char** argv){
 
   ils->search(P, maxtime, maxiter);
 
+
   cout << "##**************************************************************************"<< endl;
   cout << "##******************************* RESULTS **********************************"<< endl;
   cout << "##**************************************************************************"<< endl;
+
+
+
   cout << "##"<<endl;
   cout << "## Best solution found: " <<  P.getEvaluation() << endl;
+  cout <<  P.getEvaluation() << endl;
+
 /*
-	//cout << endl;
-	//for(int i=0;i<5;i++){
-	//	//stations[i]->printIntensity();
-	//	stations[i]->printIntensity(false);
-  //      //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
-  //  }
-	//cout << endl;
+	cout << endl;
+	for(int i=0;i<5;i++){
+	  //stations[i]->printIntensity();
+		P.printIntensity(i);
+        //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
+  }
+	cout << endl;
+*/
 
-
+/*
 	cout << "********   Summary of the results    *********"<< endl;
 	best_eval = F.eval(P,w,Zmin,Zmax);
 	cout << "Final solution: " << best_eval << endl << endl;

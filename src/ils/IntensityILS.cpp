@@ -16,7 +16,8 @@ namespace imrt {
 		//double delta_intensity= rand()%3+1;
 
 		double delta_intensity= rand()%int(maxdelta + step_intensity/2.0);
-		delta_intensity = (int) ( (delta_intensity/step_intensity) * step_intensity);
+		delta_intensity = (int)  (delta_intensity/step_intensity) * step_intensity;
+
 
 		maxdelta = maxdelta*alpha;
 
