@@ -329,7 +329,7 @@ int main(int argc, char** argv){
                           prob_intensity, step_intensity, initial_temperature, 
                           alphaT, perturbation, acceptance);
   else if(strategy=="ibo_ls")
-    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta);
+    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
 
   ils->search(P, maxtime, maxiter);
 

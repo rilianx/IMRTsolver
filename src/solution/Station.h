@@ -144,6 +144,8 @@ public:
   list< pair< int, double > > increaseIntensity(int beam, double intensity, int ratio=0);
   list< pair< int, double > > increaseIntensity_repair(int beam, double intensity, int ratio=0);
 
+  void reduce_apertures(list< pair< int, double > >& diff);
+
 
   mutable map <pair<int,int>, int > pos2beam;
   mutable map <int, pair<int,int> > beam2pos;

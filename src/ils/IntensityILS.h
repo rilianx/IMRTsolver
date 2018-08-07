@@ -14,8 +14,9 @@ namespace imrt {
 
 class IntensityILS  : public ILS {
 public:
-	IntensityILS(int step_intensity, int bsize, int vsize, int maxdelta, int maxratio, double alpha, double beta) :
-		ILS(bsize, vsize), step_intensity(step_intensity), maxdelta(maxdelta), maxratio(maxratio), alpha(alpha), beta(beta) { };
+	IntensityILS(int step_intensity, int bsize, int vsize, int maxdelta, int maxratio, double alpha, double beta, int perturbation_size=0) :
+		ILS(bsize, vsize), step_intensity(step_intensity), maxdelta(maxdelta), maxratio(maxratio), alpha(alpha), beta(beta),
+		perturbation_size(perturbation_size){ };
 	virtual ~IntensityILS() { }
 
 	virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
@@ -28,21 +29,31 @@ public:
 		p.undoLast2();
 	}
 
-/*
+   // Consiste en una reduccion de las aperturas en matrices de intensidad
+   // seleccionadas aleatoriamente
+
 	virtual double perturbation(Plan& P) {
-		P.newCopy(*init_plan);
-		double eval=P.eval();
+		double eval=P.getEvaluation();
+		for(int i=0; i<perturbation_size; i++){
+			int r=rand()%P.get_stations().size();
+			Station* s=P.get_station(r);
+			list< pair< int, double > > diff;
+			s->reduce_apertures(diff);
+			eval=P.incremental_eval(*s,diff);
+		}
 
 		return(eval);
 	};
 
 	virtual bool perturbate(int no_improvement, int iteration) {
-		return (no_improvement>200);
+
+		return (perturbation_size>0 && no_improvement>200);
 	};
-*/
+
 	private:
 
 	int step_intensity;
+	int perturbation_size;
 
 	double maxdelta;
 	double maxratio;

@@ -119,7 +119,7 @@ public:
       if ( perturbate(no_improvement, iteration )) {
         local_eval = perturbation(current_plan);
         perturbation_iteration = iteration;
-        no_improvement/2;
+        no_improvement=no_improvement/2;
       }
     }
     current_plan.newCopy(best_plan);

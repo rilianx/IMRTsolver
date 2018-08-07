@@ -70,6 +70,13 @@ public:
 	
 	void printIntensity(int station);
 
+	Station* get_station(int i){
+	    list<Station*>::iterator s= stations.begin();
+	    advance(s,i);
+	    return *s;
+	}
+
+
 private:
 	//The list of stations
 	list<Station> real_stations;

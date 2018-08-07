@@ -304,6 +304,29 @@ namespace imrt {
     return diff;
   }
 
+  void Station::reduce_apertures(list< pair< int, double > >& diff){
+	  if(int2nb.size()==0) return;
+
+      int from,to, min_diff=10000;
+      int prev=0; int nprev=0;
+      for(auto i:int2nb  ){
+          int n= (prev!=0)? min(i.second,nprev) : i.second;
+          if((i.first-prev)*n < min_diff){
+            min_diff=(i.first-prev)*n;
+            if(nprev<i.second && prev!=0) {from=prev; to=i.first;}
+            else {to=prev; from=i.first;}
+          }
+          prev=i.first;
+          nprev=i.second;
+      }
+    //  printIntensity();
+      for(int i=0; i<collimator.getXdim(); i++)
+        for(int j=0; j<collimator.getYdim(); j++)
+          if(int(I(i,j)+0.5)==from)
+            change_intensity(i, j, to, &diff);
+  }
+
+
   list< pair< int, double > > Station::increaseIntensity_repair(int beam, double intensity, int ratio){
     list< pair< int, double > > diff=increaseIntensity(beam, intensity, ratio);
 
@@ -349,29 +372,9 @@ namespace imrt {
     }
 
     //reparation (phase 2)
-    while(int2nb.size()>max_apertures){
-      int from,to, min_diff=10000;
-      int prev=0; int nprev=0;
-      for(auto i:int2nb  ){
-          int n= (prev!=0)? min(i.second,nprev) : i.second;
-          if((i.first-prev)*n < min_diff){
-            min_diff=(i.first-prev)*n;
-            if(nprev<i.second && prev!=0) {from=prev; to=i.first;}
-            else {to=prev; from=i.first;}
-          }
-          prev=i.first;
-          nprev=i.second;
-      }
-    //  printIntensity();
-      for(int i=0; i<collimator.getXdim(); i++)
-        for(int j=0; j<collimator.getYdim(); j++)
-          if(int(I(i,j)+0.5)==from)
-            change_intensity(i, j, to, &diff);
-    //  printIntensity();
+    while(int2nb.size()>max_apertures)
+    	reduce_apertures(diff);
 
-      //cout << int2nb.size() << endl;
-      //if( int2nb.size() ==8) exit(0);
-    }
 
     return diff;
   }

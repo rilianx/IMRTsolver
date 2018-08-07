@@ -162,9 +162,9 @@ def write_times(name,i,config):
 		f.write("\n")
 		
 		(mean,h,n) = mean_error(config, i, j, config.max_seeds)
-		f2.write("%.4f " % mean)
-		f2.write("+- %.2f" % h)
-		f2.write(" (%d)\n" % n)
+		f2.write("%.4f" % mean)
+		f2.write("\t%.2f\n" % h) #desviacion estandar
+		#f2.write(" (%d)\n" % n)
 		
 	f.close()
 	f2.close()
@@ -454,7 +454,7 @@ def mean_error(config, id_algo, id_inst, seeds):
 	if n>=2:
 		se=stats.sem(x)
 		h = se*t._ppf((1+0.95)/2., n-1)
-		return (np.mean(x),h,n)
+		return (np.mean(x),np.std(x),n)
 	else:
 		return (np.mean(x),-1,n)
 

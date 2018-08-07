@@ -10,9 +10,9 @@ algo_names = as
 
 
 [as]
-tuning_param = X
-tuning_values = 0 2 4 6 8 10 12 14
+#tuning_param = X
+#tuning_values = 0 2 4 6 8 10 12 14
 exec = "../AS"
-params =  -s ibo_ls --maxtime=_MAXTIME --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=5 --seed=_SEED --open-apertures=1 --initial-intensity=_X --step-intensity=2 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+params =  -s ibo_ls --maxtime=_MAXTIME --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=5 --seed=_SEED --open-apertures=0 --initial-intensity=0 --step-intensity=2 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=..
 outputpos_times = 0
 outputpos_boxes = 0
