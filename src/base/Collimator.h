@@ -7,6 +7,7 @@
 */
 
 #include <map>
+#include <set>
 #include <vector>
 #include <list>
 #include <iterator>
@@ -66,14 +67,14 @@ private:
   map<int, int> nb_angle_beamlets;
 
   list<int> angles;
-  
+
   int n_angles;
-  
+
   vector< pair<int, string> > coord_files;
 
 public:
   Collimator(){};
-  Collimator(string coord_filename);
+  Collimator(string coord_filename, set<int> angles);
   Collimator(vector< pair<int, string> >& coord_files);
   Collimator(const Collimator& c);
   Collimator& operator=(Collimator& c);
@@ -105,9 +106,9 @@ public:
   list<int>& getAngles();
 
   int getAngle(int i);
-  
+
   int getNbAngles();
-  
+
   static string delimiter;
 };
 }

@@ -11,20 +11,21 @@ namespace imrt {
 
   string Collimator::delimiter=";";
 
-  Collimator::Collimator(string coord_filename) {
+  Collimator::Collimator(string coord_filename, set<int> angles) {
     ifstream coord_file(coord_filename.c_str(), ios::in);
     string line, aux;
     int angle;
-  
-    if (! coord_file) 
+
+    if (! coord_file)
       cerr << "ERROR: unable to open instance file: " << coord_filename << ", stopping! \n";
-  
+
     cout << "##Reading collimator coordinates info." << endl;
     while (coord_file) {
       getline(coord_file, line);
       if (line.empty()) continue;
       aux   = line.substr(0, line.find(delimiter));
       angle = atoi(aux.c_str());
+      if(angles.find(angle) == angles.end()) continue;
       line.erase(0, line.find(delimiter) + delimiter.length());
       cout << "##  " << line << " a:" << angle << endl;
       coord_files.push_back(make_pair(angle,line));
@@ -34,7 +35,7 @@ namespace imrt {
     initializeCoordinates(coord_files);
     cout << "##  Read " << coord_files.size()<< " files."<< endl;
   }
-  
+
   // Remove this later
   Collimator::Collimator(vector < pair<int, string> >& coord_files) {
     ifstream myfile;
@@ -42,9 +43,9 @@ namespace imrt {
     stringstream ss;
     double x, y;
     bool flag;
-    
+
     //nb_angles=coord_files.size();
-    
+
     for (int i=0 ; i < coord_files.size(); i++) {
       // Open file
       int angle = coord_files[i].first;
@@ -52,7 +53,7 @@ namespace imrt {
       myfile.open(coord_files[i].second);
       if (!myfile.is_open())
         throw runtime_error("error reading file.");
-      
+
       // Read lines of the file
       while (getline (myfile,line)) {
         flag=false;
@@ -62,10 +63,10 @@ namespace imrt {
         x = atof(linec.c_str());
         getline (ss,linec,'\t');
         y = atof(linec.c_str());
-        
-        
+
+
         angle_coord[angle].push_back(make_pair(x,y));
-        
+
         if (beam_coord.find(x) == beam_coord.end()) {
           // New x coordinate
           beam_coord[x].push_back(y);
@@ -92,11 +93,11 @@ namespace imrt {
     ydim = ycoord.size();
     nb_beamlets= xdim*ydim;
     //printCoordinates();
-    
+
     setActiveBeamlets(angle_coord);
     //printActiveBeam();
   }
-  
+
   Collimator::Collimator(const Collimator& c){
     beam_coord=c.beam_coord;
     angle_coord=c.angle_coord;
@@ -111,7 +112,7 @@ namespace imrt {
     n_angles=c.n_angles;
     coord_files=c.coord_files;
   }
-  
+
   Collimator& Collimator::operator=(Collimator& c){
     beam_coord=c.beam_coord;
     angle_coord=c.angle_coord;
@@ -126,7 +127,7 @@ namespace imrt {
     n_angles=c.n_angles;
     coord_files=c.coord_files;
   }
-  
+
   // There is a coordinate file per angle per angle
   void Collimator::initializeCoordinates(vector < pair<int, string> >& coord_files) {
   ifstream myfile;
@@ -134,9 +135,9 @@ namespace imrt {
   stringstream ss;
   double x, y;
   bool flag;
-  
+
   //nb_angles=coord_files.size();
-  
+
   for (int i=0 ; i < coord_files.size(); i++) {
     // Open file
     int angle = coord_files[i].first;
@@ -144,7 +145,7 @@ namespace imrt {
     myfile.open(coord_files[i].second);
     if (!myfile.is_open())
       throw runtime_error("error reading file.");
-    
+
     // Read lines of the file
     while (getline (myfile,line)) {
       flag=false;
@@ -154,10 +155,10 @@ namespace imrt {
       x = atof(linec.c_str());
       getline (ss,linec,'\t');
       y = atof(linec.c_str());
-      
-      
+
+
       angle_coord[angle].push_back(make_pair(x,y));
-      
+
       if (beam_coord.find(x) == beam_coord.end()) {
         // New x coordinate
         beam_coord[x].push_back(y);
@@ -184,7 +185,7 @@ namespace imrt {
   ydim = ycoord.size();
   nb_beamlets= xdim*ydim;
   //printCoordinates();
-  
+
   setActiveBeamlets(angle_coord);
   //printActiveBeam();
 }

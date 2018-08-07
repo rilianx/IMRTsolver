@@ -124,7 +124,7 @@ int main(int argc, char** argv){
 	for(int i=0;i<5;i++)
 	   P.add_station(*stations[i]);
 
-	IntensityILS ils(bsize, vsize, maxdelta, maxratio, alpha, beta);
+	IntensityILS ils(1, bsize, vsize, maxdelta, maxratio, alpha, beta);
 	ils.search(P,1000,maxiter);
 
   F.generate_voxel_dose_functions ();
