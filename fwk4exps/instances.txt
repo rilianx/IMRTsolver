@@ -1,0 +1,14 @@
+data/Equidistantes/equidist00.txt
+data/Equidistantes/equidist01.txt
+data/Equidistantes/equidist02.txt
+data/Equidistantes/equidist03.txt
+data/Equidistantes/equidist04.txt
+data/Equidistantes/equidist05.txt
+data/Equidistantes/equidist06.txt
+data/Equidistantes/equidist07.txt
+data/Equidistantes/equidist08.txt
+data/Equidistantes/equidist09.txt
+data/Equidistantes/equidist10.txt
+data/Equidistantes/equidist11.txt
+data/Equidistantes/equidist12.txt
+data/Equidistantes/equidist13.txt

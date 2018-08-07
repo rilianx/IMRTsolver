@@ -14,8 +14,8 @@ namespace imrt {
 
 class IntensityILS  : public ILS {
 public:
-	IntensityILS(int bsize, int vsize, int maxdelta, int maxratio, double alpha, double beta) :
-		ILS(bsize, vsize), maxdelta(maxdelta), maxratio(maxratio), alpha(alpha), beta(beta) { };
+	IntensityILS(int step_intensity, int bsize, int vsize, int maxdelta, int maxratio, double alpha, double beta) :
+		ILS(bsize, vsize), step_intensity(step_intensity), maxdelta(maxdelta), maxratio(maxratio), alpha(alpha), beta(beta) { };
 	virtual ~IntensityILS() { }
 
 	virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
@@ -28,7 +28,21 @@ public:
 		p.undoLast2();
 	}
 
+/*
+	virtual double perturbation(Plan& P) {
+		P.newCopy(*init_plan);
+		double eval=P.eval();
+
+		return(eval);
+	};
+
+	virtual bool perturbate(int no_improvement, int iteration) {
+		return (no_improvement>200);
+	};
+*/
 	private:
+
+	int step_intensity;
 
 	double maxdelta;
 	double maxratio;
