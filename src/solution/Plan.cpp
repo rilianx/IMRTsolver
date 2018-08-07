@@ -15,14 +15,15 @@ namespace imrt {
     last_changed=NULL;
   }
 
-  Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,  vector<Volume>& volumes, 
-             int max_apertures, int max_intensity, int initial_intensity, int open_apertures) : ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax) {
+  Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,  
+             vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity, 
+             int step_intensity, int open_apertures, int setup) : ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax) {
     
     cout << "##Initilizing plan."<< endl;
     
     for (int i=0;i<collimator.getNbAngles();i++) {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures, 
-                                     max_intensity, initial_intensity, open_apertures);
+                                     max_intensity, initial_intensity, step_intensity, open_apertures, setup);
       station->generateIntensity();
       real_stations.push_back(*station);
       add_station(*station);

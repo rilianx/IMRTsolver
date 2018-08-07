@@ -51,6 +51,8 @@ private:
   // Maximum number of apertures
   int max_apertures;
   int max_intensity;
+  int min_intensity;
+  int initial_intensity;
   int step_intensity;
 
   /** Apertures (representation 1):
@@ -79,14 +81,16 @@ public:
    // Constructs a new Station
    // initial_open_apertures: number of open apertures
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, 
-          int max_apertures, int max_intensity=28, int intensity_per_aperture=2,
-          int open_apertures=-1);
+          int max_apertures, int max_intensity=28, int initial_intensity=0, int step_intensity=2,
+          int open_apertures=-1, int setup=6);
   
   Station(const Station &s);
   
   Station& operator=(const Station & s);
   
-  // intensity of an aperture i
+  void initializeStation(int type, int open_apertures);
+ 
+ // intensity of an aperture i
   vector<double> intensity;
 
   // Function to be used to get the index in the location
@@ -170,6 +174,13 @@ public:
   list <pair<int,double>> undoLast ();
   
   void clearHistory();
+
+  static const int OPEN_MIN_SETUP = 0;
+  static const int OPEN_MAX_SETUP = 1;
+  static const int CLOSED_MIN_SETUP = 2;
+  static const int CLOSED_MAX_SETUP = 3;
+  static const int RAND_RAND_SETUP = 4;
+  static const int MANUAL_SETUP=5;
 };
 }
 

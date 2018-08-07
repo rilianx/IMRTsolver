@@ -11,11 +11,12 @@ namespace imrt {
 
 
   Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures, 
-                   int max_intensity, int initial_intensity, int open_apertures):
+                   int max_intensity, int initial_intensity, int step_intensity, int open_apertures, int setup):
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures), 
-		intensity(max_apertures), max_intensity(max_intensity){
-
-	if(open_apertures==-1) open_apertures=max_apertures;
+		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
+                step_intensity(step_intensity) {
+    min_intensity=0;
+    if(open_apertures==-1) open_apertures=max_apertures;
 
     for (int i=0; i<volumes.size(); i++)
       D[i]=&volumes[i].getDepositionMatrix(angle);
@@ -33,7 +34,8 @@ namespace imrt {
     }
 
     // Iniatialize apertures (alternative representation)
-    for (int i=0; i<max_apertures; i++) {
+    initializeStation(setup, open_apertures); 
+    /*for (int i=0; i<max_apertures; i++) {
       vector<pair<int,int> > aux;
       for (int j=0; j<collimator.getXdim(); j++) {
         if (open_apertures>0)
@@ -44,7 +46,7 @@ namespace imrt {
       A[i]=aux;
       intensity[i]=initial_intensity;
       open_apertures--;
-    }
+    }*/
     
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
   }
@@ -53,6 +55,8 @@ namespace imrt {
     angle=s.angle;
     max_apertures=s.max_apertures;
     max_intensity=s.max_intensity;
+    min_intensity=s.min_intensity;
+    initial_intensity=s.initial_intensity;
     D=s.D;
     I=s.I;
     intensity=s.intensity;
@@ -69,6 +73,8 @@ namespace imrt {
     angle=s.angle;
     max_apertures=s.max_apertures;
     max_intensity=s.max_intensity;
+    min_intensity=s.min_intensity;
+    initial_intensity=s.initial_intensity;
     D=s.D;
     I=s.I;
     intensity=s.intensity;
@@ -80,6 +86,77 @@ namespace imrt {
     int2nb=s.int2nb;
     
     return(*this);
+  }
+
+  void Station::initializeStation(int type, int open_apertures) {
+    // Generating aperture patterns
+    if (type==OPEN_MAX_SETUP || type==OPEN_MIN_SETUP) {
+      for (int i=0; i<max_apertures; i++) {
+        vector<pair<int,int> > aux;
+        for (int j=0; j<collimator.getXdim(); j++)
+          aux.push_back(collimator.getActiveRange(j,angle));
+	A[i] =aux;
+      }
+    } else if (type==CLOSED_MAX_SETUP || type==CLOSED_MIN_SETUP) {
+      for (int i=0; i<max_apertures; i++){
+        vector<pair<int,int> > aux;
+        for (int j=0; j<collimator.getXdim(); j++)
+          aux.push_back(make_pair(-1,-1));
+        A[i] = aux;
+      }
+    } else if (type==RAND_RAND_SETUP) {
+      for (int i=0; i<max_apertures; i++) {
+       cout <<"a:" << i << endl;
+        vector<pair<int,int> > aux;
+        for (int j=0; j<collimator.getXdim(); j++) {
+          pair<int, int> range = collimator.getActiveRange(j,angle);
+          if (range.first<0) { 
+            aux.push_back(make_pair(-1,-1));
+            continue;
+          }
+          int index1 = range.first + rand() % (range.second-range.first);
+          cout << range.first << ","<< range.second << "  " << index1<< endl;
+          if ((range.first+index1) == range.second) {
+            aux.push_back(make_pair(range.second,range.second));
+          } else {
+            int index2 = index1 + rand() % (range.second-(range.first+index1));
+            cout << "this:" << index2 << endl;
+            aux.push_back(make_pair(index1,index2));
+          }
+        }
+        A[i]=aux;
+      }
+    } else {
+      //Keeping this for backwards compatibility
+      for (int i=0; i<max_apertures; i++) {
+        vector<pair<int,int> > aux;
+        for (int j=0; j<collimator.getXdim(); j++) {
+          if (open_apertures>0)
+            aux.push_back(collimator.getActiveRange(j,angle));
+          else
+            aux.push_back(make_pair(-1,-1));
+        }
+        open_apertures--; 
+        A[i]=aux;
+      }
+    }
+
+    // Generating intensity
+    if (type==OPEN_MIN_SETUP || type==CLOSED_MIN_SETUP) {
+      for (int i=0; i<max_apertures; i++)
+        intensity[i] = min_intensity;
+    } else if (type==OPEN_MAX_SETUP || type==CLOSED_MAX_SETUP) {
+      for (int i=0; i<max_apertures; i++)
+        intensity[i] = max_intensity;
+    } else if (type==RAND_RAND_SETUP) {
+      int n_levels = ((max_intensity-min_intensity) / step_intensity);
+      for (int i=0; i<max_apertures; i++)
+        intensity[i] = min_intensity + step_intensity * (rand() %  (n_levels+1));
+    } else {
+      for (int i=0; i<max_apertures; i++)
+        intensity[i] = initial_intensity;
+    }
+    generateIntensity();
   }
 
   void Station::clearIntensity() {

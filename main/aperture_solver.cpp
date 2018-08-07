@@ -68,6 +68,7 @@ int main(int argc, char** argv){
   int max_intensity=28;
   int step_intensity=2;
   bool acceptance=ILS::ACCEPT_NONE;
+  int initial_setup;
 
   // ls params
   double prob_intensity=0.2;
@@ -106,6 +107,13 @@ int main(int argc, char** argv){
   args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial-intensity"});
   args::ValueFlag<int> _max_intensity(parser, "int", "Max value aperture intensity  ("+to_string(max_intensity)+")", {"max-intensity"});
   args::ValueFlag<int> _step_intensity(parser, "int", "Step size for aperture intensity  ("+to_string(step_intensity)+")", {"step-intensity"});
+  
+  args::Group setup (parser, "Initial solution setup (these override all provided configurations):", args::Group::Validators::DontCare);
+  args::Flag open_max(setup, "open_max", "Open aperture setup with max intensity", {"open-max-setup"});
+  args::Flag open_min(setup, "open_min", "Open aperture setup with min intensity", {"open-min-setup"});
+  args::Flag closed_min(setup, "closed_min", "Closed aperture setup with min intensity", {"closed-min-setup"});
+  args::Flag closed_max(setup, "closed_max", "Closed aperture setup with max intensity", {"closed-max-setup"});
+  args::Flag all_rand(setup, "all_rand", "Random aperture setup with random intensity", {"rand-setup"});
   
   args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls-aperture"});
   args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls-intensity"});
@@ -171,6 +179,27 @@ int main(int argc, char** argv){
   if (accept_sa) acceptance=ILS::ACCEPT_SA;
   if (accept_best) acceptance=ILS::ACCEPT_NONE;
   if (_perturbation) perturbation=_perturbation.Get();
+  
+  //This should be at the end given that will modify values
+  if(open_max) {
+    initial_setup=Station::OPEN_MAX_SETUP;
+    initial_intensity=max_intensity;
+  } else if (open_min) {
+    initial_setup=Station::OPEN_MIN_SETUP;
+    initial_intensity=0;
+  } else if (closed_min) {
+    initial_setup=Station::CLOSED_MIN_SETUP;
+    initial_intensity=0;
+  } else if (closed_max) {
+    initial_setup=Station::CLOSED_MAX_SETUP;
+    initial_intensity=max_intensity;
+  } else if (all_rand) {
+    initial_setup=Station::RAND_RAND_SETUP;
+ }  else {
+    initial_setup=Station::MANUAL_SETUP;
+ }
+  
+  
 
   cout << "##**************************************************************************"<< endl;
   cout << "##**************************************************************************"<< endl;
@@ -188,7 +217,7 @@ int main(int argc, char** argv){
   Collimator collimator("data/test_instance_coordinates.txt");
   vector<Volume> volumes= createVolumes ("data/test_instance_organs.txt", collimator);
   
-  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, open_apertures);
+  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity, open_apertures, initial_setup);
   double best_eval=P.getEvaluation();
   
   
@@ -216,7 +245,13 @@ int main(int argc, char** argv){
   if (search_intensity)
     cout << "##   Searching: intensity" << endl;
   cout << "##   Probability intensity ls: " << prob_intensity << endl;
-  cout << "##   Open initial setup: " << open_apertures << endl;
+  cout << "##   Open initial setup: " ;
+  if (initial_setup==Station::OPEN_MAX_SETUP) cout << "open max intensity" << endl; 
+  else if (initial_setup==Station::OPEN_MIN_SETUP) cout << "open min intensity" << endl; 
+  else if (initial_setup==Station::CLOSED_MAX_SETUP) cout << "closed max intensity" << endl; 
+  else if (initial_setup==Station::CLOSED_MIN_SETUP) cout << "closed min intensity" << endl; 
+  else if (initial_setup==Station::RAND_RAND_SETUP) cout << "random" << endl; 
+  else cout << "manual, " << open_apertures << " open apertures" << endl;
   cout << "##   Initial intensity: " << initial_intensity << endl;
   cout << "##   Max intensity: " << max_intensity << endl;
   cout << "##   Step intensity: " << step_intensity << endl;
@@ -244,7 +279,9 @@ int main(int argc, char** argv){
   cout  << "##" << endl;
   ILS* ils;
   if(strategy=="dao_ls")    
-    ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, prob_intensity, step_intensity, initial_temperature, alphaT, perturbation, acceptance);
+    ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, 
+                          prob_intensity, step_intensity, initial_temperature, 
+                          alphaT, perturbation, acceptance);
   else if(strategy=="ibo_ls")
     ils = new IntensityILS(bsize, vsize, maxdelta, maxratio, alpha, beta);
 
