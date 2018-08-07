@@ -1,0 +1,116 @@
+##**************************************************************************
+##**************************************************************************
+##******** IMRT-Solver (Intensity-based Optimization Local Search) *********
+##**************************************************************************
+##**************************************************************************
+##Reading volume files.
+0 70 140 210 280
+##Reading collimator coordinates info.
+##  /home/leslie/instances/dao/Equidistantes/Coordinates/CoordinatesBeam_0.txt a:0
+##  /home/leslie/instances/dao/Equidistantes/Coordinates/CoordinatesBeam_70.txt a:70
+##  /home/leslie/instances/dao/Equidistantes/Coordinates/CoordinatesBeam_140.txt a:140
+##  /home/leslie/instances/dao/Equidistantes/Coordinates/CoordinatesBeam_210.txt a:210
+##  /home/leslie/instances/dao/Equidistantes/Coordinates/CoordinatesBeam_280.txt a:280
+##  Read 5 files.
+##Reading volume files.
+##  /home/leslie/instances/dao/Equidistantes/0_70_140_210_280_DDM_BLADDER.dat
+##  /home/leslie/instances/dao/Equidistantes/0_70_140_210_280_DDM_PTVHD.dat
+##  /home/leslie/instances/dao/Equidistantes/0_70_140_210_280_DDM_RECTUM.dat
+##  Read 3 files
+##Initilizing plan.
+Angle 0 intensity matrix:
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+-1 -1 -1 -1 -1  0 30 22 -1 
+-1 -1 -1  0  8 28 38 30  8 
+ 0  0  0  0 14 24 38 30 30 
+22 44 44 36 36 38  2  2  8 
+ 0  0  0  0  0  8 46 36 20 
+ 0  0  0  0  6 36 28 22 38 
+ 0  6 14  8  0 24 22 36 36 
+-1  0 14  6 24 24  8  8  0 
+-1 -1 -1 42 28 22 22  8  8 
+-1 -1 -1 -1 -1 -1 46 28 -1 
+Angle 70 intensity matrix:
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+-1  4 44  0  0 14 14 -1 -1 
+ 0 36 54 48 48 48 44 26 -1 
+ 0  0  4 30 26 32 32  4 -1 
+ 0  4 14 14 14 32 40  0  0 
+ 0  0 14  8 34 34 52  8  4 
+ 0  0 30 40 44 40  0  0 18 
+-1  0  0  0 30 34 58 30 26 
+-1 -1 -1 -1 -1 26  4  0 36 
+-1 -1 -1 -1 -1  4  8 18 48 
+Angle 140 intensity matrix:
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+-1 -1 40 68 68 68 16 -1 -1 
+ 0 28 28 28 44 44 32 32 -1 
+ 0 40 40 40 40 12 12 12 32 
+ 0  0 12 16 16  4  4 60  4 
+ 0  0 40 32 32 32 60 60 28 
+ 0  0  0 12 12 44 28  0  0 
+28 28 28  0  4  4 40 40 40 
+-1 -1 -1 -1  4  0 12  0 56 
+-1 -1 -1 -1 -1  0 32  4 40 
+Angle 210 intensity matrix:
+-1 -1 -1 -1 -1 -1 28 54 -1 
+-1 -1 -1 -1 -1 80 72 74 48 
+-1 -1 -1  0 24 32 28 20 50 
+-1  0  8 52 32 52 30 30 30 
+ 2  2  0  0  0 20 44 52 28 
+ 0  0 32 60 52 52 48 50  0 
+28 28 28 48 48 36 60 38  2 
+ 0  0  8  8 60 36 28 50 50 
+ 0  0 10 10 30 30 26 26 28 
+-1 -1 24 52 44 54 44 44 -1 
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+Angle 280 intensity matrix:
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+-1 -1 -1 -1 -1 -1 -1 10 60 
+-1 -1 -1 -1 -1 10 36 34  6 
+-1 30 30 30 32 32 32 44 44 
+ 6 36 36 30 36 36 10 34  0 
+ 0  0 34 28 54 54 54 26 36 
+ 0  6  6 10  6  6  0 54 26 
+ 0  0  0  0 34 32 32 36 -1 
+ 0  0  4  4 10 34 40 32 -1 
+-1 28  0 32 42 10  4 -1 -1 
+-1 -1 -1 -1 -1 -1 -1 -1 -1 
+##  Created 5 stations.
+##  Initial evaluation: 19504.4.
+##
+##**************************************************************************
+##*********************************** INFO *********************************
+##**************************************************************************
+##
+## Solver: 
+##   Iterations: 0
+##   Time: 20
+##   Seed: 1234567
+##   Temperature: 17
+##   alpha: 1
+##   Searching: aperture pattern
+##   Searching: intensity
+##   Probability intensity ls: 0.2
+##   Open initial setup: random
+##   Initial intensity: 2
+##   Max intensity: 28
+##   Step intensity: 2
+##   Perturbation size: 2
+##
+## Colimator configuration: 
+##   Stations: 5
+##   Angles: 0 70 140 210 280 
+##   Apertures: 5
+##
+## Instance information: 
+##   Volumes: 3
+##
+##**************************************************************************
+##********************************** SEARCH ********************************
+##**************************************************************************
+## Initial solution: 19504.4
+##
+## Staring ILS search.
