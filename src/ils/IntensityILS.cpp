@@ -15,18 +15,16 @@ namespace imrt {
 
 		//double delta_intensity= rand()%3+1;
 
-		double delta_intensity= rand()%int(maxdelta + step_intensity/2.0);
+		double delta_intensity= rand()%int(maxdelta-step_intensity+1)+step_intensity; //random entre step_intensity y maxdelta
 		delta_intensity = (int)  (delta_intensity/step_intensity) * step_intensity;
 
-
 		maxdelta = maxdelta*alpha;
+		if(maxdelta < step_intensity) maxdelta=step_intensity;
 
 		if(sign) delta_intensity*=-1;
 
 		double ratio= (maxratio>0.5)? rand()%int(maxratio + 0.5) : 0;
 		maxratio = maxratio*beta;
-
-		//cout <<endl<< delta_intensity << "," << ratio << endl;
 
 		auto diff=s->increaseIntensity_repair(beamlet,delta_intensity,ratio);
 		double eval=P.incremental_eval(*s,diff);

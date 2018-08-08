@@ -15,14 +15,14 @@ namespace imrt {
     last_changed=NULL;
   }
 
-  Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,  
-             vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity, 
+  Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,
+             vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity,
              int step_intensity, int open_apertures, int setup) : ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax) {
 
     cout << "##Initilizing plan."<< endl;
 
     for (int i=0;i<collimator.getNbAngles();i++) {
-      Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures, 
+      Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures,
                                      max_intensity, initial_intensity, step_intensity, open_apertures, setup);
       station->generateIntensity();
       real_stations.push_back(*station);
@@ -153,6 +153,28 @@ namespace imrt {
     list<Station*>::iterator s= stations.begin();
     advance(s,n);
     (*s)->printIntensity(false);
+  }
+
+  void Plan::writeIntensities(string file, int n) {
+  	ifstream myfile;
+  	myfile.open(file);
+
+    std::string line;
+    for(int i=0; i<n; i++) std::getline(myfile, line);
+
+  	int angle1, angle2, angle3, angle4, angle5;
+  	double F;
+  	myfile >> angle1;
+  	myfile >> angle2;
+  	myfile >> angle3;
+  	myfile >> angle4;
+  	myfile >> angle5;
+  	myfile >> F;
+
+  	for(auto station:stations){
+  		station->writeIntensity(myfile);
+  	}
+
   }
 
 }

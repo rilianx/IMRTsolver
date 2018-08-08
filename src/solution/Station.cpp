@@ -10,9 +10,9 @@
 namespace imrt {
 
 
-  Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures, 
+  Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures,
                    int max_intensity, int initial_intensity, int step_intensity, int open_apertures, int setup):
-		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures), 
+		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
 		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
                 step_intensity(step_intensity) {
     min_intensity=0;
@@ -34,7 +34,7 @@ namespace imrt {
     }
 
     // Iniatialize apertures (alternative representation)
-    initializeStation(setup, open_apertures); 
+    initializeStation(setup, open_apertures);
     /*for (int i=0; i<max_apertures; i++) {
       vector<pair<int,int> > aux;
       for (int j=0; j<collimator.getXdim(); j++) {
@@ -108,7 +108,7 @@ namespace imrt {
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++) {
           pair<int, int> range = collimator.getActiveRange(j,angle);
-          if (range.first<0) { 
+          if (range.first<0) {
             aux.push_back(make_pair(-1,-1));
             continue;
           }
@@ -132,7 +132,7 @@ namespace imrt {
           else
             aux.push_back(make_pair(-1,-1));
         }
-        open_apertures--; 
+        open_apertures--;
         A[i]=aux;
       }
     }
@@ -253,7 +253,26 @@ namespace imrt {
 			  }
 		  }
 	  }
+
+    cout << "nb_intensities:" << int2nb.size() << endl;
   }
+
+  void Station::writeIntensity(ifstream& myfile) {
+
+	  for (int i=0; i<collimator.getXdim();i++) {
+		  for (int j=0; j<collimator.getYdim(); j++) {
+			  if(I(i,j)!=-1){
+				  double intensity;
+				  myfile >> intensity;
+          intensity=(int) ((intensity + step_intensity/2.0)/step_intensity)*step_intensity;
+
+				  change_intensity(i, j, (int) (intensity));
+			  }
+		  }
+	  }
+  }
+
+
 
   void Station::printApertures() {
     cout << "Angle "<< angle << endl;

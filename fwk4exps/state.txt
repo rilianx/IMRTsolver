@@ -1,4 +1,4 @@
-algos:as_X0 as_X2 as_X4 as_X6 as_X8 as_X10 as_X12 as_X14 
+algos:as_X8 as_X10 as_X12 as_X14 as2_Y8 as2_Y10 as2_Y12 as2_Y14 
 gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
 gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
 compared instances:  0   0   0   0   0   0   0   0 
