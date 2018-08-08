@@ -375,7 +375,7 @@ int main(int argc, char** argv){
   set<int> l = get_angles(file, 5);
   if(_plot){
 	  std::stringstream ss;
-	  ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_setup << "_" << maxtime << "_" << seed <<".pdf";
+	  ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_intensity << "_" << maxtime << "_" << seed <<".pdf";
 	  std::string s = ss.str();
 	  system(s.c_str());
   }
