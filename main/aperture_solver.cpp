@@ -94,7 +94,8 @@ int main(int argc, char** argv){
   bool search_aperture=false;
   bool search_intensity=false;
   string strategy="dao_ls";
-
+  int ls_type=ApertureILS::FIRST_IMPROVEMENT;
+  
   int initial_intensity=2;
   int max_intensity=28;
   int step_intensity=2;
@@ -137,7 +138,6 @@ int main(int argc, char** argv){
   args::ValueFlag<int> _maxtime(parser, "int", "Maximum time in seconds ("+to_string(maxtime)+")", {"maxtime"});
   args::ValueFlag<int> _seed(parser, "int", "Seed  ("+to_string(seed)+")", {"seed"});
 
-  args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
   args::ValueFlag<int> _max_apertures(parser, "int", "Initial intensity for the station  ("+to_string(max_apertures)+")", {"max-apertures"});
   args::ValueFlag<int> _open_apertures(parser, "int", "Number of initialized open apertures (-1: all, default:"+to_string(open_apertures)+")", {"open-apertures"});
   args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial-intensity"});
@@ -151,10 +151,13 @@ int main(int argc, char** argv){
   args::Flag closed_max(setup, "closed_max", "Closed aperture setup with max intensity", {"closed-max-setup"});
   args::Flag all_rand(setup, "all_rand", "Random aperture setup with random intensity", {"rand-setup"});
   
+  args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
   args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls-aperture"});
   args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls-intensity"});
   args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob-intensity"});
-
+  args::Flag best_improv(dao_ls, "best_improv", "Apply best improvement when searching intensity or apertures", {"best-improvement"});
+  args::Flag first_improv(dao_ls, "first_improv", "Apply first improvement when searching intensity or apertures", {"first-improvement"});
+  
   args::Group accept (parser, "Acceptance criterion:", args::Group::Validators::AtMostOne);
   args::Flag accept_best(accept, "accept-best", "Accept only improvement", {"accept-best"});
   args::Flag accept_sa(accept, "accept-sa", "Accept as simulated annealing", {"accept-sa"});
@@ -162,10 +165,10 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
   args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
   args::ValueFlag<int> _perturbation(parser, "int", "Perturbation size  ("+to_string(perturbation)+")", {"perturbation-size"});
+  
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
   args::ValueFlag<string> _file(parser, "string", "File with the deposition matrix", {"file-dep"});
   args::ValueFlag<string> _file2(parser, "string", "File with the beam coordinates", {"file-coord"});
-
   args::ValueFlag<string> _path(parser, "string", "Absolute path of the executable (if it is executed from other directory)", {"path"});
 
 	try
@@ -215,9 +218,12 @@ int main(int argc, char** argv){
     search_aperture=true;
     search_intensity=true;
   }
+  if (first_improv) ls_type=ApertureILS::FIRST_IMPROVEMENT;
+  if (best_improv) ls_type=ApertureILS::BEST_IMPROVEMENT;
   if (accept_sa) acceptance=ILS::ACCEPT_SA;
   if (accept_best) acceptance=ILS::ACCEPT_NONE;
   if (_perturbation) perturbation=_perturbation.Get();
+
 
   //This should be at the end given that will modify values
   if(open_max) {
@@ -288,6 +294,10 @@ int main(int argc, char** argv){
   if (search_intensity)
     cout << "##   Searching: intensity" << endl;
   cout << "##   Probability intensity ls: " << prob_intensity << endl;
+  if (strategy=="dao_ls" && ls_type==ApertureILS::FIRST_IMPROVEMENT)
+    cout << "##   Local search: first improvement"  << endl;
+  if (strategy=="dao_ls" && ls_type==ApertureILS::BEST_IMPROVEMENT)
+    cout << "##   Local search: best improvement"  << endl;
   cout << "##   Open initial setup: " ;
   if (initial_setup==Station::OPEN_MAX_SETUP) cout << "open max intensity" << endl; 
   else if (initial_setup==Station::OPEN_MIN_SETUP) cout << "open min intensity" << endl; 
@@ -305,8 +315,6 @@ int main(int argc, char** argv){
   for (int i=0; i<collimator.getNbAngles();i++) cout << collimator.getAngle(i) << " ";
   cout << endl;
   cout << "##   Apertures: " << max_apertures << endl;
-
-
 
 
   cout << "##" << endl << "## Instance information: "<< endl;
@@ -327,7 +335,7 @@ int main(int argc, char** argv){
   if(strategy=="dao_ls")    
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, 
                           prob_intensity, step_intensity, initial_temperature, 
-                          alphaT, perturbation, acceptance);
+                          alphaT, perturbation, acceptance, ls_type);
   else if(strategy=="ibo_ls")
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
 

@@ -79,7 +79,7 @@ public:
 
 private:
 	//The list of stations
-	list<Station> real_stations;
+	//list<Station> real_stations;
 	list<Station*> stations;
   
   int n_stations;

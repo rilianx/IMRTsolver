@@ -12,11 +12,11 @@ namespace imrt {
 
 ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, 
                          double prob_intensity, int step_intensity , double initial_temperature,  
-                         double alpha, int perturbation_size, int acceptance=0): 
+                         double alpha, int perturbation_size, int acceptance=0, int ls_type=ApertureILS::FIRST_IMPROVEMENT): 
                          ILS(bsize, vsize, acceptance), search_intensity(search_intensity), 
                          search_aperture(search_aperture), prob_intensity(prob_intensity), 
                          step_intensity(step_intensity) , initial_temperature(initial_temperature), 
-                         alpha(alpha), perturbation_size(perturbation_size){
+                         alpha(alpha), perturbation_size(perturbation_size), ls_type(ls_type){
 //  cout << "per:" << perturbation_size << endl;
   temperature=initial_temperature;
 }
@@ -254,7 +254,7 @@ void ApertureILS::updateTemperature(){
 double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) {
   double aux_eval, local_eval=P.getEvaluation();
   bool search_a;
-  bool best_improvement=false;
+  bool best_improvement=ls_type;
   
   int beamlet = target_beam.second.second;
   Station* s = target_beam.second.first;

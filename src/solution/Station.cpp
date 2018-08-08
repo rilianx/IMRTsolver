@@ -57,7 +57,7 @@ namespace imrt {
     min_intensity=s.min_intensity;
     initial_intensity=s.initial_intensity;
     D=s.D;
-    I=s.I;
+    I= Matrix (s.I);
     intensity=s.intensity;
     A=s.A;
     last_mem=s.last_mem;
@@ -75,7 +75,7 @@ namespace imrt {
     min_intensity=s.min_intensity;
     initial_intensity=s.initial_intensity;
     D=s.D;
-    I=s.I;
+    I= Matrix (s.I);
     intensity=s.intensity;
     A=s.A;
     last_mem=s.last_mem;

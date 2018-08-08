@@ -25,7 +25,7 @@ namespace imrt {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures, 
                                      max_intensity, initial_intensity, step_intensity, open_apertures, setup);
       station->generateIntensity();
-      real_stations.push_back(*station);
+      //real_stations.push_back(*station);
       add_station(*station);
       station->printIntensity();
     }
@@ -42,7 +42,7 @@ namespace imrt {
       Station* aux = new Station(**it);
       if (p.last_changed && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
       add_station(*aux);
-      real_stations.push_back(*aux);
+      //real_stations.push_back(*aux);
     }
     evaluation_fx=p.evaluation_fx;
   }
@@ -55,12 +55,12 @@ namespace imrt {
     Zmin=p.Zmin;
     Zmax=p.Zmax;
     stations.clear();
-    real_stations.clear();
+    //real_stations.clear();
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
       Station* aux = new Station (**it);
       if (p.last_changed!=NULL && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
-      add_station(*aux);
-      real_stations.push_back(*aux);
+      stations.push_back(aux);
+      //real_stations.push_back(*aux);
     }
     evaluation_fx=p.evaluation_fx;
   }
