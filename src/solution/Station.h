@@ -122,9 +122,13 @@ public:
 
   void printIntensity(bool vector_form=false);
 
+  void writeIntensity(ifstream& myfile);
+
   void printApertures();
   
   void printAperture(int aperture);
+
+
 
   const Matrix& getDepositionMatrix(int o) const;
 

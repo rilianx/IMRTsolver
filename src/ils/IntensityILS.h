@@ -15,7 +15,7 @@ namespace imrt {
 class IntensityILS  : public ILS {
 public:
 	IntensityILS(int step_intensity, int bsize, int vsize, int maxdelta, int maxratio, double alpha, double beta, int perturbation_size=0) :
-		ILS(bsize, vsize), step_intensity(step_intensity), maxdelta(maxdelta), maxratio(maxratio), alpha(alpha), beta(beta),
+		ILS(bsize, vsize), step_intensity(step_intensity), maxdelta(maxdelta), maxdelta0(maxdelta), maxratio0(maxratio), maxratio(maxratio), alpha(alpha), beta(beta),
 		perturbation_size(perturbation_size){ };
 	virtual ~IntensityILS() { }
 
@@ -41,19 +41,24 @@ public:
 			s->reduce_apertures(diff);
 			eval=P.incremental_eval(*s,diff);
 		}
+		maxdelta=maxdelta0;
+		maxratio=maxratio0;
 
 		return(eval);
 	};
 
 	virtual bool perturbate(int no_improvement, int iteration) {
 
-		return (perturbation_size>0 && no_improvement>200);
+		return (perturbation_size>0 && no_improvement>100);
 	};
 
 	private:
 
 	int step_intensity;
 	int perturbation_size;
+
+	double maxdelta0;
+	double maxratio0;
 
 	double maxdelta;
 	double maxratio;

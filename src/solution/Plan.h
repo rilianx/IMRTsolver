@@ -23,10 +23,10 @@ namespace imrt {
 class Plan {
 public:
 	Plan(EvaluationFunction &ev);
-  
+
   Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
-  
-  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator, vector<Volume>& volumes, 
+
+  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator, vector<Volume>& volumes,
        int max_apertures, int max_intensity, int initial_intensity, int step_intensity=2, int open_apertures=-1, int setup=6);
 
   Plan(const Plan &p);
@@ -67,8 +67,10 @@ public:
 
 	//Lepi's version
 	void undoLast2();
-	
+
 	void printIntensity(int station);
+
+	void writeIntensities(string file, int n);
 
 	Station* get_station(int i){
 	    list<Station*>::iterator s= stations.begin();
@@ -81,7 +83,7 @@ private:
 	//The list of stations
 	//list<Station> real_stations;
 	list<Station*> stations;
-  
+
   int n_stations;
 
   Station* last_changed;

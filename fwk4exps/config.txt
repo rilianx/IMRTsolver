@@ -1,18 +1,23 @@
 [base]
 test_instances = instances.txt
 mintime = 0.0001
-maxtime = 20
+maxtime = 40
 factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
-max_seeds = 5
-min_seeds = 5
+max_seeds = 10
+min_seeds = 10
 algo_names = as
 
+#vsize [1 5 10 20 50 100]
+#bsize [1 5 10 15 20]
+#maxdelta [0 5 10 15] 
+#alpha=beta= [0.99 0.999 0.9999] 
+#maxratio [0 2 4 6] 
 
 [as]
 #tuning_param = X
-#tuning_values = 0 2 4 6 8 10 12 14
+#tuning_values = 8 10 12 14
 exec = "../AS"
-params =  -s ibo_ls --maxtime=_MAXTIME --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=5 --seed=_SEED --open-apertures=0 --initial-intensity=0 --step-intensity=2 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+params =  -s ibo_ls --maxtime=_MAXTIME --bsize=5 --vsize=20 --maxdelta=8 --alpha=0.999 --maxratio=6 --beta=0.999 --perturbation-size=4 --max-apertures=5 --seed=_SEED --open-apertures=0 --initial-intensity=0 --step-intensity=2 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=..
 outputpos_times = 0
 outputpos_boxes = 0
