@@ -83,11 +83,12 @@ public:
         cout << "NOTE: No beamlet available." << endl;
         local_eval = perturbation(current_plan);
         perturbation_iteration=iteration;
+        target_beam = getLSBeamlet(current_plan);
       }
 
       cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
               ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  <<
-              ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first << endl;
+              ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
       aux_eval = localSearch (target_beam, current_plan);
       cout << endl;
 
