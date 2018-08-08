@@ -15,7 +15,7 @@ namespace imrt {
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
 		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
                 step_intensity(step_intensity) {
-    min_intensity=0;
+    min_intensity=1;
     if(open_apertures==-1) open_apertures=max_apertures;
 
     for (int i=0; i<volumes.size(); i++)

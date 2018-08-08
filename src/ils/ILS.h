@@ -79,7 +79,7 @@ public:
       //cout << "ss"<< endl;
       target_beam = getLSBeamlet(current_plan);
       //cout << target_beam.second.second << endl;
-      if (target_beam.second.second < 0) {
+      while (target_beam.second.second < 0) {
         cout << "NOTE: No beamlet available." << endl;
         local_eval = perturbation(current_plan);
         perturbation_iteration=iteration;
@@ -124,7 +124,6 @@ public:
         no_improvement=no_improvement/2;
       }
     }
-
     current_plan.newCopy(best_plan);
     aux_eval=best_plan.eval();
     return(best_eval);
