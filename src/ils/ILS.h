@@ -123,6 +123,7 @@ public:
         no_improvement=no_improvement/2;
       }
     }
+
     current_plan.newCopy(best_plan);
     aux_eval=best_plan.eval();
     return(best_eval);

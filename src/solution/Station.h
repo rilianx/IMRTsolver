@@ -88,6 +88,8 @@ public:
   
   Station& operator=(const Station & s);
   
+  virtual ~Station(){};
+  
   void initializeStation(int type, int open_apertures);
  
  // intensity of an aperture i
