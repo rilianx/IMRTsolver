@@ -108,7 +108,7 @@ int main(int argc, char** argv){
   double min_temperature=0;
   double alphaT=0.95;
   int perturbation=2;
-
+  
   string file="data/testinstance_0_70_140_210_280.txt";
   string file2="data/test_instance_coordinates.txt";
 
@@ -157,6 +157,7 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob-intensity"});
   args::Flag best_improv(dao_ls, "best_improv", "Apply best improvement when searching intensity or apertures", {"best-improvement"});
   args::Flag first_improv(dao_ls, "first_improv", "Apply first improvement when searching intensity or apertures", {"first-improvement"});
+  args::Flag do_perturbate(dao_ls, "do_perturbate", "Perturbate after a selected criterion is triggered", {"perturbate"});
   
   args::Group accept (parser, "Acceptance criterion:", args::Group::Validators::AtMostOne);
   args::Flag accept_best(accept, "accept-best", "Accept only improvement", {"accept-best"});
@@ -335,7 +336,7 @@ int main(int argc, char** argv){
   if(strategy=="dao_ls")    
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, 
                           prob_intensity, step_intensity, initial_temperature, 
-                          alphaT, perturbation, acceptance, ls_type);
+                          alphaT, do_perturbate, perturbation, acceptance, ls_type);
   else if(strategy=="ibo_ls")
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
 

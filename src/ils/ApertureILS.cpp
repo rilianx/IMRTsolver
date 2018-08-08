@@ -12,11 +12,11 @@ namespace imrt {
 
 ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, 
                          double prob_intensity, int step_intensity , double initial_temperature,  
-                         double alpha, int perturbation_size, int acceptance=0, int ls_type=ApertureILS::FIRST_IMPROVEMENT): 
+                         double alpha, bool do_perturbate, int perturbation_size, int acceptance=0, int ls_type=ApertureILS::FIRST_IMPROVEMENT): 
                          ILS(bsize, vsize, acceptance), search_intensity(search_intensity), 
                          search_aperture(search_aperture), prob_intensity(prob_intensity), 
                          step_intensity(step_intensity) , initial_temperature(initial_temperature), 
-                         alpha(alpha), perturbation_size(perturbation_size), ls_type(ls_type){
+                         alpha(alpha), do_perturbate(do_perturbate), perturbation_size(perturbation_size), ls_type(ls_type){
 //  cout << "per:" << perturbation_size << endl;
   temperature=initial_temperature;
 }
@@ -163,10 +163,10 @@ double ApertureILS::improvementIntensity(int beamlet, Station& station, bool ope
 double ApertureILS::doOpen(int beamlet, int aperture, Station& station, double c_eval, Plan& P) {
   double aux_eval=0;
   list<pair<int, double> > diff;
-  
+  //cout << "open" << beamlet << "a" << aperture<< endl;  
   diff = station.openBeamlet(beamlet, aperture);
   if(diff.size() <1) return(c_eval);
-  
+   //cout <<"passed"<< endl;  
   aux_eval = P.incremental_eval(station, diff);
   //cout << "  Opening eval: " << aux_eval << " size: " << aux_diff.size() << " list: ";
   //for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
@@ -299,7 +299,7 @@ double ApertureILS::perturbation(Plan& P) {
   double aux_eval=P.getEvaluation();
   
   cout << "##  Perturbation: " ;
-    
+  if (perturbation_size==0) cout << "none";   
   for (int i=0; i<perturbation_size; i++) {
     list<Station*>::iterator s=stations.begin();
     std::advance(s,rand()%stations.size());
@@ -339,6 +339,7 @@ double ApertureILS::perturbation(Plan& P) {
 }
 
 bool ApertureILS::perturbate(int no_improvement, int iteration) {
+  if (!do_perturbate) return(false);
   if (no_improvement >= ((double) iteration)*0.3 )  return(true);
   //if (no_improvement==100) return(true);
   return(false);

@@ -82,6 +82,7 @@ public:
         cout << "NOTE: No beamlet available." << endl;
         local_eval = perturbation(current_plan);
         perturbation_iteration=iteration;
+        target_beam = getLSBeamlet(current_plan);
       }
 
       cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
