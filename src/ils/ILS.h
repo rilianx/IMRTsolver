@@ -126,6 +126,9 @@ public:
 
     current_plan.newCopy(best_plan);
     aux_eval=best_plan.eval();
+
+    best_plan.getEvaluationFunction().generate_voxel_dose_functions ();
+
     return(best_eval);
   };
 

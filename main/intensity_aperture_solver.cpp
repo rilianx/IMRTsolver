@@ -127,8 +127,8 @@ int main(int argc, char** argv){
 	IntensityILS ils(1, bsize, vsize, maxdelta, maxratio, alpha, beta);
 	ils.search(P,1000,maxiter);
 
-  F.generate_voxel_dose_functions ();
-  system("python plotter/plot.py");
+
+   system("python plotter/plot.py");
 
 	return 0;
 

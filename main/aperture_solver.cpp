@@ -165,6 +165,8 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
   args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
   args::ValueFlag<int> _perturbation(parser, "int", "Perturbation size  ("+to_string(perturbation)+")", {"perturbation-size"});
+
+  args::Flag _plot(parser, "bool", "Generate plot and save in file", {"plot"});
   
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
   args::ValueFlag<string> _file(parser, "string", "File with the deposition matrix", {"file-dep"});
@@ -368,7 +370,14 @@ int main(int argc, char** argv){
 	cout << "Final solution: " << best_eval << endl << endl;
 
   F.generate_voxel_dose_functions ();
-  system("python plotter/plot.py");*/
+  */
+  set<int> l = get_angles(file, 5);
+  if(_plot){
+	  std::stringstream ss;
+	  ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_setup << "_" << maxtime << "_" << seed <<".pdf";
+	  std::string s = ss.str();
+	  system(s.c_str());
+  }
 
 	return 0;
 
