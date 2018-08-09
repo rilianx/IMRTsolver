@@ -61,6 +61,7 @@ private:
   int perturbation_size;  
   bool do_perturbate;
 
+  list<pair<Station*, int>> tabu;
 };
 
 }

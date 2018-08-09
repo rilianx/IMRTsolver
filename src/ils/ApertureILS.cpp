@@ -355,10 +355,11 @@ double ApertureILS::perturbation(Plan& P) {
 
 bool ApertureILS::perturbate(int no_improvement, int iteration) {
   if (!do_perturbate) return(false);
-  if (no_improvement >= ((double) iteration)*0.3) {  
-    return(true);
-  }//if (no_improvement==100) return(true);
-  return(false);
+  //if (no_improvement >= ((double) iteration)*0.3) {  
+  //  return(true);
+  //}
+  if (no_improvement==100) return(true);
+    return(false);
 };
 
 }
