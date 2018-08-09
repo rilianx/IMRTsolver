@@ -22,6 +22,10 @@ ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool searc
 }
 
 bool ApertureILS::isBeamletModifiable(int beamlet, Station* station, bool open_flag) {
+  for (auto it=tabu.begin(); it!=tabu.end();it++){
+    if (it->first->getAngle() == station->getAngle() && it->second == beamlet) return(false);
+  }
+
   if (!open_flag) {
     if (station->anyOpen(beamlet) && search_aperture)
       return(true);
@@ -38,25 +42,31 @@ bool ApertureILS::isBeamletModifiable(int beamlet, Station* station, bool open_f
 
 pair <bool, pair<Station*, int> > ApertureILS::getLSBeamlet(Plan& P){
   auto sb = P.best_beamlets(bsize, vsize);
+  Station* s;
+  if (sb.size() < 1) return(make_pair(false, make_pair(s,-1))); 
+
   auto it = sb.begin();
-  std::advance(it,rand()%sb.size());
-  
-  Station * s = it->second.first; 
+  int addit = rand()%sb.size();
+  std::advance(it,addit);
+
+  s = it->second.first; 
   int beamlet = it->second.second;
   bool sign = it->first.second; 
-  
+
   int i=0;
   while (!isBeamletModifiable(beamlet, s, !sign)) {
     // If no beamlet was found return -1
     i++;
-    if (i==sb.size()) return(make_pair(false, make_pair(s,-1)));
+    if (i==sb.size()) {
+      return(make_pair(false, make_pair(s,-1)));
+    }
     std::advance(it,1);
     if (it==sb.end()) it = sb.begin();
-    
+
     s = it->second.first; 
     beamlet = it->second.second;
     sign = it->first.second; 
-  } 
+  }
   return(make_pair(sign, make_pair(s,beamlet)));
 }
 
@@ -287,7 +297,11 @@ double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Pla
     cout << "ERROR: Search option not recognized!!!" << endl;
     
   }
-  
+  if (local_eval>aux_eval) { 
+    tabu.clear();
+  }else{
+    tabu.push_back(make_pair(s, beamlet));
+  }
   return(aux_eval);
 }
 
@@ -300,6 +314,7 @@ double ApertureILS::perturbation(Plan& P) {
   
   cout << "##  Perturbation: " ;
   if (perturbation_size==0) cout << "none";   
+  else tabu.clear();
   for (int i=0; i<perturbation_size; i++) {
     list<Station*>::iterator s=stations.begin();
     std::advance(s,rand()%stations.size());
@@ -340,8 +355,9 @@ double ApertureILS::perturbation(Plan& P) {
 
 bool ApertureILS::perturbate(int no_improvement, int iteration) {
   if (!do_perturbate) return(false);
-  if (no_improvement >= ((double) iteration)*0.3 )  return(true);
-  //if (no_improvement==100) return(true);
+  if (no_improvement >= ((double) iteration)*0.3) {  
+    return(true);
+  }//if (no_improvement==100) return(true);
   return(false);
 };
 

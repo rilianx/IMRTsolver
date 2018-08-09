@@ -28,6 +28,8 @@ public:
 
   ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance){
   };
+  
+  virtual ~ILS() { };
 
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
   virtual bool acceptanceCriterion(double new_eval, double prev_eval)=0;
@@ -84,6 +86,10 @@ public:
         local_eval = perturbation(current_plan);
         perturbation_iteration=iteration;
         target_beam = getLSBeamlet(current_plan);
+        if (local_eval < best_eval) {
+          best_eval=local_eval;
+          best_plan.newCopy(current_plan);
+        }
       }
 
       cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
@@ -125,8 +131,10 @@ public:
       }
     }
     current_plan.newCopy(best_plan);
-    aux_eval=best_plan.eval();
-    return(best_eval);
+    aux_eval=current_plan.getEvaluation();
+    //aux_eval=best_plan.eval();
+    cout << "Resulting: " << aux_eval<< endl;
+    return(aux_eval);
   };
 
 

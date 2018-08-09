@@ -17,7 +17,8 @@ namespace imrt {
                 step_intensity(step_intensity) {
     min_intensity=1;
     if(open_apertures==-1) open_apertures=max_apertures;
-
+    
+    n_volumes=volumes.size();
     for (int i=0; i<volumes.size(); i++)
       D[i]=&volumes[i].getDepositionMatrix(angle);
 
@@ -51,12 +52,18 @@ namespace imrt {
   }
 
   Station::Station(const Station &s): collimator(s.collimator){
+    collimator=s.collimator;
     angle=s.angle;
     max_apertures=s.max_apertures;
     max_intensity=s.max_intensity;
     min_intensity=s.min_intensity;
     initial_intensity=s.initial_intensity;
-    D=s.D;
+    n_volumes=s.n_volumes;
+    for (int i=0; i<n_volumes; i++){
+      const Matrix * aux= s.D.find(i)->second;
+      D[i]=aux;
+    }
+    //I=s.I;
     I= Matrix (s.I);
     intensity=s.intensity;
     A=s.A;
@@ -74,8 +81,13 @@ namespace imrt {
     max_intensity=s.max_intensity;
     min_intensity=s.min_intensity;
     initial_intensity=s.initial_intensity;
-    D=s.D;
+    n_volumes=s.n_volumes;
+    for (int i=0; i<n_volumes; i++) {
+      const Matrix * aux= s.D.find(i)->second;
+      D[i]=aux;
+    }
     I= Matrix (s.I);
+    //I= s.I;
     intensity=s.intensity;
     A=s.A;
     last_mem=s.last_mem;

@@ -54,7 +54,7 @@ private:
   int min_intensity;
   int initial_intensity;
   int step_intensity;
-
+  int n_volumes; 
   /** Apertures (representation 1):
    * Each aperture is represented by a vector of pairs A[i] = (x_ini, x_fin)
    * and an intensity
@@ -88,7 +88,7 @@ public:
   
   Station& operator=(const Station & s);
   
-  virtual ~Station(){};
+  virtual ~Station(){ };
   
   void initializeStation(int type, int open_apertures);
  
