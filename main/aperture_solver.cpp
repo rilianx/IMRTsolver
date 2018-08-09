@@ -30,7 +30,7 @@ set<int> get_angles(string file, int n){
   if (! _file)
     cerr << "ERROR: unable to open instance file: " << file << ", stopping! \n";
 
-  cout << "##Reading volume files." << endl;
+  //cout << "##Reading volume files." << endl;
   getline(_file, line);
   _file.close();
 
@@ -39,7 +39,7 @@ set<int> get_angles(string file, int n){
   char delim=' ';
   std::size_t current, previous = 0;
   current = line.find(delim);
-  cout << line << endl;
+  //cout << line << endl;
   while (current != std::string::npos) {
     angles.insert(atoi(line.substr(previous, current - previous).c_str()));
     previous = current + 1;
@@ -95,7 +95,7 @@ int main(int argc, char** argv){
   bool search_intensity=false;
   string strategy="dao_ls";
   int ls_type=ApertureILS::FIRST_IMPROVEMENT;
-  
+
   int initial_intensity=2;
   int max_intensity=28;
   int step_intensity=2;
@@ -108,7 +108,7 @@ int main(int argc, char** argv){
   double min_temperature=0;
   double alphaT=0.95;
   int perturbation=2;
-  
+
   string file="data/testinstance_0_70_140_210_280.txt";
   string file2="data/test_instance_coordinates.txt";
 
@@ -150,7 +150,7 @@ int main(int argc, char** argv){
   args::Flag closed_min(setup, "closed_min", "Closed aperture setup with min intensity", {"closed-min-setup"});
   args::Flag closed_max(setup, "closed_max", "Closed aperture setup with max intensity", {"closed-max-setup"});
   args::Flag all_rand(setup, "all_rand", "Random aperture setup with random intensity", {"rand-setup"});
-  
+
   args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
   args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls-aperture"});
   args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls-intensity"});
@@ -158,7 +158,7 @@ int main(int argc, char** argv){
   args::Flag best_improv(dao_ls, "best_improv", "Apply best improvement when searching intensity or apertures", {"best-improvement"});
   args::Flag first_improv(dao_ls, "first_improv", "Apply first improvement when searching intensity or apertures", {"first-improvement"});
   args::Flag do_perturbate(dao_ls, "do_perturbate", "Perturbate after a selected criterion is triggered", {"perturbate"});
-  
+
   args::Group accept (parser, "Acceptance criterion:", args::Group::Validators::AtMostOne);
   args::Flag accept_best(accept, "accept-best", "Accept only improvement", {"accept-best"});
   args::Flag accept_sa(accept, "accept-sa", "Accept as simulated annealing", {"accept-sa"});
@@ -166,7 +166,9 @@ int main(int argc, char** argv){
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
   args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
   args::ValueFlag<int> _perturbation(parser, "int", "Perturbation size  ("+to_string(perturbation)+")", {"perturbation-size"});
-  
+
+  args::Flag _plot(parser, "bool", "Generate plot and save in file", {"plot"});
+
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
   args::ValueFlag<string> _file(parser, "string", "File with the deposition matrix", {"file-dep"});
   args::ValueFlag<string> _file2(parser, "string", "File with the beam coordinates", {"file-coord"});
@@ -300,11 +302,11 @@ int main(int argc, char** argv){
   if (strategy=="dao_ls" && ls_type==ApertureILS::BEST_IMPROVEMENT)
     cout << "##   Local search: best improvement"  << endl;
   cout << "##   Open initial setup: " ;
-  if (initial_setup==Station::OPEN_MAX_SETUP) cout << "open max intensity" << endl; 
-  else if (initial_setup==Station::OPEN_MIN_SETUP) cout << "open min intensity" << endl; 
-  else if (initial_setup==Station::CLOSED_MAX_SETUP) cout << "closed max intensity" << endl; 
-  else if (initial_setup==Station::CLOSED_MIN_SETUP) cout << "closed min intensity" << endl; 
-  else if (initial_setup==Station::RAND_RAND_SETUP) cout << "random" << endl; 
+  if (initial_setup==Station::OPEN_MAX_SETUP) cout << "open max intensity" << endl;
+  else if (initial_setup==Station::OPEN_MIN_SETUP) cout << "open min intensity" << endl;
+  else if (initial_setup==Station::CLOSED_MAX_SETUP) cout << "closed max intensity" << endl;
+  else if (initial_setup==Station::CLOSED_MIN_SETUP) cout << "closed min intensity" << endl;
+  else if (initial_setup==Station::RAND_RAND_SETUP) cout << "random" << endl;
   else cout << "manual, " << open_apertures << " open apertures" << endl;
   cout << "##   Initial intensity: " << initial_intensity << endl;
   cout << "##   Max intensity: " << max_intensity << endl;
@@ -333,9 +335,9 @@ int main(int argc, char** argv){
   srand(seed);
 
   ILS* ils;
-  if(strategy=="dao_ls")    
-    ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture, 
-                          prob_intensity, step_intensity, initial_temperature, 
+  if(strategy=="dao_ls")
+    ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
+                          prob_intensity, step_intensity, initial_temperature,
                           alphaT, do_perturbate, perturbation, acceptance, ls_type);
   else if(strategy=="ibo_ls")
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
@@ -369,7 +371,14 @@ int main(int argc, char** argv){
 	cout << "Final solution: " << best_eval << endl << endl;
 
   F.generate_voxel_dose_functions ();
-  system("python plotter/plot.py");*/
+  */
+  set<int> l = get_angles(file, 5);
+  if(_plot){
+	  std::stringstream ss;
+	  ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_intensity << "_" << maxtime << "_" << seed <<".pdf";
+	  std::string s = ss.str();
+	  system(s.c_str());
+  }
 
 	return 0;
 

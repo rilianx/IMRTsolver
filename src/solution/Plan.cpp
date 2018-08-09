@@ -27,7 +27,7 @@ namespace imrt {
       station->generateIntensity();
       //real_stations.push_back(*station);
       add_station(*station);
-      station->printIntensity();
+      //station->printIntensity();
     }
     cout << "##  Created " << stations.size() << " stations."<< endl;
     eval();

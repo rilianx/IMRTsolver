@@ -132,8 +132,8 @@ public:
     }
     current_plan.newCopy(best_plan);
     aux_eval=current_plan.getEvaluation();
-    //aux_eval=best_plan.eval();
-    cout << "Resulting: " << aux_eval<< endl;
+    best_plan.getEvaluationFunction().generate_voxel_dose_functions ();
+
     return(aux_eval);
   };
 

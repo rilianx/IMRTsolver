@@ -72,6 +72,10 @@ public:
 
 	void writeIntensities(string file, int n);
 
+	EvaluationFunction& getEvaluationFunction(){
+		return ev;
+	}
+
 	Station* get_station(int i){
 	    list<Station*>::iterator s= stations.begin();
 	    advance(s,i);
