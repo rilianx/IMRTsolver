@@ -15,6 +15,7 @@ int EvaluationFunction::n_evaluations=0;
 
 EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F(0.0),
 	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(150)) {
+  n_volumes =volumes.size();
 	for(int i=0; i<nb_organs; i++){
 		nb_voxels[i]=volumes[i].getNbVoxels();
 		Z.insert(Z.end(), vector<double>(nb_voxels[i]));
@@ -22,18 +23,20 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F
 	}
 }
 
-EvaluationFunction::EvaluationFunction(const EvaluationFunction& ef) {
+EvaluationFunction::EvaluationFunction(const EvaluationFunction& ef):  prev_F(0.0), F(0.0),
+nb_organs(ef.n_volumes), nb_voxels(ef.n_volumes), voxel_dose(ef.n_volumes, vector<double>(150)) {
   prev_F=ef.prev_F;
   F=ef.F;
   nb_organs=ef.nb_organs;
-  nb_voxels=ef.nb_voxels;
+  n_volumes=ef.n_volumes;
+  nb_voxels=nb_voxels;
   voxel_dose=ef.voxel_dose;
-  Z=ef.Z;
   D=ef.D;
-  tumor_voxels=ef.tumor_voxels;
+  Z=ef.Z;
   voxels=ef.voxels;
   o_voxels=ef.o_voxels;
   Z_diff=ef.Z_diff;
+  tumor_voxels=ef.tumor_voxels;
 }
 
 EvaluationFunction::~EvaluationFunction() { }
@@ -42,14 +45,16 @@ EvaluationFunction & EvaluationFunction::operator=(const EvaluationFunction & ef
   prev_F=ef.prev_F;
   F=ef.F;
   nb_organs=ef.nb_organs;
+  n_volumes=ef.n_volumes;
   nb_voxels=ef.nb_voxels;
   voxel_dose=ef.voxel_dose;
-  Z=ef.Z;
   D=ef.D;
-  tumor_voxels=ef.tumor_voxels;
+  Z=ef.Z;
   voxels=ef.voxels;
   o_voxels=ef.o_voxels;
   Z_diff=ef.Z_diff;
+  tumor_voxels=ef.tumor_voxels;
+  
   return *this;
 }
 
@@ -220,52 +225,6 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
   return F;
 
 }
-
-/*double EvaluationFunction::delta_eval(Station& station, vector<double>& w,
-  vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
-  
-  double delta_F=0.0;
-  
-  //for each voxel we compute the change produced by the modified beamlets
-  //while at the same time we compute the variation in the function F produced by all these changes
-  
-  for(int o=0; o<nb_organs; o++){
-    const Matrix&  D = station.getDepositionMatrix(o);
-  	for(int k=0; k<nb_voxels[o]; k++){
-  		//we compute the change in the delivered dose in voxel k of the organ o
-  		double delta=0.0;
-  
-  		for (auto let:diff){
-  		    int b=let.first;
-  			if(D(k,b)==0.0) continue;
-  				delta+= D(k,b)*let.second;
-  		}
-  
-  		if(delta==0.0) continue; //no change in the voxel
-  
-  		double pen=0.0;
-  		//with the change in the dose of a voxel we can incrementally modify the value of F
-  		if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
-  			pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
-  		else if(Z[o][k] < Zmin[o]) //the penalty disappears
-  			pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
-  		else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
-  			pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
-  
-  		if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
-  			pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
-  		else if(Z[o][k] > Zmax[o]) //the penalty disappears
-  			pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
-  		else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
-  			pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
-  
-  		delta_F += pen/nb_voxels[o];
-  	}
-  }
-  
-  F+=delta_F;
-  return F;
-  }*/
 
 void EvaluationFunction::undo_last_eval(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax){

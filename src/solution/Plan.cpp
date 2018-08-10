@@ -49,8 +49,8 @@ namespace imrt {
 
   void Plan::newCopy(Plan& p) {
     last_changed=NULL;
-    EvaluationFunction aux_ev(p.ev);
-    ev=aux_ev;
+    EvaluationFunction* aux_ev= new EvaluationFunction (p.ev);
+    ev=*aux_ev;
     w=p.w;
     Zmin=p.Zmin;
     Zmax=p.Zmax;

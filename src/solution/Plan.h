@@ -31,7 +31,7 @@ public:
 
   Plan(const Plan &p);
 
-	virtual ~Plan() {};
+	//virtual ~Plan() {};
 
 	void newCopy(Plan& p);
 
@@ -72,8 +72,8 @@ public:
 
 	void writeIntensities(string file, int n);
 
-	EvaluationFunction& getEvaluationFunction(){
-		return ev;
+	EvaluationFunction* getEvaluationFunction(){
+		return &ev;
 	}
 
 	Station* get_station(int i){
@@ -81,7 +81,6 @@ public:
 	    advance(s,i);
 	    return *s;
 	}
-
 
 private:
 	//The list of stations

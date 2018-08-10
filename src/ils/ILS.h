@@ -64,7 +64,7 @@ public:
   //  init_plan = new Plan(current_plan);
 
 
-    Plan best_plan (current_plan);
+    Plan best_plan= Plan(current_plan);
 
     pair<bool, pair<Station*, int>> target_beam;
     double local_eval, aux_eval,  best_eval=current_plan.eval();
@@ -132,7 +132,7 @@ public:
     }
     current_plan.newCopy(best_plan);
     aux_eval=current_plan.getEvaluation();
-    best_plan.getEvaluationFunction().generate_voxel_dose_functions ();
+    best_plan.getEvaluationFunction()->generate_voxel_dose_functions ();
 
     return(aux_eval);
   };
