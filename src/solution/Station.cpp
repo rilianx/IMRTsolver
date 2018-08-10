@@ -36,6 +36,7 @@ namespace imrt {
 
     // Iniatialize apertures (alternative representation)
     initializeStation(setup, open_apertures);
+    //printApertures();
     /*for (int i=0; i<max_apertures; i++) {
       vector<pair<int,int> > aux;
       for (int j=0; j<collimator.getXdim(); j++) {
@@ -104,8 +105,9 @@ namespace imrt {
     if (type==OPEN_MAX_SETUP || type==OPEN_MIN_SETUP) {
       for (int i=0; i<max_apertures; i++) {
         vector<pair<int,int> > aux;
-        for (int j=0; j<collimator.getXdim(); j++)
+        for (int j=0; j<collimator.getXdim(); j++){
           aux.push_back(collimator.getActiveRange(j,angle));
+        }
 	      A[i] =aux;
       }
     } else if (type==CLOSED_MAX_SETUP || type==CLOSED_MIN_SETUP) {
@@ -412,7 +414,7 @@ namespace imrt {
 
   bool Station::isOpenBeamlet(int beam, int aperture) {
   	auto coord = collimator.indexToPos(beam, angle);
-
+        if (!collimator.isActiveBeamAngle(coord.first, coord.second,angle)) return(false);
     //cout << "Checking beamlet: " << beam << " angle:" << aperture << endl;
     //cout << "Position: " << coord.first << "," << coord.second << endl;
   	if (A[aperture][coord.first].first < 0 || A[aperture][coord.first].first > coord.second || A[aperture][coord.first].second< coord.second)
@@ -542,11 +544,10 @@ namespace imrt {
       else if (intensity[aperture]+size>max_intensity && intensity[aperture]!=max_intensity) size = max_intensity-intensity[aperture];
       else return (diff);
     }
-
     intensity[aperture]=intensity[aperture]+size;
 
     for (int i=0; i<collimator.getXdim(); i++) {
-      if (A[aperture][i].first<0) continue;
+      if (A[aperture][i].first<0 || A[aperture][i].second<0) continue;
       int beamlet = pos2beam[make_pair(i, A[aperture][i].first)];
       for(int j=A[aperture][i].first; j<=A[aperture][i].second; j++){
         diff.push_back(make_pair(beamlet, size));
@@ -560,9 +561,9 @@ namespace imrt {
 
   void Station::updateIntensity(list<pair<int,double> > diff) {
     pair<int,int> coord;
-    for (list<pair<int,double> >::iterator it=diff.begin();it!=diff.end();it++) {
+    if (diff.size()==0){ cout <<"cero" << endl; return; }
+    for (auto it=diff.begin();it!=diff.end();it++) {
       coord=collimator.indexToPos(it->first, angle);
-     // cout << "THIS: " << coord.first << " " << coord.second << endl;
       I(coord.first,coord.second) = I(coord.first,coord.second) + it->second;
     }
   }

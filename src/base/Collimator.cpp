@@ -219,7 +219,8 @@ namespace imrt {
         if (flag) {
           for (int s=0; s<ycoord.size(); s++) {
             if (ycoord[s]==nmin) selmin=s;
-            else if(ycoord[s]==nmax) selmax=s;
+            //NOTA DE LESLIE: Aqui habia un else que no era correcto!!
+            if(ycoord[s]==nmax) selmax=s;
           }
         } else {
           selmin=-1;selmax=-1;
