@@ -17,6 +17,7 @@ algo_names = as-close as-open-min as-open-max dao-as-close dao-open-min dao-open
 [as-close]
 tuning_param = X
 tuning_values = 40
+<<<<<<< HEAD
 exec = "../AS"
 params =  -s ibo_ls --maxtime=_X --bsize=15 --vsize=10 --maxdelta=10 --alpha=0.99 --maxratio=2 --beta=0.99 --perturbation-size=4 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-apertures=1 --initial-intensity=0 --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --plot
 outputpos_times = 0
