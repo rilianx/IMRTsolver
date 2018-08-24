@@ -28,7 +28,7 @@ public:
 
   ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance){
   };
-  
+
   virtual ~ILS() { };
 
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
@@ -132,7 +132,8 @@ public:
     }
     current_plan.newCopy(best_plan);
     aux_eval=current_plan.getEvaluation();
-    best_plan.getEvaluationFunction()->generate_voxel_dose_functions ();
+    cout << 1 << endl;
+    best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
 
     return(aux_eval);
   };

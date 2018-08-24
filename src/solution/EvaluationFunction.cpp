@@ -29,7 +29,7 @@ nb_organs(ef.n_volumes), nb_voxels(ef.n_volumes), voxel_dose(ef.n_volumes, vecto
   F=ef.F;
   nb_organs=ef.nb_organs;
   n_volumes=ef.n_volumes;
-  nb_voxels=nb_voxels;
+  nb_voxels=ef.nb_voxels;
   voxel_dose=ef.voxel_dose;
   D=ef.D;
   Z=ef.Z;
@@ -54,7 +54,7 @@ EvaluationFunction & EvaluationFunction::operator=(const EvaluationFunction & ef
   o_voxels=ef.o_voxels;
   Z_diff=ef.Z_diff;
   tumor_voxels=ef.tumor_voxels;
-  
+
   return *this;
 }
 
@@ -281,6 +281,7 @@ void EvaluationFunction::generate_voxel_dose_functions (){
 		std::set<double, std::greater<double> > dose;
 		std::fill(voxel_dose[o].begin(), voxel_dose[o].end(), 0.0);
 		for(int k=0; k<nb_voxels[o]; k++){
+
 			dose.insert(Z[o][k]);
 			if(Z[o][k]<150)
 				voxel_dose[o][(int) Z[o][k]]+=1;

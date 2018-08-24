@@ -267,12 +267,24 @@ int main(int argc, char** argv){
   P.writeIntensities("data/Equidistantes/optimalSolutions.txt",n);
 
   P.printIntensity(0);
+
   P.printIntensity(1);
+
   P.printIntensity(2);
+
   P.printIntensity(3);
+
   P.printIntensity(4);
 
   cout << P.eval() << endl;
+  P.getEvaluationFunction()->generate_voxel_dose_functions ();
+  set<int> l = get_angles(file, 5);
+
+    std::stringstream ss;
+    ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_intensity << "_" << initial_setup << "_" << maxtime << "_" << seed <<".pdf";
+    std::string s = ss.str();
+    system(s.c_str());
+
 
   return 0;
 
