@@ -25,3 +25,6 @@ data/equidistant-instances.tar.gz
 /LSA
 fwk4exps/as2/
 *.pdf
+/.RData
+/.Rhistory
+/output.png
