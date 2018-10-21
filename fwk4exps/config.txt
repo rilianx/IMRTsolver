@@ -10,14 +10,13 @@ algo_names = as-close as-open-min as-open-max dao-as-close dao-open-min dao-open
 
 #vsize [1 5 10 20 50 100]
 #bsize [1 5 10 15 20]
-#maxdelta [0 5 10 15] 
-#alpha=beta= [0.99 0.999 0.9999] 
-#maxratio [0 2 4 6] 
+#maxdelta [0 5 10 15]
+#alpha=beta= [0.99 0.999 0.9999]
+#maxratio [0 2 4 6]
 
 [as-close]
 tuning_param = X
 tuning_values = 40
-<<<<<<< HEAD
 exec = "../AS"
 params =  -s ibo_ls --maxtime=_X --bsize=15 --vsize=10 --maxdelta=10 --alpha=0.99 --maxratio=2 --beta=0.99 --perturbation-size=4 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-apertures=1 --initial-intensity=0 --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --plot
 outputpos_times = 0
@@ -28,7 +27,7 @@ outputpos_boxes = 0
 tuning_param = X
 tuning_values = 10 20 30 40
 exec = "../AS"
-params =  -s ibo_ls --maxtime=40 --bsize=15 --vsize=_X --maxdelta=10 --alpha=0.99 --maxratio=2 --beta=0.99 --perturbation-size=4 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-apertures=1 --initial-intensity=5 --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --plot
+params =  -s ibo_ls --maxtime=40 --bsize=45 --vsize=92 --maxdelta=15 --alpha=0.99 --maxratio=5 --beta=0.99 --perturbation-size=6 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-apertures=1 --initial-intensity=5 --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --plot
 outputpos_times = 0
 outputpos_boxes = 0
 

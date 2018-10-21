@@ -54,7 +54,7 @@ private:
   int min_intensity;
   int initial_intensity;
   int step_intensity;
-  int n_volumes; 
+  int n_volumes;
   /** Apertures (representation 1):
    * Each aperture is represented by a vector of pairs A[i] = (x_ini, x_fin)
    * and an intensity
@@ -71,7 +71,7 @@ private:
    void change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff=NULL );
 
    void clearIntensity();
-   
+
    //These auxiliar variables to track last changes
    pair<pair<int,int>, pair<int,int>> last_mem;
    list<pair<int,double>> last_diff;
@@ -80,18 +80,18 @@ public:
 
    // Constructs a new Station
    // initial_open_apertures: number of open apertures
-  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle, 
-          int max_apertures, int max_intensity=28, int initial_intensity=0, 
+  Station(Collimator& _collimator, vector<Volume>& volumes, int _angle,
+          int max_apertures, int max_intensity=28, int initial_intensity=0,
           int step_intensity=2, int open_apertures=-1, int setup=6);
-  
+
   Station(const Station &s);
-  
+
   Station& operator=(const Station & s);
-  
+
   virtual ~Station(){ };
-  
+
   void initializeStation(int type, int open_apertures);
- 
+
  // intensity of an aperture i
   vector<double> intensity;
 
@@ -103,6 +103,27 @@ public:
   int getIntensity(int beam) const{
     pair<int,int> p = getPos(beam);
     return I(p.first,p.second);
+  }
+
+  // Returns the total intesity of the apertures
+  int get_sum_alpha(string strategy) const{
+    int intens=0;
+    if(strategy=="dao_ls"){
+      for(auto i:intensity) intens+=i;
+      return intens;
+    }else if(strategy=="ibo_ls"){
+	    for (int i=0; i<collimator.getXdim();i++)
+		    for (int j=0; j<collimator.getYdim(); j++)
+          if(I(i,j)>intens) intens=I(i,j);
+      return intens;
+    }
+  }
+
+  int get_nb_apertures(string strategy){
+    if(strategy=="dao_ls")
+       return intensity.size();
+    else if(strategy=="ibo_ls")
+       return int2nb.size();
   }
 
   //revert the last change
@@ -125,7 +146,7 @@ public:
   void writeIntensity(ifstream& myfile);
 
   void printApertures();
-  
+
   void printAperture(int aperture);
 
 
@@ -133,7 +154,7 @@ public:
   const Matrix& getDepositionMatrix(int o) const;
 
   int getAngle(){ return angle;}
-  
+
   int getNbApertures() { return(max_apertures);}
 
   int getNbBeamlets() const{
@@ -158,15 +179,15 @@ public:
 
   //maps from intensity to nb of open beamlets
   map< int, int > int2nb;
-   
+
   //Aperture info and modification functions
   bool isOpenBeamlet (int beam, int aperture);
-  bool isActiveBeamlet(int beam); 
+  bool isActiveBeamlet(int beam);
   vector<int> getClosed(int beam);
   vector<int> getOpen(int beam);
   bool anyClosed(int beam);
   bool anyOpen(int beam);
-  
+
   /* Function that opens a beamlet from the left, if lside is true, or
      from the right size otherwise. Return true if the closing was performed.*/
   list<pair<int,double>> openBeamlet(int beam, int aperture);
@@ -178,9 +199,9 @@ public:
   void updateIntensity(list<pair<int,double>> diff);
   bool canIncreaseIntensity(int beam);
   bool canReduceIntensity(int beam);
-  
+
   list <pair<int,double>> undoLast ();
-  
+
   void clearHistory();
 
   static const int OPEN_MIN_SETUP = 0;

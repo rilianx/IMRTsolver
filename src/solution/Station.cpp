@@ -17,7 +17,7 @@ namespace imrt {
                 step_intensity(step_intensity) {
     min_intensity=1;
     if(open_apertures==-1) open_apertures=max_apertures;
-    
+
     n_volumes=volumes.size();
     for (int i=0; i<volumes.size(); i++)
       D[i]=&volumes[i].getDepositionMatrix(angle);
@@ -36,19 +36,7 @@ namespace imrt {
 
     // Iniatialize apertures (alternative representation)
     initializeStation(setup, open_apertures);
-    //printApertures();
-    /*for (int i=0; i<max_apertures; i++) {
-      vector<pair<int,int> > aux;
-      for (int j=0; j<collimator.getXdim(); j++) {
-        if (open_apertures>0)
-          aux.push_back(collimator.getActiveRange(j,angle));
-        else
-          aux.push_back(make_pair(-1,-1));
-      }
-      A[i]=aux;
-      intensity[i]=initial_intensity;
-      open_apertures--;
-    }*/
+
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
   }
 

@@ -8,7 +8,7 @@ Compilar:
 ````
 cmake .
 make
-```` 
+````
 
 Para correr:
 
@@ -52,7 +52,7 @@ Para correr:
       --perturbation-size=[int]         Perturbation size (2)
 
     Example.
-    ../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999
+    ./AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999
     --beta=0.999 --bsize=5 --vsize=20 --max_ap=4 --seed=0 --int0=1 --open-setup
 
 ----
@@ -70,7 +70,7 @@ Para correr:
       maxdelta ← maxdelta*alpha
       ratio ← random(0,maxratio)
       maxratio ← maxratio*beta
-    
+
       if increase:
         diff ← increaseIntensity&Repair (b,si,delta_intenisty,ratio)
       else:
@@ -86,6 +86,3 @@ Para correr:
         undo_last_eval()
 
 [Más detalles](https://docs.google.com/document/d/1EGoKoLsmik4TSiY_SslWkxddDCrYvUfFKpPLRpQPV_U/edit#)
-
-
-

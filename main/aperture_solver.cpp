@@ -123,7 +123,7 @@ int main(int argc, char** argv){
   int tabusize=10;
 
 
-	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n.../AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4 --step-intensity=1 --file-dep=data/Equidistantes/equidist00.txt --file-coord=data/Equidistantes/equidist-coord.txt");
+	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********", "Example.\n./AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4 --step-intensity=1 --file-dep=data/Equidistantes/equidist00.txt --file-coord=data/Equidistantes/equidist-coord.txt");
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
   args::ValueFlag<string> _strategy(parser, "string", "Strategy  (dao_ls|ibo_ls)", {'s', "strategy"});
@@ -272,17 +272,6 @@ int main(int argc, char** argv){
 
   double best_eval=P.getEvaluation();
 
-
-  /*vector<Station*> stations(5);
-  Station* station;
-  for(int i=0;i<5;i++){
-	  station = new Station(collimator,volumes, i*70, max_apertures, max_intensity, initial_intensity, open_setup);
-    //station = new Station(collimator,volumes, i*70, max_apertures);
-	  station->generateIntensity();
-	  stations[i]=station;
-  }*/
-
-
   cout << "##" << endl << "##**************************************************************************"<< endl;
   cout << "##*********************************** INFO *********************************"<< endl;
   cout << "##**************************************************************************"<< endl;
@@ -345,6 +334,10 @@ int main(int argc, char** argv){
   ils->search(P, maxtime, maxiter);
 
 
+
+
+
+
   cout << "##**************************************************************************"<< endl;
   cout << "##******************************* RESULTS **********************************"<< endl;
   cout << "##**************************************************************************"<< endl;
@@ -353,17 +346,33 @@ int main(int argc, char** argv){
 
   cout << "##"<<endl;
   cout << "## Best solution found: " <<  P.getEvaluation() << endl;
-  cout <<  P.getEvaluation() << endl;
+  cout <<  P.getEvaluation() << " ";
 
-/*
-	cout << endl;
-	for(int i=0;i<5;i++){
-	  //stations[i]->printIntensity();
-		P.printIntensity(i);
-        //cout << "nb_apertures:" << stations[i]->int2nb.size() << endl;
+  const list<Station*> stations=P.get_stations();
+
+  int tot_alpha=0;
+  for(auto s:stations){
+    int alpha=s->get_sum_alpha(strategy);
+    cout << alpha << " " ;
+    tot_alpha+=alpha;
   }
+  cout << tot_alpha << " ";
+
+  int nb_apertures=0;
+  for(auto s:stations){
+    int ap=s->get_nb_apertures(strategy);
+    cout << ap << " " ;
+    nb_apertures+=ap;
+  }
+  cout << nb_apertures << endl;
+
+
+	/*cout << endl;
+	for(int i=0;i<5;i++)
+		P.printIntensity(i);
+
 	cout << endl;
-*/
+  */
 
 /*
 	cout << "********   Summary of the results    *********"<< endl;
