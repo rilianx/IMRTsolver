@@ -31,7 +31,7 @@ public:
 
   Plan(const Plan &p);
 
-	//virtual ~Plan() {};
+	virtual ~Plan() {};
 
 	void newCopy(Plan& p);
 

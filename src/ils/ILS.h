@@ -64,7 +64,7 @@ public:
   //  init_plan = new Plan(current_plan);
 
 
-    Plan best_plan= Plan(current_plan);
+    Plan& best_plan= *new Plan(current_plan);
 
     pair<bool, pair<Station*, int>> target_beam;
     double local_eval, aux_eval,  best_eval=current_plan.eval();
