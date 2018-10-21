@@ -134,7 +134,7 @@ public:
     aux_eval=current_plan.getEvaluation();
     cout << 1 << endl;
     best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
-
+    cout << 2 << endl;
     return(aux_eval);
   };
 
