@@ -4,9 +4,10 @@ mintime = 0.0001
 maxtime = 40
 factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
-max_seeds = 10
-min_seeds = 10
-algo_names = as-close as-open-min as-open-max dao-as-close dao-open-min dao-open-max dao-random
+max_seeds = 30
+min_seeds = 30
+algo_names = dao-open-min as-open-min
+as-close as-open-min as-open-max dao-as-close dao-open-min dao-open-max dao-random
 
 #vsize [1 5 10 20 50 100]
 #bsize [1 5 10 15 20]
