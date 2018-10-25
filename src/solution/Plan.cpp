@@ -24,7 +24,6 @@ namespace imrt {
     for (int i=0;i<collimator.getNbAngles();i++) {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures,
                                      max_intensity, initial_intensity, step_intensity, open_apertures, setup);
-      station->generateIntensity();
       //real_stations.push_back(*station);
       add_station(*station);
       //station->printIntensity();

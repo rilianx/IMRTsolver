@@ -88,8 +88,42 @@ namespace imrt {
     return(*this);
   }
 
+  //only for ILS
+  void Station::generate_random_intensities(){
+    clearIntensity();
+
+    vector<int> values(max_apertures+1);
+    values[0]=0;
+    for(int i=1; i<max_apertures+1;i++){
+      int in=rand()%(max_intensity+1)/2.0;
+      values[i]=in;
+    }
+
+    for (int i=0; i < collimator.getXdim(); i++) {
+      list<int> in;
+      pair <int,int> aux = collimator.getActiveRange(i,angle);
+      if(aux.first<0) continue;
+
+      for (int j=aux.first; j<=aux.second; j++)
+        in.push_back(values[rand()%(max_apertures+1)]);
+      in.sort();
+
+      int left=aux.first,right=aux.second;
+      while(!in.empty()){
+        if(rand()%2)
+          change_intensity(i, left++, in.front());
+        else
+          change_intensity(i, right--, in.front());
+        in.pop_front();
+      }
+    }
+  //  printIntensity();
+  }
+
   void Station::initializeStation(int type, int open_apertures) {
     // Generating aperture patterns
+
+
     if (type==OPEN_MAX_SETUP || type==OPEN_MIN_SETUP) {
       for (int i=0; i<max_apertures; i++) {
         vector<pair<int,int> > aux;
@@ -154,7 +188,11 @@ namespace imrt {
       for (int i=0; i<max_apertures; i++)
         intensity[i] = initial_intensity;
     }
-    generateIntensity();
+
+    if(type==RAND_INTENSITIES)
+      generate_random_intensities();
+    else
+      generateIntensity();
   }
 
   void Station::clearIntensity() {

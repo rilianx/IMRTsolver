@@ -92,6 +92,8 @@ public:
 
   void initializeStation(int type, int open_apertures);
 
+  void generate_random_intensities();
+
  // intensity of an aperture i
   vector<double> intensity;
 
@@ -209,7 +211,9 @@ public:
   static const int CLOSED_MIN_SETUP = 2;
   static const int CLOSED_MAX_SETUP = 3;
   static const int RAND_RAND_SETUP = 4;
-  static const int MANUAL_SETUP=5;
+  static const int RAND_INTENSITIES = 5; //only for ILS
+  static const int MANUAL_SETUP=6;
+
 };
 }
 

@@ -227,6 +227,7 @@ int main(int argc, char** argv){
   if (accept_best) acceptance=ILS::ACCEPT_NONE;
   if (_perturbation) perturbation=_perturbation.Get();
 
+  srand(seed);
 
   //This should be at the end given that will modify values
   if(open_max) {
@@ -242,7 +243,10 @@ int main(int argc, char** argv){
     initial_setup=Station::CLOSED_MAX_SETUP;
     initial_intensity=max_intensity;
   } else if (all_rand) {
-    initial_setup=Station::RAND_RAND_SETUP;
+    if(strategy=="dao_ls")
+      initial_setup=Station::RAND_RAND_SETUP;
+    else if (strategy=="ibo_ls")
+      initial_setup=Station::RAND_INTENSITIES;
  }  else {
     initial_setup=Station::MANUAL_SETUP;
  }
@@ -296,6 +300,7 @@ int main(int argc, char** argv){
   else if (initial_setup==Station::CLOSED_MAX_SETUP) cout << "closed max intensity" << endl;
   else if (initial_setup==Station::CLOSED_MIN_SETUP) cout << "closed min intensity" << endl;
   else if (initial_setup==Station::RAND_RAND_SETUP) cout << "random" << endl;
+  else if (initial_setup==Station::RAND_INTENSITIES) cout << "random" << endl;
   else cout << "manual, " << open_apertures << " open apertures" << endl;
   cout << "##   Initial intensity: " << initial_intensity << endl;
   cout << "##   Max intensity: " << max_intensity << endl;
@@ -321,7 +326,7 @@ int main(int argc, char** argv){
   cout << "## Initial solution: " << best_eval << endl;
   cout  << "##" << endl;
 
-  srand(seed);
+
 
   ILS* ils;
   if(strategy=="dao_ls")
