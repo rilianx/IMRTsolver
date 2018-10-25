@@ -6,7 +6,7 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = dao-open-min as-open-min
+algo_names = dao-open-min as-open-min as-rnd
 as-close as-open-min as-open-max dao-as-close dao-open-min dao-open-max dao-random
 
 #vsize [1 5 10 20 50 100]
@@ -23,12 +23,15 @@ params =  -s ibo_ls --maxtime=_X --bsize=15 --vsize=10 --maxdelta=10 --alpha=0.9
 outputpos_times = 0
 outputpos_boxes = 0
 
-
 [as-open-min]
-tuning_param = X
-tuning_values = 10 20 30 40
 exec = "../AS"
-params =  -s ibo_ls --maxtime=40 --bsize=45 --vsize=92 --maxdelta=15 --alpha=0.99 --maxratio=5 --beta=0.99 --perturbation-size=6 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-apertures=1 --initial-intensity=5 --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --plot
+params =  -s ibo_ls --maxtime=40 --bsize=45 --vsize=92 --maxdelta=15 --alpha=0.99 --maxratio=5 --beta=0.99 --perturbation-size=6 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-apertures=1 --initial-intensity=5 --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --rand-setup
+outputpos_times = 0
+outputpos_boxes = 0
+
+[as-rnd]
+exec = "../AS"
+params =  -s ibo_ls --maxtime=40 --bsize=45 --vsize=92 --maxdelta=15 --alpha=0.99 --maxratio=5 --beta=0.99 --perturbation-size=6 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-apertures=1 --initial-intensity=5 --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. 
 outputpos_times = 0
 outputpos_boxes = 0
 
@@ -51,10 +54,8 @@ outputpos_boxes = 0
 
 
 [dao-open-min]
-tuning_param = X
-tuning_values = 40
 exec = "../AS"
-params =  -s dao_ls --maxtime=_X --bsize=7 --vsize=34 --perturbation-size=5 --prob-intensity=0.01 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-min-setup --perturbate --first-improvement --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --plot
+params =  -s dao_ls --maxtime=40 --bsize=7 --vsize=34 --perturbation-size=5 --prob-intensity=0.01 --max-apertures=5 --seed=_SEED --step-intensity=1 --open-min-setup --perturbate --first-improvement --max-intensity=20 --file-dep=_INSTANCE --file-coord=data/Equidistantes/equidist-coord.txt --path=.. 
 outputpos_times = 0
 outputpos_boxes = 0
 
