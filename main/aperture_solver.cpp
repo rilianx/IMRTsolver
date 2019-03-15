@@ -336,11 +336,7 @@ int main(int argc, char** argv){
   else if(strategy=="ibo_ls")
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
 
-  ils->search(P, maxtime, maxiter);
-
-
-
-
+  ils-> notTargetedSearch(P, maxtime, maxiter);
 
 
   cout << "##**************************************************************************"<< endl;

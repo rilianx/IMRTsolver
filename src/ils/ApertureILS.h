@@ -39,11 +39,19 @@ public:
   
   double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
   
+  double iLocalSearch(Plan& P);
+  double aLocalSearch(Plan& P);
+  
   void updateTemperature();
   
   double perturbation(Plan& P);
   
   bool perturbate(int no_improvement, int iteration);
+  
+  vector < pair<int, int> > getShuffledNeighbors(Plan &P);
+  
+    
+  //double ailocalsearch (Plan &P);
   
   static const int FIRST_IMPROVEMENT=0;
   static const int BEST_IMPROVEMENT=1;
