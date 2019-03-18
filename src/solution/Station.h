@@ -91,6 +91,8 @@ public:
   virtual ~Station(){ };
 
   void initializeStation(int type, int open_apertures);
+  
+  void setApertureShape (int a, int row, int start, int end);
 
   void generate_random_intensities();
 
@@ -150,8 +152,6 @@ public:
   void printApertures();
 
   void printAperture(int aperture);
-
-
 
   const Matrix& getDepositionMatrix(int o) const;
 

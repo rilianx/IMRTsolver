@@ -235,7 +235,12 @@ namespace imrt {
         }
       }
     }
-  }
+  };
+  
+  void Station::setApertureShape (int a, int row, int start, int end) {
+    A[a][row].first = start;
+    A[a][row].second = end;
+  };
 
   list<int> Station::open_beamlets(int a){
 	  list<int> ob;
@@ -250,7 +255,7 @@ namespace imrt {
 
     }
     return ob;
-  }
+  };
 
   list<int> Station::closed_beamlets(int a){
 	  list<int> ob;
@@ -311,8 +316,6 @@ namespace imrt {
 		  }
 	  }
   }
-
-
 
   void Station::printApertures() {
     cout << "Angle "<< angle << endl;
