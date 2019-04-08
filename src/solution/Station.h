@@ -93,6 +93,8 @@ public:
   void initializeStation(int type, int open_apertures);
   
   void setApertureShape (int a, int row, int start, int end);
+  
+  pair<int, int> getApertureShape(int a, int row);
 
   void generate_random_intensities();
 
@@ -107,28 +109,30 @@ public:
   int getIntensity(int beam) const{
     pair<int,int> p = getPos(beam);
     return I(p.first,p.second);
-  }
+  };
 
   // Returns the total intesity of the apertures
   int get_sum_alpha(string strategy) const{
     int intens=0;
     if(strategy=="dao_ls"){
       for(auto i:intensity) intens+=i;
-      return intens;
+      return (intens);
     }else if(strategy=="ibo_ls"){
 	    for (int i=0; i<collimator.getXdim();i++)
 		    for (int j=0; j<collimator.getYdim(); j++)
           if(I(i,j)>intens) intens=I(i,j);
-      return intens;
+      return (intens);
     }
-  }
+    return(intens);
+  };
 
   int get_nb_apertures(string strategy){
     if(strategy=="dao_ls")
-       return intensity.size();
+       return (intensity.size());
     else if(strategy=="ibo_ls")
-       return int2nb.size();
-  }
+       return (int2nb.size());
+    return(-1);
+  };
 
   //revert the last change
   //should be followed by a call to the incremental_eval procedure
@@ -137,7 +141,7 @@ public:
       pair <int,int> a = beam2pos[let.first];
       change_intensity(a.first, a.second, I(a.first, a.second) - let.second);
     }
-  }
+  };
 
   // Function to generate the intensity matrix from the
   // defined apertures and the intensity vector
@@ -155,13 +159,13 @@ public:
 
   const Matrix& getDepositionMatrix(int o) const;
 
-  int getAngle(){ return angle;}
+  int getAngle(){ return angle;};
 
-  int getNbApertures() { return(max_apertures);}
+  int getNbApertures() { return(max_apertures);};
 
   int getNbBeamlets() const{
     return collimator.getNangleBeamlets(angle);
-  }
+  };
 
   list<int> open_beamlets(int aperture);
 

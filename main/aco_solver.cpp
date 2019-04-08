@@ -330,12 +330,15 @@ int main(int argc, char** argv){
   //cout << "## Initial solution: " << best_eval << endl;
   //cout  << "##" << endl;
 
-
+  collimator.generateReference ();
+  collimator.printReference ();
 
   ACO* aco = new ACS(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity,1, 1, 0.4, 0.3);
-  aco->printAnts();
-  aco->generateTours();
-  aco->printAnts();
+  //aco->printAnts();
+  //aco->generateTours();
+  //aco->printAnts();
+  
+  
   //if(strategy=="dao_ls")
    // ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
    //                       prob_intensity, step_intensity, initial_temperature,

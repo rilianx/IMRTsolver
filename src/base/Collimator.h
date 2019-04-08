@@ -71,6 +71,10 @@ private:
   int n_angles;
 
   vector< pair<int, string> > coord_files;
+  
+  map < int, pair <int,int> > reference;
+  
+  int ref_size;
 
 public:
   Collimator(){};
@@ -110,6 +114,16 @@ public:
   int getNbAngles();
 
   static string delimiter;
+  
+  void generateReference ();
+  
+  void printReference ();
+  
+  int getReferenceSize();
+  
+  pair <int, int> getReference (int r) ;
+  
+  int searchReferenceIndex (pair<int, int>);
 };
 }
 

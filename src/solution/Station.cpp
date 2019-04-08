@@ -256,6 +256,10 @@ namespace imrt {
     }
     return ob;
   };
+  
+  pair<int, int> Station::getApertureShape(int a, int row) {
+    return(A[a][row]);
+  };
 
   list<int> Station::closed_beamlets(int a){
 	  list<int> ob;

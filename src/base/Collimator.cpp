@@ -126,7 +126,8 @@ namespace imrt {
     angles=c.angles;
     n_angles=c.n_angles;
     coord_files=c.coord_files;
-  }
+    return(*this);
+  };
 
   // There is a coordinate file per angle per angle
   void Collimator::initializeCoordinates(vector < pair<int, string> >& coord_files) {
@@ -331,5 +332,41 @@ namespace imrt {
   int Collimator::getNbAngles(){
     return(n_angles);
   }
-
+  
+  void Collimator::generateReference () {
+    int i = 0;
+    reference[0] = make_pair(-1,-1);
+    i = 1;
+    for (int s = 1; s < getYdim(); s++) {
+      for (int j = 0; (j+s) < getYdim(); j++) {
+        reference[i] = make_pair(j,j+s);
+        i++;
+      }
+    }
+    reference[i] = make_pair(0, getYdim()-1);
+    ref_size = i;
+  };
+  
+  void Collimator::printReference () {
+    cout << "Reference list" << endl;
+    for (int i=0; i < ref_size; i++) {
+      cout << i << " " << reference[i].first << "," << reference[i].second << endl;
+    }
+  };
+  
+  pair <int, int> Collimator::getReference (int r) {
+    return(reference[r]);
+  };
+  
+  int Collimator::searchReferenceIndex (pair<int, int> p) {
+    for (int i=0;i<ref_size;i++) {
+      if (reference[i].first == p.first && reference[i].second==p.second)
+        return(i);
+    }
+    return(-1);
+  };
+  
+  int Collimator::getReferenceSize() {
+    return(ref_size);
+  };
 }

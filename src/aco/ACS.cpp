@@ -15,13 +15,12 @@ namespace imrt {
            int step_intensity, int _n_ants, double _initial_pheromone, double _alpha, double _beta):
            ACO(w, Zmin, Zmax, _collimator, volumes, max_apertures, max_intensity, initial_intensity,
                step_intensity, _n_ants, _initial_pheromone, _alpha, _beta){
-//  cout << "per:" << perturbation_size << endl;
              q0=0.5;
              calculateProbability();
              printProbability();
            };
   
-  void ACS::generateTours() {
+  /*void ACS::generateTours() {
     double aux;
     bool flag;
     for (int ant=0; ant < n_ants; ant++) {
@@ -42,18 +41,20 @@ namespace imrt {
       }
       
     }
-  };
+  };*/
+
+  void ACS::generateTours() {};
   
   void ACS::calculateProbability (){
     double sum, aux;
     for (int i = 0; i < collimator.getNbAngles(); i++) {
       for (int j = 0; j < collimator.getXdim(); j++) {
         sum = 0;
-        for (int s = 0; s < ref_size; s++) {
+        for (int s = 0; s < collimator.getReferenceSize(); s++) {
           sum = sum + pow(pheromone[i](j,s),alpha);
         }
         aux = 0;
-        for (int s = 0; s < ref_size; s++) {
+        for (int s = 0; s < collimator.getReferenceSize(); s++) {
           probability[i](j,s) =  pow(pheromone[i](j,s),alpha);
           probability[i](j,s) = aux + pow(pheromone[i](j,s),alpha) / sum;;
           aux  = probability[i](j,s);
@@ -67,7 +68,7 @@ namespace imrt {
     cout << "Probabilities" << endl;
     for (int i = 0; i < collimator.getNbAngles(); i++) {
       for (int j = 0; j < collimator.getXdim(); j++) {
-        for (int s = 0; s < ref_size; s++) {
+        for (int s = 0; s < collimator.getReferenceSize(); s++) {
           cout << probability[i](j,s) <<  " ";
         }
         cout << endl;
