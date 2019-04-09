@@ -29,15 +29,21 @@ public:
 
   ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance){
   };
+  
+  ILS(const ILS & ils ){
+    bsize=ils.bsize;
+    vsize=ils.vsize;
+    acceptance=ils.acceptance;
+  };
 
   virtual ~ILS() { };
 
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
-  virtual double iLocalSearch(Plan& P) {
+  virtual double iLocalSearch(Plan& P, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
   };
-  virtual double aLocalSearch(Plan& P) {
+  virtual double aLocalSearch(Plan& P, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
   };

@@ -17,13 +17,14 @@ public:
   
   ACS(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& _collimator,
       vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity,
-      int step_intensity, int _n_ants, double _initial_pheromone, double _alpha, double _beta);
+      int step_intensity, int _n_ants, double _initial_pheromone, double _alpha, double _beta, double _rho);
 
   virtual ~ACS() {};
   
   void generateTours();
   void calculateProbability();
   void printProbability();
+  void search (int max_eval);
 
   //double ailocalsearch (Plan &P);
   

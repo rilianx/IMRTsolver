@@ -94,6 +94,8 @@ public:
   
   void setApertureShape (int a, int row, int start, int end);
   
+  void setApertureShape (int a, int row, pair<int, int> p);
+  
   pair<int, int> getApertureShape(int a, int row);
 
   void generate_random_intensities();
@@ -205,6 +207,8 @@ public:
   void updateIntensity(list<pair<int,double>> diff);
   bool canIncreaseIntensity(int beam);
   bool canReduceIntensity(int beam);
+  void setApertureIntensity(int aperture, double value);
+  double getApertureIntensity(int aperture);
 
   list <pair<int,double>> undoLast ();
 

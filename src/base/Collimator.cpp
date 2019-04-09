@@ -25,7 +25,7 @@ namespace imrt {
       if (line.empty()) continue;
       aux   = line.substr(0, line.find(delimiter));
       angle = atoi(aux.c_str());
-      if(angles.find(angle) == angles.end()) continue;
+      if (angles.find(angle) == angles.end()) continue;
       line.erase(0, line.find(delimiter) + delimiter.length());
       cout << "##  " << line << " a:" << angle << endl;
       coord_files.push_back(make_pair(angle,line));
@@ -368,5 +368,42 @@ namespace imrt {
   
   int Collimator::getReferenceSize() {
     return(ref_size);
+  };
+  
+  void Collimator::generateIntensityLevels (int step_intensity, int max_intensity) {
+    int aux=0;
+    // Level 0 and 1 are always in the set
+    levels_to_intensity.push_back(0);
+    intensity_to_levels[0.0] = 0;
+    levels_to_intensity.push_back(1);
+    intensity_to_levels[1.0] = 1;
+    aux = 1;
+    
+    for (int i=2; aux< max_intensity; i++){
+      aux = aux + step_intensity; 
+      levels_to_intensity.push_back(aux);
+      intensity_to_levels[aux] = i;
+    }
+    printIntensityLevels ();
+  };
+  
+  void Collimator::printIntensityLevels (){
+    cout << "Intensity levels: "<< endl;
+    for (int i=0; i<levels_to_intensity.size(); i++){
+      cout << levels_to_intensity[i] <<  " ";
+    }
+    cout << endl;
+  };
+  
+  int Collimator::getIntensityLevel(double v) {
+    return(intensity_to_levels[v]);
+  };
+  
+  double Collimator::getLevelIntensity(int l) {
+    return(levels_to_intensity[l]);
+  };
+  
+  int Collimator::getIntensityLevelSize() {
+    return(levels_to_intensity.size());
   };
 }

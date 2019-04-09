@@ -19,6 +19,8 @@ public:
               int step_intensity, double initial_temperature, double alpha, bool do_perturbate, 
               int perturbation_size, int acceptance, int ls_type);
 
+  ApertureILS(const ApertureILS & ils);
+  
   virtual ~ApertureILS() {};  
 
   pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
@@ -39,8 +41,9 @@ public:
   
   double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
   
-  double iLocalSearch(Plan& P);
-  double aLocalSearch(Plan& P);
+  double iLocalSearch(Plan& P, bool verbose=true);
+  double aLocalSearch(Plan& P, bool verbose=true);
+  double simpleLocalSearch(Plan& P, bool verbose=true);
   
   void updateTemperature();
   
@@ -50,6 +53,7 @@ public:
   
   vector < pair<int, int> > getShuffledNeighbors(Plan &P);
   
+  int getStepIntensity ();
     
   //double ailocalsearch (Plan &P);
   

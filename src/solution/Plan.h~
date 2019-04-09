@@ -24,12 +24,12 @@ class Plan {
 public:
 	Plan(EvaluationFunction &ev);
 
-  Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
+        Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
 
-  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator, vector<Volume>& volumes,
+        Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator, vector<Volume>& volumes,
        int max_apertures, int max_intensity, int initial_intensity, int step_intensity=2, int open_apertures=-1, int setup=6);
 
-  Plan(const Plan &p);
+        Plan(const Plan &p);
 
 	virtual ~Plan() {};
 
@@ -62,6 +62,13 @@ public:
 		  std::advance(it,rand()%sb.size());
 		  return make_pair(it->first.second, it->second);
 	}
+	
+	virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(int bsize, int vsize){
+	  auto sb=ev.best_beamlets(*this, bsize, vsize);
+	  auto it=sb.begin();
+	  //std::advance(it,rand()%sb.size());
+	  return make_pair(it->first.second, it->second);
+	}
 
 	void undoLast();
 
@@ -82,14 +89,18 @@ public:
 	    return *s;
 	}
 
+        int getNStations () {
+            return(stations.size()) ;
+        }
+
 private:
 	//The list of stations
 	//list<Station> real_stations;
 	list<Station*> stations;
 
-  int n_stations;
+        int n_stations;
 
-  Station* last_changed;
+        Station* last_changed;
 	list< pair< int, double > > last_diff;
 
 	EvaluationFunction ev;

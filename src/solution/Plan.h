@@ -75,7 +75,9 @@ public:
 	//Lepi's version
 	void undoLast2();
 
-	void printIntensity(int station);
+        void printSolution ();
+
+        void printIntensity(int station);
 
 	void writeIntensities(string file, int n);
 
@@ -89,18 +91,18 @@ public:
 	    return *s;
 	}
 
-        int getNStations () {
-            return(stations.size()) ;
-        }
+  int getNStations () {
+     return(stations.size()) ;
+  }
 
 private:
 	//The list of stations
 	//list<Station> real_stations;
 	list<Station*> stations;
 
-        int n_stations;
+  int n_stations;
 
-        Station* last_changed;
+  Station* last_changed;
 	list< pair< int, double > > last_diff;
 
 	EvaluationFunction ev;

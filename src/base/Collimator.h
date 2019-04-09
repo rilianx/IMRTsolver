@@ -73,6 +73,8 @@ private:
   vector< pair<int, string> > coord_files;
   
   map < int, pair <int,int> > reference;
+  vector<int> levels_to_intensity;
+  map<double, int> intensity_to_levels;
   
   int ref_size;
 
@@ -124,6 +126,16 @@ public:
   pair <int, int> getReference (int r) ;
   
   int searchReferenceIndex (pair<int, int>);
+  
+  void generateIntensityLevels(int step_intensity, int max_intensity);
+  
+  void printIntensityLevels ();
+  
+  int getIntensityLevelSize();
+    
+  int getIntensityLevel(double v);
+  
+  double getLevelIntensity(int l);
 };
 }
 

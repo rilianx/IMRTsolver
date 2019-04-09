@@ -148,14 +148,6 @@ namespace imrt {
     return(ev.best_beamlets(*this, n, nv));
   }
 
-  void Plan::printSolution () {
-    Station *st;
-    for (int s=0; s < n_stations; s++) {
-      st = get_station(s);
-      st->printAperture(s);
-    }
-  };
-
   void Plan::printIntensity(int n) {
     list<Station*>::iterator s= stations.begin();
     advance(s,n);

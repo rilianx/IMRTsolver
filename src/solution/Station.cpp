@@ -241,6 +241,11 @@ namespace imrt {
     A[a][row].first = start;
     A[a][row].second = end;
   };
+  
+  void Station::setApertureShape (int a, int row, pair<int,int> p) {
+    A[a][row].first = p.first;
+    A[a][row].second = p.second;
+  };
 
   list<int> Station::open_beamlets(int a){
 	  list<int> ob;
@@ -332,7 +337,7 @@ namespace imrt {
   }
 
   void Station::printAperture(int aperture) {
-    cout << "Angle: "<< angle << " aperture: " << aperture << endl;
+    cout << "Station: "<< angle << " aperture: " << aperture << " intensity "<< intensity[aperture]<< endl;
     for (int i=0; i<collimator.getXdim(); i++) {
       cout << A[aperture][i].first << "-" << A[aperture][i].second << endl;
     }
@@ -612,6 +617,14 @@ namespace imrt {
       if (isOpenBeamlet(beam,i) && intensity[i]>0) return(true);
     return(false);
   }
+  
+  void Station::setApertureIntensity(int aperture, double value) {
+    intensity[aperture]=value;
+  };
+  
+  double Station::getApertureIntensity(int aperture) {
+    return(intensity[aperture]);
+  };
 
   list <pair<int,double> > Station::undoLast () {
     list <pair<int,double> > undo_diff;

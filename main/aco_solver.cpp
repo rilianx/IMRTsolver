@@ -331,9 +331,13 @@ int main(int argc, char** argv){
   //cout  << "##" << endl;
 
   collimator.generateReference ();
-  collimator.printReference ();
+  collimator.generateIntensityLevels (step_intensity,max_intensity);
+  //collimator.printReference ();
 
-  ACO* aco = new ACS(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity,1, 1, 0.4, 0.3);
+  ACO* aco = new ACS(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity,10, 1, 2, 2, 0.2);
+  aco->search(900);
+  //aco->evaporation();
+  //aco->printPheromone();
   //aco->printAnts();
   //aco->generateTours();
   //aco->printAnts();
@@ -352,10 +356,8 @@ int main(int argc, char** argv){
   cout << "##**************************************************************************"<< endl;
   cout << "##******************************* RESULTS **********************************"<< endl;
   cout << "##**************************************************************************"<< endl;
-
-
-
   cout << "##"<<endl;
+  
  // cout << "## Best solution found: " <<  P.getEvaluation() << endl;
   //cout <<  P.getEvaluation() << " ";
 
