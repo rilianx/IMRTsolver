@@ -21,6 +21,13 @@ public:
 
 	virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
 
+	// This function performs a local search over all the
+	// aperture intensities in a treatment plan.
+	virtual double iLocalSearch(Plan& P, bool verbose=true);
+
+  //Returns a list of the cells index of the intensity matrix related to the station
+  vector < pair<int, int> > getShuffledCells(Station*);
+
 	virtual bool acceptanceCriterion(double new_eval, double prev_eval){
 		return false;
 	}

@@ -236,12 +236,12 @@ namespace imrt {
       }
     }
   };
-  
+
   void Station::setApertureShape (int a, int row, int start, int end) {
     A[a][row].first = start;
     A[a][row].second = end;
   };
-  
+
   void Station::setApertureShape (int a, int row, pair<int,int> p) {
     A[a][row].first = p.first;
     A[a][row].second = p.second;
@@ -261,7 +261,7 @@ namespace imrt {
     }
     return ob;
   };
-  
+
   pair<int, int> Station::getApertureShape(int a, int row) {
     return(A[a][row]);
   };
@@ -358,6 +358,37 @@ namespace imrt {
 
      I(i,j)=intensity;
      if(I(i,j)>0.0) int2nb[I(i,j)+0.5]++;
+  }
+
+  list< pair< int, double > > Station::intensityUp(int i, int j){
+    list< pair< int, double > > diff;
+    if(I(i,j)==-1) return diff;
+    if(getMaxIntensityRow(i) <= I(i,j) ||
+        (j-1>=0 && I(i,j-1)>I(i,j)) || (j+1<I.nb_cols() && I(i,j+1)>I(i,j)) ){
+            //next available intensity
+            if(I(i,j)==0) change_intensity(i, j, int2nb.begin()->first, &diff);
+            else{
+              map< int, int >::iterator it = int2nb.find(I(i,j)); it++;
+              if(it!=int2nb.end())
+                change_intensity(i, j, it->first, &diff);
+            }
+     }
+    return diff;
+  }
+
+  list< pair< int, double > > Station::intensityDown(int i, int j){
+    list< pair< int, double > > diff;
+    if(I(i,j)<=0) return diff;
+    if(j==0 || j==I.nb_cols() ||
+        I(i,j-1)<I(i,j) || I(i,j+1)<I(i,j) ){
+            //previous available intensity
+            map< int, int >::iterator it = int2nb.find(I(i,j));
+            if(it!=int2nb.begin()){
+              it--; change_intensity(i, j, it->first, &diff);
+            }else
+              change_intensity(i, j, 0, &diff);
+     }
+    return diff;
   }
 
   list< pair< int, double > > Station::increaseIntensity(int beam, double intensity, int ratio){
@@ -617,11 +648,11 @@ namespace imrt {
       if (isOpenBeamlet(beam,i) && intensity[i]>0) return(true);
     return(false);
   }
-  
+
   void Station::setApertureIntensity(int aperture, double value) {
     intensity[aperture]=value;
   };
-  
+
   double Station::getApertureIntensity(int aperture) {
     return(intensity[aperture]);
   };

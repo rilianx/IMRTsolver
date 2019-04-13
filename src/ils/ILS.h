@@ -9,7 +9,7 @@
 #define ILS_H_
 
 #include <ctime>
-#include <algorithm> 
+#include <algorithm>
 #include "Plan.h"
 
 namespace imrt {
@@ -29,7 +29,7 @@ public:
 
   ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance){
   };
-  
+
   ILS(const ILS & ils ){
     bsize=ils.bsize;
     vsize=ils.vsize;
@@ -52,7 +52,7 @@ public:
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
   }
-  
+
   virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(Plan& P){
     return P.getBestLSBeamlet(bsize, vsize);
   }
@@ -157,36 +157,36 @@ public:
     return(aux_eval);
   };
 
-  
+
   double notTargetedSearch(Plan& current_plan, int max_time, int max_iterations) {
-    
+
     cout << "## Staring ILS search." << endl;
     std::clock_t time_end;
-    
+
     //Start time
     time_begin=clock();
     Plan& best_plan= *new Plan(current_plan);
-    
+
     double local_eval, aux_eval,  best_eval=current_plan.eval();
     double used_time=0;
     bool flag=true;
     int no_improvement, iteration=1, perturbation_iteration=0;
     no_improvement = 0;
     local_eval=best_eval;
-    
-    
+
+
     while (flag) {
       cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
         ", current: " << local_eval << endl;
       aux_eval =iLocalSearch (current_plan);
       cout << "Iteration: " << iteration << ", ils: " << aux_eval  << endl;
-      
+
       if (aux_eval < local_eval) {
         local_eval = aux_eval;
         //Local search over aperture shapes
         aux_eval = aLocalSearch (current_plan);
         cout << "Iteration: " << iteration << ", als: " << aux_eval;
-        if (aux_eval < local_eval) 
+        if (aux_eval < local_eval)
           local_eval = aux_eval;
       } else {
         //undoLast(current_plan);
@@ -194,13 +194,13 @@ public:
         cout << "Iteration: " << iteration << ", per: " << aux_eval;
       }
       cout << endl;
-      
+
       if (aux_eval < best_eval) {
         best_eval=aux_eval;
         best_plan.newCopy(current_plan);
       }
       iteration++;
-      
+
       // Termination criterion
       time_end=clock();
       used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
