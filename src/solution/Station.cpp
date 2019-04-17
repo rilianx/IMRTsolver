@@ -290,6 +290,13 @@ namespace imrt {
     }
     return(pos->second);
   }
+  
+  /* Function to be used to get the index of a coordinate 
+   in the matrix I */
+  int Station::getBeamIndex(pair<int,int> coord) const {
+    auto pos = pos2beam.find(coord);
+    return(pos->second);
+  };
 
   void Station::printIntensity(bool vector_form) {
 	  if(!vector_form){
@@ -535,6 +542,48 @@ namespace imrt {
       updateIntensity(diff);
     }
 
+    last_diff=diff;
+    return(diff);
+  }
+  
+  /* Function that closes a beamlet in coordinate <x,y> from the left, if lside is true, or
+   from the right size otherwise. Return true if the closing was performed.*/
+  list<pair <int,double> > Station::closeBeamlet(pair<int,int> coord, int aperture, bool lside) {
+    //cout << "Attempt to close beam: " << beam << endl;
+    list<pair <int, double> > diff;
+    //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
+    int beam = getBeamIndex(coord);
+    
+    if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
+      auto coord = collimator.indexToPos(beam, angle);
+      int row= coord.first;
+      //cout << "Coordinates: " << coord.first << "," << coord.second << endl;
+      if (lside) {
+        for (int i=0;i<=coord.second-A[aperture][row].first;i++) {
+          diff.push_back(make_pair(beam-(coord.second-A[aperture][row].first)+i, -intensity[aperture]));
+        }
+        last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
+        if (A[aperture][row].second == coord.second) {
+          A[aperture][row].first=-1;
+          A[aperture][row].second=-1;
+        } else {
+          A[aperture][row].first=coord.second+1;
+        }
+      } else {
+        for (int i=0;i<=A[aperture][row].second-coord.second;i++) {
+          diff.push_back(make_pair(beam+i, -intensity[aperture]));
+        }
+        last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
+        if (A[aperture][row].first == coord.second) {
+          A[aperture][row].first=-1;
+          A[aperture][row].second=-1;
+        } else {
+          A[aperture][row].second=coord.second-1;
+        }
+      }
+      updateIntensity(diff);
+    }
+    
     last_diff=diff;
     return(diff);
   }

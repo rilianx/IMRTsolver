@@ -40,9 +40,6 @@ namespace imrt {
 
 class Station {
 private:
-
-  Collimator& collimator;
-
   int angle;
 
   // Dose deposition matrices for each volume
@@ -77,7 +74,7 @@ private:
    list<pair<int,double>> last_diff;
 
 public:
-
+  Collimator& collimator;
    // Constructs a new Station
    // initial_open_apertures: number of open apertures
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle,
@@ -106,6 +103,8 @@ public:
   // Function to be used to get the index in the location
   // in the matrix I of the rows of matrix D
   pair<int,int> getPos(int beam) const;
+  
+  int getBeamIndex(pair<int,int> coord) const;
 
   // Get intensity of beam
   int getIntensity(int beam) const{
@@ -161,9 +160,13 @@ public:
 
   const Matrix& getDepositionMatrix(int o) const;
 
-  int getAngle(){ return angle;};
+  int getAngle(){ 
+    return angle;
+  };
 
-  int getNbApertures() { return(max_apertures);};
+  int getNbApertures() { 
+    return(max_apertures);
+  };
 
   int getNbBeamlets() const{
     return collimator.getNangleBeamlets(angle);
@@ -203,6 +206,7 @@ public:
   /* Function that closes a beamlet from the left, if lside is true, or
        from the right size otherwise. Return true if the closing was performed.*/
   list<pair<int,double>> closeBeamlet(int beam, int aperture, bool lside);
+  list<pair<int,double>> closeBeamlet(pair<int,int> coord, int aperture, bool lside);
   list<pair<int,double>> modifyIntensityAperture(int aperture, double size);
   void updateIntensity(list<pair<int,double>> diff);
   bool canIncreaseIntensity(int beam);

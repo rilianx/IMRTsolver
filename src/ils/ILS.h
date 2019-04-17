@@ -47,6 +47,15 @@ public:
     cout << "Not implemented "<< endl;
     return 0.0;
   };
+  virtual double iSLocalSearch(Plan& P, bool verbose=true) {
+    cout << "Not implemented "<< endl;
+    return 0.0;
+  };
+  virtual double aSLocalSearch(Plan& P, bool verbose=true) {
+    cout << "Not implemented "<< endl;
+    return 0.0;
+  };
+  
   virtual bool acceptanceCriterion(double new_eval, double prev_eval)=0;
 
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
@@ -157,7 +166,7 @@ public:
     return(aux_eval);
   };
 
-  
+  /* Not targeted version having first ils and then als */
   double notTargetedSearch(Plan& current_plan, int max_time, int max_iterations) {
     
     cout << "## Staring ILS search." << endl;
@@ -167,36 +176,54 @@ public:
     time_begin=clock();
     Plan& best_plan= *new Plan(current_plan);
     
-    double local_eval, aux_eval,  best_eval=current_plan.eval();
+    double local_eval, aux_eval,  best_eval;
     double used_time=0;
-    bool flag=true;
+    bool flag=true, impils=true, impals=true;
     int no_improvement, iteration=1, perturbation_iteration=0;
     no_improvement = 0;
-    local_eval=best_eval;
     
-    
+    best_eval = local_eval = current_plan.getEvaluation();
     while (flag) {
-      cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
-        ", current: " << local_eval << endl;
-      aux_eval =iLocalSearch (current_plan);
-      cout << "Iteration: " << iteration << ", ils: " << aux_eval  << endl;
+      cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << 
+        ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval << ", current: " << local_eval << endl;
       
+      // Perturbate if we haven't improved last iteration
+      if (!impals) {
+        local_eval = perturbation(current_plan);
+        cout << "Iteration: " << iteration << ", per: " << local_eval << endl;
+      }
+      impals = impils = false;
+      
+      // Intensity ls
+      aux_eval =iLocalSearch (current_plan, false);
       if (aux_eval < local_eval) {
         local_eval = aux_eval;
-        //Local search over aperture shapes
-        aux_eval = aLocalSearch (current_plan);
-        cout << "Iteration: " << iteration << ", als: " << aux_eval;
-        if (aux_eval < local_eval) 
-          local_eval = aux_eval;
-      } else {
-        //undoLast(current_plan);
-        local_eval = perturbation(current_plan);
-        cout << "Iteration: " << iteration << ", per: " << aux_eval;
+        impils = true;
       }
-      cout << endl;
+      cout << "Iteration: " << iteration << ", ils: " << aux_eval <<" "<< local_eval << endl;
       
-      if (aux_eval < best_eval) {
-        best_eval=aux_eval;
+      // Termination criterion
+      time_end = clock();
+      used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+      if (max_time!=0 && used_time >= max_time) {
+        flag = false;
+        if (local_eval < best_eval) {
+          best_eval = local_eval;
+          best_plan.newCopy(current_plan);
+        }
+        break;
+      }
+      
+      // Aperture ls
+      aux_eval = aLocalSearch (current_plan, false);
+      if (aux_eval < local_eval) {
+        local_eval = aux_eval;
+        impals = true;
+      }
+      cout << "Iteration: " << iteration << ", als: " << aux_eval << " " << local_eval << endl;
+      
+      if (local_eval < best_eval) {
+        best_eval = local_eval;
         best_plan.newCopy(current_plan);
       }
       iteration++;
@@ -209,9 +236,8 @@ public:
     }
     current_plan.newCopy(best_plan);
     aux_eval=current_plan.getEvaluation();
-    cout << 1 << endl;
     best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
-    cout << 2 << endl;
+    
     return(aux_eval);
   };
 
