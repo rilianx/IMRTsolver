@@ -329,14 +329,18 @@ int main(int argc, char** argv){
 
 
   ILS* ils;
-  if(strategy=="dao_ls")
+  if(strategy=="dao_ls"){
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
                           prob_intensity, step_intensity, initial_temperature,
                           alphaT, do_perturbate, perturbation, acceptance, ls_type);
-  else if(strategy=="ibo_ls")
+    ils-> notTargetedSearch(P, maxtime, maxiter);
+  }else if(strategy=="ibo_ls"){
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
+    ils->beamTargetedSearch(P, maxtime, maxiter);
+    for(int i=0;i<10;i++) cout << ils->iLocalSearch(P, false) << endl;
+  }
 
-  ils-> notTargetedSearch(P, maxtime, maxiter);
+
 
 
   cout << "##**************************************************************************"<< endl;
@@ -347,6 +351,14 @@ int main(int argc, char** argv){
 
   cout << "##"<<endl;
   cout << "## Best solution found: " <<  P.getEvaluation() << endl;
+
+
+  cout << endl;
+	for(int i=0;i<5;i++)
+		P.printIntensity(i);
+	cout << endl;
+
+
   cout <<  P.getEvaluation() << " ";
 
   const list<Station*> stations=P.get_stations();
@@ -374,6 +386,7 @@ int main(int argc, char** argv){
 
 	cout << endl;
   
+
 
 /*
 	cout << "********   Summary of the results    *********"<< endl;

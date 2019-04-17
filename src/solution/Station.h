@@ -61,9 +61,7 @@ private:
    // Range open (x_ini, x_fin) of row "r" for aperture d: A[d][r](x_ini, x_fin)
    vector<vector<pair<int,int> > > A;
 
-   //  Apertures (representation 2):
-   // Intensity for each beam of the collimator
-   Matrix I;
+
 
    void change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff=NULL );
 
@@ -74,7 +72,13 @@ private:
    list<pair<int,double>> last_diff;
 
 public:
+
   Collimator& collimator;
+
+  //  Apertures (representation 2):
+  // Intensity for each beam of the collimator
+  Matrix I;
+
    // Constructs a new Station
    // initial_open_apertures: number of open apertures
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle,
@@ -88,11 +92,11 @@ public:
   virtual ~Station(){ };
 
   void initializeStation(int type, int open_apertures);
-  
+
   void setApertureShape (int a, int row, int start, int end);
-  
+
   void setApertureShape (int a, int row, pair<int, int> p);
-  
+
   pair<int, int> getApertureShape(int a, int row);
 
   void generate_random_intensities();
@@ -110,6 +114,15 @@ public:
   int getIntensity(int beam) const{
     pair<int,int> p = getPos(beam);
     return I(p.first,p.second);
+  };
+
+  int getMaxIntensityRow(int i) const{
+    int max=-1;
+    for(int j=0;j<I.nb_cols();j++){
+      if(I(i,j)>max)
+        max=I(i,j);
+    }
+    return max;
   };
 
   // Returns the total intesity of the apertures
@@ -181,6 +194,12 @@ public:
   // return a list with the changed beamlets an their changes to be used by the incremental evaluation
   list< pair< int, double > > increaseIntensity(int beam, double intensity, int ratio=0);
   list< pair< int, double > > increaseIntensity_repair(int beam, double intensity, int ratio=0);
+
+  //increase the intensity in the cell a minimum step (if it possible)
+  list< pair< int, double > > intensityUp(int i, int j);
+
+  //decrease the intensity in the cell a minimum step (if it possible)
+  list< pair< int, double > > intensityDown(int i, int j);
 
   void reduce_apertures(list< pair< int, double > >& diff);
 

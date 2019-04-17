@@ -4,10 +4,48 @@
  *  Created on: 2 ago. 2018
  *      Author: iaraya
  */
+ #include <algorithm>    // std::random_shuffle
 
 #include "IntensityILS.h"
 
 namespace imrt {
+
+	// random generator function:
+	int myrandom (int i) { return std::rand()%i;}
+
+   vector < pair<int, int> > IntensityILS::getShuffledCells(Station* s){
+		 vector < pair<int, int> > cells;
+		 for (int i=0; i<s->I.nb_rows();i++)
+			 for (int j=0; j<s->I.nb_cols(); j++)
+				 if(s->I(i,j)!=-1) cells.push_back(make_pair(i,j));
+		 std::random_shuffle ( cells.begin(), cells.end(), myrandom);
+		 return cells;
+	 }
+
+   double IntensityILS::iLocalSearch(Plan& P, bool verbose){
+		 const list<Station*> stations=P.get_stations();
+		 list< pair< int, double > > diff;
+		 double eval =P.getEvaluation();
+
+		 for(auto s:stations){
+			  vector < pair<int, int> > cells = getShuffledCells(s);
+				for(auto cell:cells){
+					int a=rand()%2;
+					for(int b=0; b<2;b++){
+					  int i=cell.first;
+					  int j=cell.second;
+						if(a==b) diff=s->intensityUp(i,j);
+						else diff=s->intensityDown(i,j);
+						if(diff.empty()) continue;
+
+						double new_eval=P.incremental_eval(*s,diff);
+						if(new_eval<eval)
+							return eval;
+						undoLast(P);
+					}
+				}
+		 }
+	 }
 
 	double IntensityILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P){
 		Station*s = target_beam.second.first; int beamlet=target_beam.second.second;

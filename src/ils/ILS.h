@@ -9,7 +9,7 @@
 #define ILS_H_
 
 #include <ctime>
-#include <algorithm> 
+#include <algorithm>
 #include "Plan.h"
 
 namespace imrt {
@@ -29,7 +29,7 @@ public:
 
   ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance){
   };
-  
+
   ILS(const ILS & ils ){
     bsize=ils.bsize;
     vsize=ils.vsize;
@@ -61,7 +61,7 @@ public:
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
   }
-  
+
   virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(Plan& P){
     return P.getBestLSBeamlet(bsize, vsize);
   }
@@ -168,14 +168,14 @@ public:
 
   /* Not targeted version having first ils and then als */
   double notTargetedSearch(Plan& current_plan, int max_time, int max_iterations) {
-    
+
     cout << "## Staring ILS search." << endl;
     std::clock_t time_end;
-    
+
     //Start time
     time_begin=clock();
     Plan& best_plan= *new Plan(current_plan);
-    
+
     double local_eval, aux_eval,  best_eval;
     double used_time=0;
     bool flag=true, impils=true, impals=true;
@@ -227,7 +227,7 @@ public:
         best_plan.newCopy(current_plan);
       }
       iteration++;
-      
+
       // Termination criterion
       time_end=clock();
       used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
