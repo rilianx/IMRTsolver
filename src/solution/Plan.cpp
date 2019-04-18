@@ -17,16 +17,25 @@ namespace imrt {
 
   Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,
              vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity,
-             int step_intensity, int open_apertures, int setup) : ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax) {
+             int step_intensity, int open_apertures, int setup, char* file) : ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax) {
 
     cout << "##Initilizing plan."<< endl;
 
+
+    fstream* myfile=NULL;
+    if(file) myfile=new fstream(file, std::ios_base::in);
+
     for (int i=0;i<collimator.getNbAngles();i++) {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures,
-                                     max_intensity, initial_intensity, step_intensity, open_apertures, setup);
+                                     max_intensity, initial_intensity, step_intensity, open_apertures, setup, myfile);
       //real_stations.push_back(*station);
       add_station(*station);
+
       //station->printIntensity();
+    }
+    if(myfile){
+    	myfile->close();
+        delete myfile;
     }
     cout << "##  Created " << stations.size() << " stations."<< endl;
     eval();

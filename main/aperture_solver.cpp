@@ -10,6 +10,7 @@
 #include <set>
 #include <stack>
 #include <unistd.h>
+#include <string.h>
 
 #include "EvaluationFunction.h"
 #include "Plan.h"
@@ -111,6 +112,7 @@ int main(int argc, char** argv){
 
   string file="data/testinstance_0_70_140_210_280.txt";
   string file2="data/test_instance_coordinates.txt";
+  char* file3=NULL;
 
   string path=".";
 
@@ -172,6 +174,7 @@ int main(int argc, char** argv){
 	//args::Flag trace(parser, "trace", "Trace", {"trace"});
   args::ValueFlag<string> _file(parser, "string", "File with the deposition matrix", {"file-dep"});
   args::ValueFlag<string> _file2(parser, "string", "File with the beam coordinates", {"file-coord"});
+  args::ValueFlag<string> _file3(parser, "string", "File with initial intensities", {"file-sol"});
   args::ValueFlag<string> _path(parser, "string", "Absolute path of the executable (if it is executed from other directory)", {"path"});
 
 	try
@@ -252,6 +255,7 @@ int main(int argc, char** argv){
  }
   if (_file) file=_file.Get();
   if (_file2) file2=_file2.Get();
+  if (_file3) file3=strdup(_file3.Get().c_str()); //intensidades de partida
   if (_path) path=_path.Get();
 
   chdir(path.c_str());
@@ -272,7 +276,7 @@ int main(int argc, char** argv){
   Collimator collimator(file2, get_angles(file, 5));
   vector<Volume> volumes= createVolumes (file, collimator);
 
-  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity, open_apertures, initial_setup);
+  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity, open_apertures, initial_setup,file3);
 
   double best_eval=P.getEvaluation();
 
@@ -325,7 +329,6 @@ int main(int argc, char** argv){
 
   cout << "## Initial solution: " << best_eval << endl;
   cout  << "##" << endl;
-
 
 
   ILS* ils;

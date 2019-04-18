@@ -11,7 +11,7 @@ namespace imrt {
 
 
   Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures,
-                   int max_intensity, int initial_intensity, int step_intensity, int open_apertures, int setup):
+                   int max_intensity, int initial_intensity, int step_intensity, int open_apertures, int setup, fstream* myfile):
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
 		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
                 step_intensity(step_intensity) {
@@ -36,6 +36,15 @@ namespace imrt {
 
     // Iniatialize apertures (alternative representation)
     initializeStation(setup, open_apertures);
+
+    if(myfile) {
+    	for (int i=0; i<collimator.getXdim(); i++) {
+    	   for (int j=0; j<collimator.getYdim(); j++) {
+    		   int a; *myfile>>a;
+    		   if(a!=-1) change_intensity(i, j, a);
+    	   }
+    	}
+    }
 
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
   }
