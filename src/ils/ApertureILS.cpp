@@ -490,7 +490,10 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
         cout << "Neighborhood size "<< a_list.size() << "    current " << local_best_eval << endl;
       for (i = 0; i < a_list.size(); i++) {
          //skip the tabu neighbor (returns the station to previous state)
-         if (a_list[i].first == tabu.first && a_list[i].second == tabu.second) continue;
+         if (a_list[i].first == tabu.first && a_list[i].second == tabu.second) {
+           if (i == (a_list.size()-1)) completed = true;
+           continue;
+         }
          //get the station of the movement
          s = stations.begin();
          std::advance(s,a_list[i].first);
@@ -519,7 +522,7 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
            
            // If first improvement has been chosen break and 
            if (!best_improvement) { 
-             if (i==(a_list.size()-1)) completed=true;
+             if (i==(a_list.size()-1)) completed = true;
              break;
            }
          }
@@ -529,7 +532,7 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
          if (diff.size()>0)
            aux_eval = P.incremental_eval(*(*s), diff);
          
-         if (i== (a_list.size()-1)) completed = true;
+         if (i == (a_list.size()-1)) completed = true;
          
          time_end = clock();
          used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
@@ -557,8 +560,11 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
     }
     
     cout << "   ils best: " << local_best_eval ;
-    if (!completed) cout << ": [nolo]"<< endl;
-    else  cout << ": [lo]"<< endl;
+    if (!completed) cout << ": [nolo] : ";
+    else  cout << ": [lo] : ";
+    time_end = clock();
+    used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+    cout << max_time << " :" << used_time << endl;
     return(local_best_eval);
 };
 
@@ -651,8 +657,11 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
   }
   
   cout << "   als best: " << local_best_eval ;
-  if (!completed) cout << ": [nolo]"<< endl;
-  else  cout << ": [lo]"<< endl;
+  if (!completed) cout << ": [nolo] : ";
+  else  cout << ": [lo] : ";
+  time_end = clock();
+  used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+  cout << max_time << " :" << used_time << endl;
   
   return(local_best_eval);
 };
