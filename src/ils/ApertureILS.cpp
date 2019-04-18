@@ -12,11 +12,13 @@ namespace imrt {
 
 ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, bool search_aperture, 
                          double prob_intensity, int step_intensity , double initial_temperature,  
-                         double alpha, bool do_perturbate, int perturbation_size, int acceptance=0, int ls_type=ApertureILS::FIRST_IMPROVEMENT): 
+                         double alpha, bool do_perturbate, int perturbation_size, int acceptance=0, 
+                         int ls_type=ApertureILS::FIRST_IMPROVEMENT): 
                          ILS(bsize, vsize, acceptance), search_intensity(search_intensity), 
                          search_aperture(search_aperture), prob_intensity(prob_intensity), 
                          step_intensity(step_intensity) , initial_temperature(initial_temperature), 
-                         alpha(alpha), do_perturbate(do_perturbate), perturbation_size(perturbation_size), ls_type(ls_type){
+                         alpha(alpha), do_perturbate(do_perturbate), perturbation_size(perturbation_size), 
+                         ls_type(ls_type){
 //  cout << "per:" << perturbation_size << endl;
   temperature=initial_temperature;
 };
