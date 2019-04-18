@@ -39,18 +39,22 @@ public:
   virtual ~ILS() { };
 
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
+  
   virtual double iLocalSearch(Plan& P, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
   };
+  
   virtual double aLocalSearch(Plan& P, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
   };
+  
   virtual double iSLocalSearch(Plan& P, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
   };
+  
   virtual double aSLocalSearch(Plan& P, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
