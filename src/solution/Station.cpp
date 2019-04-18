@@ -679,7 +679,7 @@ namespace imrt {
 
   void Station::updateIntensity(list<pair<int,double> > diff) {
     pair<int,int> coord;
-    if (diff.size()==0){ cout <<"cero" << endl; return; }
+    if (diff.size()==0){ return; }
     for (auto it=diff.begin();it!=diff.end();it++) {
       coord=collimator.indexToPos(it->first, angle);
       I(coord.first,coord.second) = I(coord.first,coord.second) + it->second;
