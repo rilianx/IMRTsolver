@@ -40,12 +40,12 @@ public:
 
   virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
   
-  virtual double iLocalSearch(Plan& P, bool verbose=true) {
+  virtual double iLocalSearch(Plan& P,double max_time, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
   };
   
-  virtual double aLocalSearch(Plan& P, bool verbose=true) {
+  virtual double aLocalSearch(Plan& P,  double max_time, bool verbose=true) {
     cout << "Not implemented "<< endl;
     return 0.0;
   };
@@ -199,12 +199,12 @@ public:
       impals = impils = false;
       
       // Intensity ls
-      aux_eval =iLocalSearch (current_plan, false);
+      aux_eval =iLocalSearch (current_plan, max_time-used_time, false);
       if (aux_eval < local_eval) {
         local_eval = aux_eval;
         impils = true;
       }
-      cout << "Iteration: " << iteration << ", ils: " << aux_eval <<" "<< local_eval << endl;
+      //cout << "Iteration: " << iteration << ", ils: " << aux_eval <<" "<< local_eval << endl;
       
       // Termination criterion
       time_end = clock();
@@ -219,12 +219,12 @@ public:
       }
       
       // Aperture ls
-      aux_eval = aLocalSearch (current_plan, false);
+      aux_eval = aLocalSearch (current_plan, max_time-used_time, false);
       if (aux_eval < local_eval) {
         local_eval = aux_eval;
         impals = true;
       }
-      cout << "Iteration: " << iteration << ", als: " << aux_eval << " " << local_eval << endl;
+      //cout << "Iteration: " << iteration << ", als: " << aux_eval << " " << local_eval << endl;
       
       if (local_eval < best_eval) {
         best_eval = local_eval;
@@ -242,6 +242,9 @@ public:
     aux_eval=current_plan.getEvaluation();
     best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
     
+    time_end=clock();
+    used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
+    cout << "## Total used time: "<< used_time << endl;
     return(aux_eval);
   };
 

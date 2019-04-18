@@ -458,16 +458,20 @@ vector < pair<pair<int, int>, pair<int, int>> > ApertureILS::getShuffledAperture
 
 // This function performs a local search over all the
 // aperture intensities in a treatment plan.
-double ApertureILS::iLocalSearch (Plan& P, bool verbose) {
+double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
     list<Station*> stations = P.get_stations();
     list<Station*>::iterator s;
+    std::clock_t time_end, time_begin;
+    double used_time; 
+    
     double local_best_eval , aux_eval;
     list<pair<int, double> > diff;
     vector<pair<int, int>> a_list;
     pair <int,int> tabu;
     int i,j, best_n;
     bool improvement = true, best_improvement=ls_type;
-
+    bool completed = false;
+    
     //check all neighbors
     tabu = make_pair(-1,-1);
     best_n = -1;
@@ -475,10 +479,13 @@ double ApertureILS::iLocalSearch (Plan& P, bool verbose) {
     local_best_eval = aux_eval = P.getEvaluation();
     if (verbose)
       cout << "Staring intensity local search..." << endl;
+    time_begin=clock();
+    
     while (improvement) {
       j++;
       a_list = getShuffledIntensityNeighbors(P);
       improvement = false;
+      completed = false;
       if (verbose)
         cout << "Neighborhood size "<< a_list.size() << "    current " << local_best_eval << endl;
       for (i = 0; i < a_list.size(); i++) {
@@ -512,6 +519,7 @@ double ApertureILS::iLocalSearch (Plan& P, bool verbose) {
            
            // If first improvement has been chosen break and 
            if (!best_improvement) { 
+             if (i==(a_list.size()-1)) completed=true;
              break;
            }
          }
@@ -520,6 +528,14 @@ double ApertureILS::iLocalSearch (Plan& P, bool verbose) {
          diff = (*s)->undoLast();
          if (diff.size()>0)
            aux_eval = P.incremental_eval(*(*s), diff);
+         
+         if (i== (a_list.size()-1)) completed = true;
+         
+         time_end = clock();
+         used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+         if (max_time!=0 && used_time >= max_time) {
+           break;
+         }
        } 
       
        //Apply best neighbor
@@ -532,30 +548,46 @@ double ApertureILS::iLocalSearch (Plan& P, bool verbose) {
            aux_eval = P.incremental_eval(*(*s), diff);
          }
        }
+       
+       time_end = clock();
+       used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+       if (max_time!=0 && used_time >= max_time) {
+         break;
+       }
     }
+    
+    cout << "   ils best: " << local_best_eval ;
+    if (!completed) cout << ": [nolo]"<< endl;
+    else  cout << ": [lo]"<< endl;
     return(local_best_eval);
 };
 
 // This function performs a local search over all the
 // aperture patterns in a treatment plan.
-double ApertureILS::aLocalSearch(Plan& P, bool verbose){
+double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
   Station *s;
+  std::clock_t time_end, time_begin;
+  double used_time;
   double local_best_eval, aux_eval;
   bool improvement=true, best_improvement=ls_type;
   vector < pair< pair<int, int>, pair<int, int>> > a_list;
   pair< pair<int,int>, pair<int,int>> best_move;
   list<pair<int, double> > diff;
   int i,j, best_n, aperture, beamlet, sign;
-  
+  bool completed = false;
   best_n = -1;
   j=-1;
   local_best_eval = aux_eval= P.getEvaluation();
   if (verbose)
-  cout << "Staring aperture local search..." << endl;
+    cout << "Staring aperture local search..." << endl;
+  
+  time_begin=clock();
+  
   while (improvement) {
     j++;
     a_list = getShuffledApertureNeighbors(P);
     improvement = false;
+    completed = false;
     if (verbose)
       cout << "Neighborhood size "<< a_list.size() << "    current " << local_best_eval << endl;
     for (i = 0; i < a_list.size(); i++) {
@@ -580,6 +612,7 @@ double ApertureILS::aLocalSearch(Plan& P, bool verbose){
         if (verbose)
           cout << "     improvement " << aux_eval << endl ;
         if (!best_improvement) { 
+          if (i==(a_list.size()-1)) completed=true;
           break;
         }
       }
@@ -587,6 +620,14 @@ double ApertureILS::aLocalSearch(Plan& P, bool verbose){
       diff = s->undoLast();
       if (diff.size() > 0)
         aux_eval = P.incremental_eval(*s, diff);
+      
+      if (i==(a_list.size()-1)) completed=true;
+      
+      time_end = clock();
+      used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+      if (max_time!=0 && used_time >= max_time) {
+        break;
+      }
     }
     
     //Apply best neighbor
@@ -602,7 +643,17 @@ double ApertureILS::aLocalSearch(Plan& P, bool verbose){
       }
     }
     
+    time_end = clock();
+    used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+    if (max_time!=0 && used_time >= max_time) {
+      break;
+    }
   }
+  
+  cout << "   als best: " << local_best_eval ;
+  if (!completed) cout << ": [nolo]"<< endl;
+  else  cout << ": [lo]"<< endl;
+  
   return(local_best_eval);
 };
 

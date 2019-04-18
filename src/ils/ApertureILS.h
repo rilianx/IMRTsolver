@@ -41,8 +41,8 @@ public:
   
   double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
   
-  double iLocalSearch(Plan& P, bool verbose=true);
-  double aLocalSearch(Plan& P, bool verbose=true);
+  double iLocalSearch(Plan& P, double max_time, bool verbose=true);
+  double aLocalSearch(Plan& P, double max_time, bool verbose=true);
   double iSLocalSearch(Plan& P, bool verbose=true);
   double aSLocalSearch(Plan& P, bool verbose=true);
   double simpleLocalSearch(Plan& P, bool verbose=true);
