@@ -30,6 +30,7 @@ namespace imrt {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures,
                                      max_intensity, initial_intensity, step_intensity, open_apertures, setup, myfile);
       add_station(*station);
+      angle2station[collimator.getAngle(i)]=station;
     }
     if(myfile){
     	myfile->close();
@@ -50,6 +51,7 @@ namespace imrt {
       Station* aux = new Station(**it);
       if (p.last_changed && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
       add_station(*aux);
+      angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
     }
     evaluation_fx=p.evaluation_fx;
@@ -68,9 +70,11 @@ namespace imrt {
       Station* aux = new Station (**it);
       if (p.last_changed!=NULL && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
       stations.push_back(aux);
+      angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
     }
     evaluation_fx=p.evaluation_fx;
+    angle2station=p.angle2station;
   }
 
   void Plan::add_station(Station& s){

@@ -91,19 +91,19 @@ void EvaluationFunction::generate_Z(const Plan& p){
 
 	for(int o=0; o<nb_organs; o++)
 	 	 std::fill(Z[o].begin(), Z[o].end(), 0.0);
-	for(auto station : stations){
-		//considering 2*Xmid, Xext
-		//we update the dose distribution matrices Z with the dose delivered by the station
-		for(int o=0; o<nb_organs; o++){
-			 const Matrix&  D = station->getDepositionMatrix(o);
-			 for(int k=0; k<nb_voxels[o]; k++){
-			   double dose=0.0;
-			   for(int b=0; b<station->getNbBeamlets(); b++){
-					 dose +=  D(k,b)*station->getIntensity( b );
-			   }
-			   Z[o][k] += dose;
+
+	//we update the dose distribution matrices Z with the dose delivered by the station
+	for(int o=0; o<nb_organs; o++){
+		 for(int k=0; k<nb_voxels[o]; k++){
+		   double dose=0.0;
+			 list<pair <int,int> > beamlets = voxel2beamlet_list[make_pair(o,k)];
+			 for(auto bl:beamlets){
+				 int angle=bl.first; int b=bl.second;
+				 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+				 dose += Dep(k,b)*p.angle2station.at(angle)->getIntensity(b);
 			 }
-		}
+		   Z[o][k] += dose;
+		 }
 	}
 }
 
@@ -118,15 +118,17 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 			if(Z[o][k] < Zmin[o] )
 				 pen += w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
 
-
 			if(Z[o][k] > Zmax[o] )
 				 pen += w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
 
 			update_sorted_voxels(w, Zmin, Zmax, o, k);
-			//update_beamlets_impact(o, k);
+			update_beamlets_impact(o, k);
 		}
 		F+=pen/nb_voxels[o];
 	}
+
+	//for(auto b:beamlet_impact)
+		//cout << b.first.first << "," << b.first.second << ":" << b.second << " " << endl;
 
 	n_evaluations++;
 	return F;
@@ -158,6 +160,8 @@ void EvaluationFunction::update_beamlets_impact(int o, int k, double prev_Dok){
 		const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
 		beamlet_impact[bl] += D[o][k] * Dep(k,b);
 	}
+
+
 }
 
 multimap < double, pair<Station*, int>, MagnitudeCompare >

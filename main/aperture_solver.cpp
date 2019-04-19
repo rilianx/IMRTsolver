@@ -372,7 +372,8 @@ int main(int argc, char** argv){
   }else if(strategy=="ibo_ls"){
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
     ils->beamTargetedSearch(P, maxtime, maxiter);
-    for(int i=0;i<100;i++) cout << ils->iLocalSearch(P, false) << endl;
+    cout << P.eval() << endl  ;
+    for(int i=0;i<10;i++) cout << ils->iLocalSearch(P, false) << endl;
   }
 
 

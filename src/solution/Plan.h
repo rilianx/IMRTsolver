@@ -95,6 +95,8 @@ public:
      return(stations.size()) ;
   }
 
+
+  map<int, Station*> angle2station;
 private:
 	//The list of stations
 	//list<Station> real_stations;
