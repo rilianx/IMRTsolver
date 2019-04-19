@@ -12,8 +12,23 @@
 namespace imrt {
 
 int EvaluationFunction::n_evaluations=0;
+EvaluationFunction* EvaluationFunction::instance=NULL;
 
-EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F(0.0),
+void EvaluationFunction::create_beam2voxel_list(vector<Volume>& volumes, const Collimator& collimator){
+	for (int i=0;i<collimator.getNbAngles();i++){
+		for(int o=0; o<nb_organs; o++){
+			 int angle = collimator.getAngle(i);
+			 const Matrix&  D = volumes[o].getDepositionMatrix(angle);
+			 for(int k=0; k<nb_voxels[o]; k++){
+				 for(int b=0; b<collimator.getNangleBeamlets(angle); b++)
+					 if(D(k,b) > 0.0) beam2voxel_list[make_pair(angle,b)].push_back(make_pair(o,k));
+			 }
+		}
+	}
+
+}
+
+EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator& collimator) : prev_F(0.0), F(0.0),
 	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(150)) {
   n_volumes =volumes.size();
 	for(int i=0; i<nb_organs; i++){
@@ -21,43 +36,12 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes) : prev_F(0.0), F
 		Z.insert(Z.end(), vector<double>(nb_voxels[i]));
 		D.insert(D.end(), vector<double>(nb_voxels[i]));
 	}
-}
 
-EvaluationFunction::EvaluationFunction(const EvaluationFunction& ef):  prev_F(0.0), F(0.0),
-nb_organs(ef.n_volumes), nb_voxels(ef.n_volumes), voxel_dose(ef.n_volumes, vector<double>(150)) {
-  prev_F=ef.prev_F;
-  F=ef.F;
-  nb_organs=ef.nb_organs;
-  n_volumes=ef.n_volumes;
-  nb_voxels=ef.nb_voxels;
-  voxel_dose=ef.voxel_dose;
-  D=ef.D;
-  Z=ef.Z;
-  voxels=ef.voxels;
-  o_voxels=ef.o_voxels;
-  Z_diff=ef.Z_diff;
-  tumor_voxels=ef.tumor_voxels;
+	create_beam2voxel_list(volumes, collimator);
+
 }
 
 EvaluationFunction::~EvaluationFunction() { }
-
-EvaluationFunction & EvaluationFunction::operator=(const EvaluationFunction & ef) {
-  prev_F=ef.prev_F;
-  F=ef.F;
-  nb_organs=ef.nb_organs;
-  n_volumes=ef.n_volumes;
-  nb_voxels=ef.nb_voxels;
-  voxel_dose=ef.voxel_dose;
-  D=ef.D;
-  Z=ef.Z;
-  voxels=ef.voxels;
-  o_voxels=ef.o_voxels;
-  Z_diff=ef.Z_diff;
-  tumor_voxels=ef.tumor_voxels;
-
-  return *this;
-}
-
 
 void EvaluationFunction::generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
 	bool flag=false;
@@ -139,9 +123,7 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 			if(Z[o][k] > Zmax[o] )
 				 pen += w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
 
-			//F+= pen;
-
-			update_sorted_voxels(w, Zmin, Zmax, o, k, false);
+			update_sorted_voxels(w, Zmin, Zmax, o, k);
 		}
 		F+=pen/nb_voxels[o];
 	}
@@ -150,10 +132,11 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 	return F;
 }
 
-
+//Update D (partial derivative of F w.r.t. the voxels)
+//And resorts the set of voxels
 void EvaluationFunction::update_sorted_voxels(vector<double>& w,
-	vector<double>& Zmin, vector<double>& Zmax, int o, int k, bool erase){
-		if(erase) voxels.erase(make_pair(abs(D[o][k]),make_pair(o,k)));
+	vector<double>& Zmin, vector<double>& Zmax, int o, int k){
+		voxels.erase(make_pair(abs(D[o][k]),make_pair(o,k)));
 
 		if(Zmin[o]>0){
 			 if(Z[o][k] < Zmin[o])  D[o][k]=w[o]*(Z[o][k]-Zmin[o])/nb_voxels[o];
@@ -164,7 +147,6 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 		}
 		if(D[o][k]!=0.0)
 			voxels.insert(make_pair(abs(D[o][k]),make_pair(o,k)));
-
 }
 
 double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,

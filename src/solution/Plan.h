@@ -62,7 +62,7 @@ public:
 		  std::advance(it,rand()%sb.size());
 		  return make_pair(it->first.second, it->second);
 	}
-	
+
 	virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(int bsize, int vsize){
 	  auto sb=ev.best_beamlets(*this, bsize, vsize);
 	  auto it=sb.begin();
@@ -105,7 +105,7 @@ private:
   Station* last_changed;
 	list< pair< int, double > > last_diff;
 
-	EvaluationFunction ev;
+	EvaluationFunction& ev;
 
 	vector<double> w;
 	vector<double> Zmin;

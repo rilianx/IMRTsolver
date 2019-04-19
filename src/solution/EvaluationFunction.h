@@ -6,6 +6,7 @@
  */
 
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <list>
 #include <iterator>
@@ -47,18 +48,42 @@ class Plan;
      }
 };
 
+struct pair_hash
+{
+  template <typename T, typename U>
+  std::size_t operator()(const std::pair<T, U> &x) const
+  {
+    return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+  }
+};
 
 class EvaluationFunction {
-public:
+
+private: //singleton implementation
+  static EvaluationFunction* instance;
+	EvaluationFunction() {};
+	EvaluationFunction(EvaluationFunction&) {};
 
 	//Constructor of the evaluator.
-	EvaluationFunction(vector<Volume>& volumes);
+	EvaluationFunction(vector<Volume>& volumes, const Collimator& collimator);
 
-  EvaluationFunction(const EvaluationFunction& F);
+public:
+
+  //EvaluationFunction(const EvaluationFunction& F);
+
+	/* Static access method. */
+	static EvaluationFunction& getInstance(vector<Volume>& volumes, const Collimator& collimator){
+		if(!instance) instance = new EvaluationFunction(volumes, collimator);
+		return *instance;
+	}
+
+	static EvaluationFunction& getInstance(){
+		return *instance;
+	}
+
+  void create_beam2voxel_list(vector<Volume>& volumes, const Collimator& collimator);
 
 	virtual ~EvaluationFunction();
-
-	EvaluationFunction& operator=(const EvaluationFunction & ef);
 
 	// Generate the dose distribution matrices Z for each organ
 	void generate_Z(const Plan& p);
@@ -74,8 +99,14 @@ public:
 
 	void undo_last_eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
+	//Update D (partial derivative of F w.r.t. the voxels)
+	//And resorts the set of voxels
+	//Must be called every time that Z[o][k] changes
 	void update_sorted_voxels(vector<double>& w,
-	vector<double>& Zmin, vector<double>& Zmax, int o, int k, bool erase=true);
+	vector<double>& Zmin, vector<double>& Zmax, int o, int k);
+
+
+
   //Additional functions
 
 	// Generate files in the plotter directory with the voxel_dose functions for each organ
@@ -119,16 +150,20 @@ private:
   //Extra data
 
 	// all the tumor voxels sorted by derivative (may be useful for algorithms)
-  set< pair <double, pair<int,int> > > tumor_voxels;
-
   set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > voxels;
 
-  set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > o_voxels;
+  //Beamlets sorted by impact (partial derivative magnitude)
+  multimap < double, pair<Station*, int>, MagnitudeCompare > sorted_beamlets;
+
+  //beamlet (angle,b) --> lista de voxels (o,k)
+  unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > beam2voxel_list;
 
 	//Matrix of derivatives for each organ and voxel (may be useful for algorithms)
-	//How much increase/decrease F increasing the voxe in one unity.
+	//How much increase/decrease F increasing the voxel in one unity.
 	vector< vector<double> > D;
 
+  //Store the changes in Z (dose distribution) after an incremental evaluation
+	//It is used to undo the changes by using the undo_last_eval function
 	list < pair < pair<int,int>, double > > Z_diff;
 
 
