@@ -57,7 +57,7 @@ namespace imrt {
 
   void Plan::newCopy(Plan& p) {
     last_changed=NULL;
-    ev= EvaluationFunction::getInstance();
+    //ev= EvaluationFunction::getInstance();
 
     w=p.w;
     Zmin=p.Zmin;

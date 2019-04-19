@@ -61,8 +61,7 @@ class EvaluationFunction {
 
 private: //singleton implementation
   static EvaluationFunction* instance;
-	EvaluationFunction() {};
-	EvaluationFunction(EvaluationFunction&) {};
+	EvaluationFunction(EvaluationFunction& e) : volumes(e.volumes) {};
 
 	//Constructor of the evaluator.
 	EvaluationFunction(vector<Volume>& volumes, const Collimator& collimator);
@@ -81,7 +80,7 @@ public:
 		return *instance;
 	}
 
-  void create_beam2voxel_list(vector<Volume>& volumes, const Collimator& collimator);
+  void create_voxel2beamlet_list(vector<Volume>& volumes, const Collimator& collimator);
 
 	virtual ~EvaluationFunction();
 
@@ -105,6 +104,8 @@ public:
 	void update_sorted_voxels(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, int o, int k);
 
+  //Update the impacts og each beamlet affected by the voxel [o][k]
+	void update_beamlets_impact(int o, int k, double prev_Dok=0.0);
 
 
   //Additional functions
@@ -136,6 +137,8 @@ private:
 	//voxel_dose[o][d] indicates the number of voxels in organ o with a dose between d and d+1
 	vector<vector<double> > voxel_dose;
 
+  vector<Volume>& volumes;
+
 	//number of organs, including the tumor
 	int nb_organs;
 
@@ -152,11 +155,15 @@ private:
 	// all the tumor voxels sorted by derivative (may be useful for algorithms)
   set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > voxels;
 
-  //Beamlets sorted by impact (partial derivative magnitude)
-  multimap < double, pair<Station*, int>, MagnitudeCompare > sorted_beamlets;
+  //Beamlets (angle,b) sorted by impact (partial derivative magnitude)
+  //multimap < double, pair<int, int>, MagnitudeCompare > sorted_beamlets;
+	unordered_map <pair<int, int>, double, pair_hash> beamlet_impact;
+
+  //voxels (o,k) --> beamlet list (angle,b)
+  unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > voxel2beamlet_list;
 
   //beamlet (angle,b) --> lista de voxels (o,k)
-  unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > beam2voxel_list;
+  //unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > beam2voxel_list;
 
 	//Matrix of derivatives for each organ and voxel (may be useful for algorithms)
 	//How much increase/decrease F increasing the voxel in one unity.

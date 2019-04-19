@@ -14,22 +14,21 @@ namespace imrt {
 int EvaluationFunction::n_evaluations=0;
 EvaluationFunction* EvaluationFunction::instance=NULL;
 
-void EvaluationFunction::create_beam2voxel_list(vector<Volume>& volumes, const Collimator& collimator){
+void EvaluationFunction::create_voxel2beamlet_list(vector<Volume>& volumes, const Collimator& collimator){
 	for (int i=0;i<collimator.getNbAngles();i++){
 		for(int o=0; o<nb_organs; o++){
 			 int angle = collimator.getAngle(i);
 			 const Matrix&  D = volumes[o].getDepositionMatrix(angle);
 			 for(int k=0; k<nb_voxels[o]; k++){
 				 for(int b=0; b<collimator.getNangleBeamlets(angle); b++)
-					 if(D(k,b) > 0.0) beam2voxel_list[make_pair(angle,b)].push_back(make_pair(o,k));
+					 if(D(k,b) > 0.0) voxel2beamlet_list[make_pair(o,k)].push_back(make_pair(angle,b));
 			 }
 		}
 	}
-
 }
 
 EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator& collimator) : prev_F(0.0), F(0.0),
-	nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(150)) {
+	volumes(volumes), nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(150)) {
   n_volumes =volumes.size();
 	for(int i=0; i<nb_organs; i++){
 		nb_voxels[i]=volumes[i].getNbVoxels();
@@ -37,7 +36,7 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator
 		D.insert(D.end(), vector<double>(nb_voxels[i]));
 	}
 
-	create_beam2voxel_list(volumes, collimator);
+	create_voxel2beamlet_list(volumes, collimator);
 
 }
 
@@ -124,6 +123,7 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 				 pen += w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
 
 			update_sorted_voxels(w, Zmin, Zmax, o, k);
+			//update_beamlets_impact(o, k);
 		}
 		F+=pen/nb_voxels[o];
 	}
@@ -149,77 +149,15 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 			voxels.insert(make_pair(abs(D[o][k]),make_pair(o,k)));
 }
 
-double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
-	vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
-
-  prev_F=F; Z_diff.clear();
-  double delta_F=0.0;
-
-  //for each voxel we compute the change produced by the modified beamlets
-  //while at the same time we compute the variation in the function F produced by all these changes
-
-  for(int o=0; o<nb_organs; o++){
-		const Matrix&  D = station.getDepositionMatrix(o);
-		for(int k=0; k<nb_voxels[o]; k++){
-
-		//we compute the change in the delivered dose in voxel k of the organ o
-		double delta=0.0;
-
-		//cout << station.changed_lets.size() << endl;
-		for (auto let:diff){
-		    int b=let.first;
-			if(D(k,b)==0.0) continue;
-				delta+= D(k,b)*let.second;
-		}
-
-
-		if(delta==0.0) continue; //no change in the voxel
-
-
-		double pen=0.0;
-		//with the change in the dose of a voxel we can incrementally modify the value of F
-		if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
-			pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
-		else if(Z[o][k] < Zmin[o]) //the penalty disappears
-			pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
-		else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
-			pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
-
-		if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
-			pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
-		else if(Z[o][k] > Zmax[o]) //the penalty disappears
-			pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
-		else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
-			pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
-
-		delta_F += pen/nb_voxels[o];
-		Z[o][k]+=delta;
-
-		update_sorted_voxels(w, Zmin, Zmax, o, k);
-
-		//we save the last changes (see undo_last_eval)
-		Z_diff.push_back(make_pair(make_pair(o,k),delta));
+void EvaluationFunction::update_beamlets_impact(int o, int k, double prev_Dok){
+	list<pair <int,int> >& beamlets = voxel2beamlet_list[make_pair(o,k)];
+	for(auto bl:beamlets){
+		beamlet_impact[bl] -= prev_Dok;
+		int angle = bl.first;
+		int b = bl.second;
+		const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+		beamlet_impact[bl] += D[o][k] * Dep(k,b);
 	}
-  }
-
-  F+=delta_F;
-  n_evaluations++;
-  return F;
-
-}
-
-void EvaluationFunction::undo_last_eval(vector<double>& w,
-	vector<double>& Zmin, vector<double>& Zmax){
-
-	for(auto z:Z_diff){
-		int o=z.first.first;
-		int k=z.first.second;
-		Z[o][k]-=z.second;
-
-		update_sorted_voxels(w, Zmin, Zmax, o, k);
-	}
-	F=prev_F;
-	prev_F=F; Z_diff.clear();
 }
 
 multimap < double, pair<Station*, int>, MagnitudeCompare >
@@ -244,6 +182,85 @@ EvaluationFunction::get_sorted_beamlets(Plan& p){
 
 	return sorted_set;
 }
+
+double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
+	vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
+
+  prev_F=F; Z_diff.clear();
+  double delta_F=0.0;
+
+  //for each voxel we compute the change produced by the modified beamlets
+  //while at the same time we compute the variation in the function F produced by all these changes
+
+  for(int o=0; o<nb_organs; o++){
+		const Matrix&  Dep = station.getDepositionMatrix(o);
+		for(int k=0; k<nb_voxels[o]; k++){
+
+		//we compute the change in the delivered dose in voxel k of the organ o
+		double delta=0.0;
+
+		//cout << station.changed_lets.size() << endl;
+		for (auto let:diff){
+		    int b=let.first;
+			if(Dep(k,b)==0.0) continue;
+				delta+= Dep(k,b)*let.second;
+		}
+
+
+		if(delta==0.0) continue; //no change in the voxel
+
+
+		double pen=0.0;
+		//with the change in the dose of a voxel we can incrementally modify the value of F
+		if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
+			pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
+		else if(Z[o][k] < Zmin[o]) //the penalty disappears
+			pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
+		else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
+			pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
+
+		if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
+			pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
+		else if(Z[o][k] > Zmax[o]) //the penalty disappears
+			pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
+		else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
+			pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
+
+		delta_F += pen/nb_voxels[o];
+		Z[o][k] += delta;
+
+    double prev_Dok=D[o][k];
+		update_sorted_voxels(w, Zmin, Zmax, o, k);
+		//update_beamlets_impact(o, k, prev_Dok);
+
+		//we save the last changes (see undo_last_eval)
+		Z_diff.push_back(make_pair(make_pair(o,k),delta));
+	}
+  }
+
+  F+=delta_F;
+  n_evaluations++;
+  return F;
+
+}
+
+void EvaluationFunction::undo_last_eval(vector<double>& w,
+	vector<double>& Zmin, vector<double>& Zmax){
+
+	for(auto z:Z_diff){
+		int o=z.first.first;
+		int k=z.first.second;
+		Z[o][k]-=z.second;
+
+		double prev_Dok=D[o][k];
+		update_sorted_voxels(w, Zmin, Zmax, o, k);
+		//update_beamlets_impact(o, k, prev_Dok);
+	}
+	F=prev_F;
+	prev_F=F; Z_diff.clear();
+}
+
+
 
 	set < pair< pair<double,bool>, pair<Station*, int> >,
 	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
