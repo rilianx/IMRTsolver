@@ -39,16 +39,25 @@ class Plan;
  * Basically it penalizes voxels with doses larger than Zmax (healthy organs), and with doses smaller than Zmin (tumor)
  */
 
+ struct MagnitudeCompare
+ {
+     bool operator()(const double& lhs, const double& rhs)
+     {
+         return abs(lhs) > abs(rhs);
+     }
+};
+
+
 class EvaluationFunction {
 public:
 
 	//Constructor of the evaluator.
 	EvaluationFunction(vector<Volume>& volumes);
-  
+
   EvaluationFunction(const EvaluationFunction& F);
 
 	virtual ~EvaluationFunction();
-	
+
 	EvaluationFunction& operator=(const EvaluationFunction & ef);
 
 	// Generate the dose distribution matrices Z for each organ
@@ -60,7 +69,7 @@ public:
 	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
 			list< pair< int, double > >& diff);
 
- // double delta_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, 
+ // double delta_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
  //     list< pair< int, double > >& diff);
 
 	void undo_last_eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
@@ -80,10 +89,13 @@ public:
 	std::greater< pair< pair<double,bool>, pair<Station*, int> > > >
 	best_beamlets(Plan& p, int n, int nv, int mode=0);
 
+  //returns a map of beamlets sorted by their impact in F (derivative, (station, beamlet))
+	multimap < double, pair<Station*, int>, MagnitudeCompare > get_sorted_beamlets(Plan& p);
+
 	void generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
 	static int n_evaluations;
-	
+
 	int n_volumes;
 
 private:

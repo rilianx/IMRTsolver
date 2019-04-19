@@ -240,11 +240,32 @@ void EvaluationFunction::undo_last_eval(vector<double>& w,
 	prev_F=F; Z_diff.clear();
 }
 
+multimap < double, pair<Station*, int>, MagnitudeCompare >
+EvaluationFunction::get_sorted_beamlets(Plan& p){
+	//the sorted set of beamlets
+	multimap < double, pair<Station*, int>, MagnitudeCompare > sorted_set;
+
+	double max_ev=0.0;
+	for(auto s:p.get_stations()){
+		for(int b=0; b<s->getNbBeamlets(); b++){
+			double ev=0; int i=0;
+			for(auto voxel:voxels){
+				int o=voxel.second.first;
+				int k=voxel.second.second;
+				const Matrix&  Dep = s->getDepositionMatrix(o);
+				ev += D[o][k] * Dep(k,b);
+			}
+			if(ev==0) continue;
+			sorted_set. insert(make_pair (ev,  make_pair(s,b)));
+		}
+	}
+
+	return sorted_set;
+}
 
 	set < pair< pair<double,bool>, pair<Station*, int> >,
 	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
 EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
-
   set < pair< pair<double,bool>, pair<Station*, int> >,
 	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >  bestb;
 
