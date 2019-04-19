@@ -22,7 +22,7 @@ namespace imrt {
 		 return cells;
 	 }
 
-   double IntensityILS::iLocalSearch(Plan& P, bool verbose){
+   double IntensityILS::iLocalSearch(Plan& P, double max_time, bool verbose){
 		 const list<Station*> stations=P.get_stations();
 		 list< pair< int, double > > diff;
 		 double eval =P.getEvaluation();

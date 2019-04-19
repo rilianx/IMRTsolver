@@ -23,7 +23,7 @@ public:
 
 	// This function performs a local search over all the
 	// aperture intensities in a treatment plan.
-	virtual double iLocalSearch(Plan& P, bool verbose=true);
+	virtual double iLocalSearch(Plan& P, double max_time, bool verbose=true);
 
   //Returns a list of the cells index of the intensity matrix related to the station
   vector < pair<int, int> > getShuffledCells(Station*);

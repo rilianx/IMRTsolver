@@ -48,6 +48,7 @@ namespace imrt {
     
     double getEvaluation();
     Plan * getPlan();
+    
   };
   
 }
