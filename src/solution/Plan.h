@@ -42,7 +42,18 @@ public:
 
 	double eval();
 
+	double incremental_eval (Station& station, int i, int j, double intensity){
+		list< pair< int, double > > diff;
+		diff.push_back(make_pair(station.pos2beam[make_pair(i,j)],intensity));
+		return incremental_eval (station, diff);
+	}
+
 	double incremental_eval (Station& station, list< pair< int, double > >& diff);
+
+	double get_delta_eval (Station& s, int i, int j, double intensity, int n_voxels=999999){
+    return ev.get_delta_eval(s.getAngle(),
+    s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
+  }
 
 	// This function assumes that there are no changes made without evaluation
 	// performed with eval or incrementalEval

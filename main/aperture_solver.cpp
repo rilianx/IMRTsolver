@@ -370,10 +370,48 @@ int main(int argc, char** argv){
     else
       ils-> beamTargetedSearch(P, maxtime, maxiter);
   }else if(strategy=="ibo_ls"){
+
+    for(auto s:P.get_stations()){
+      for (int i=0; i<collimator.getXdim();i++) {
+			  for (int j=0; j<collimator.getYdim(); j++) {
+          if(s->I(i,j)!=-1){
+            printf("%4.1f ",
+            EvaluationFunction::getInstance().get_ratio_beamlet(w,
+          	Zmin, Zmax, s->getAngle(), s->pos2beam[make_pair(i,j)] ));
+          }else cout << "  -1 " ;
+        }
+        cout << endl;
+      }
+      cout << endl;
+    }
+
+
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
     ils->beamTargetedSearch(P, maxtime, maxiter);
+
+    for(auto s:P.get_stations()){
+      for (int i=0; i<collimator.getXdim();i++) {
+			  for (int j=0; j<collimator.getYdim(); j++) {
+          if(s->I(i,j)!=-1){
+            printf("%4.1f ",
+            EvaluationFunction::getInstance().get_ratio_beamlet(w,
+          	Zmin, Zmax, s->getAngle(), s->pos2beam[make_pair(i,j)] ));
+          }else cout << "  -1 " ;
+        }
+        cout << endl;
+      }
+      cout << endl;
+    }
+    
+    cout << endl;
+  	for(int i=0;i<5;i++)
+  		P.printIntensity(i);
+  	cout << endl;
+
+
+
+    for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     cout << P.eval() << endl  ;
-    for(int i=0;i<10;i++) cout << ils->iLocalSearch(P, false) << endl;
   }
 
 

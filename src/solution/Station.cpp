@@ -299,8 +299,8 @@ namespace imrt {
     }
     return(pos->second);
   }
-  
-  /* Function to be used to get the index of a coordinate 
+
+  /* Function to be used to get the index of a coordinate
    in the matrix I */
   int Station::getBeamIndex(pair<int,int> coord) const {
     auto pos = pos2beam.find(coord);
@@ -376,35 +376,33 @@ namespace imrt {
      if(I(i,j)>0.0) int2nb[I(i,j)+0.5]++;
   }
 
-  list< pair< int, double > > Station::intensityUp(int i, int j){
-    list< pair< int, double > > diff;
-    if(I(i,j)==-1) return diff;
+  double Station::intensityUp(int i, int j){
+    if(I(i,j)==-1) return I(i,j);
     if(getMaxIntensityRow(i) <= I(i,j) ||
         (j-1>=0 && I(i,j-1)>I(i,j)) || (j+1<I.nb_cols() && I(i,j+1)>I(i,j)) ){
             //next available intensity
-            if(I(i,j)==0) change_intensity(i, j, int2nb.begin()->first, &diff);
+            if(I(i,j)==0) return int2nb.begin()->first;
             else{
               map< int, int >::iterator it = int2nb.find(I(i,j)); it++;
               if(it!=int2nb.end())
-                change_intensity(i, j, it->first, &diff);
+                return it->first;
             }
      }
-    return diff;
+    return I(i,j);
   }
 
-  list< pair< int, double > > Station::intensityDown(int i, int j){
-    list< pair< int, double > > diff;
-    if(I(i,j)<=0) return diff;
+  double Station::intensityDown(int i, int j){
+    if(I(i,j)<=0) return I(i,j);
     if(j==0 || j==I.nb_cols() ||
         I(i,j-1)<I(i,j) || I(i,j+1)<I(i,j) ){
             //previous available intensity
             map< int, int >::iterator it = int2nb.find(I(i,j));
             if(it!=int2nb.begin()){
-              it--; change_intensity(i, j, it->first, &diff);
+              it--; return it->first;
             }else
-              change_intensity(i, j, 0, &diff);
+              return 0.0;
      }
-    return diff;
+    return I(i,j);
   }
 
   list< pair< int, double > > Station::increaseIntensity(int beam, double intensity, int ratio){
@@ -585,7 +583,7 @@ namespace imrt {
     last_diff=diff;
     return(diff);
   }
-  
+
   /* Function that closes a beamlet in coordinate <x,y> from the left, if lside is true, or
    from the right size otherwise. Return true if the closing was performed.*/
   list<pair <int,double> > Station::closeBeamlet(pair<int,int> coord, int aperture, bool lside) {
@@ -593,7 +591,7 @@ namespace imrt {
     list<pair <int, double> > diff;
     //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
     int beam = getBeamIndex(coord);
-    
+
     if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
       auto coord = collimator.indexToPos(beam, angle);
       int row= coord.first;
@@ -623,7 +621,7 @@ namespace imrt {
       }
       updateIntensity(diff);
     }
-    
+
     last_diff=diff;
     return(diff);
   }

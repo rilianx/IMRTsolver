@@ -93,8 +93,17 @@ public:
 	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
 			list< pair< int, double > >& diff);
 
- // double delta_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
- //     list< pair< int, double > >& diff);
+  double get_delta_eval(int angle, int b, double delta_intensity,
+      	vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, int n_voxels=999999) const;
+
+  double get_impact_beamlet(int angle, int b);
+
+  //return a kind of evaluation of the beamlets: (impact o the tumor)/(impact to the organs)
+  //unlike get_impact_beamlet, it is not based on the evaluation function (only Z and constraints)
+  double get_ratio_beamlet(vector<double>& w,
+  	vector<double>& Zmin, vector<double>& Zmax, int angle, int b);
+
+
 
 	void undo_last_eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
@@ -163,7 +172,7 @@ private:
   unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > voxel2beamlet_list;
 
   //beamlet (angle,b) --> lista de voxels (o,k)
-  //unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > beam2voxel_list;
+  unordered_map < pair<int, int>, multimap<double, pair<int,int> >, pair_hash > beamlet2voxel_list;
 
 	//Matrix of derivatives for each organ and voxel (may be useful for algorithms)
 	//How much increase/decrease F increasing the voxel in one unity.

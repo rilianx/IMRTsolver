@@ -63,7 +63,6 @@ private:
 
 
 
-   void change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff=NULL );
 
    void clearIntensity();
 
@@ -101,13 +100,16 @@ public:
 
   void generate_random_intensities();
 
+
+  void change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff=NULL );
+
  // intensity of an aperture i
   vector<double> intensity;
 
   // Function to be used to get the index in the location
   // in the matrix I of the rows of matrix D
   pair<int,int> getPos(int beam) const;
-  
+
   int getBeamIndex(pair<int,int> coord) const;
 
   // Get intensity of beam
@@ -173,11 +175,11 @@ public:
 
   const Matrix& getDepositionMatrix(int o) const;
 
-  int getAngle(){ 
+  int getAngle(){
     return angle;
   };
 
-  int getNbApertures() { 
+  int getNbApertures() {
     return(max_apertures);
   };
 
@@ -195,11 +197,11 @@ public:
   list< pair< int, double > > increaseIntensity(int beam, double intensity, int ratio=0);
   list< pair< int, double > > increaseIntensity_repair(int beam, double intensity, int ratio=0);
 
-  //increase the intensity in the cell a minimum step (if it possible)
-  list< pair< int, double > > intensityUp(int i, int j);
+  //return the next intensity level of the cell (if it is feasible)
+  double intensityUp(int i, int j);
 
-  //decrease the intensity in the cell a minimum step (if it possible)
-  list< pair< int, double > > intensityDown(int i, int j);
+  //return the previous intensity level of the cell (if it is feasible)
+  double intensityDown(int i, int j);
 
   void reduce_apertures(list< pair< int, double > >& diff);
 
