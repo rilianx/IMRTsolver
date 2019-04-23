@@ -106,6 +106,27 @@ public:
      return(stations.size()) ;
   }
 
+  //update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
+  //if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
+  //return false if some voxel surpasses Zmax
+  bool Zupdate(Station* s, int b, double delta_intensity, bool return_if_unfeasible){
+	  return ev.Zupdate(s->getAngle(), b, delta_intensity, return_if_unfeasible, Zmax);
+  }
+
+  	//regresa al savepoint para Z
+  	void Zrollback(){
+  		ev.Zrollback();
+  	}
+
+  	void Zsavepoint(){
+  		ev.Zsavepoint();
+  	}
+
+  	//almacena en sorted_beamlets los beamlet (station, b) ordenados segun v/c
+  	void get_vc_sorted_beamlets(Plan& p, multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_beamlets){
+  		ev.get_vc_sorted_beamlets(p, Zmin, Zmax, sorted_beamlets);
+  	}
+
 
   map<int, Station*> angle2station;
 private:
