@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "IntensityGenerator.h"
 #include "EvaluationFunction.h"
 #include "Plan.h"
 #include "Collimator.h"
@@ -412,6 +413,9 @@ int main(int argc, char** argv){
 
     for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     cout << P.eval() << endl  ;
+  }else if(strategy=="intgen"){
+	  IntensityGenerator intgen;
+	  intgen.generate(P);
   }
 
 
