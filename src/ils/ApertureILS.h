@@ -32,7 +32,7 @@ public:
   
   double openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P);
   
-  double closeBeamlet(int beamlet, int aperture, Station& station, double c_eval,  Plan& P);
+  double closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval,  Plan& P);
   
   double improvementAperture(int beamlet, Station& station, bool open_beamlet, 
                              double c_eval, Plan& P, bool best_improvement); 
@@ -43,8 +43,6 @@ public:
   
   double iLocalSearch(Plan& P, double max_time, bool verbose=true);
   double aLocalSearch(Plan& P, double max_time, bool verbose=true);
-  double iSLocalSearch(Plan& P, bool verbose=true);
-  double aSLocalSearch(Plan& P, bool verbose=true);
   double simpleLocalSearch(Plan& P, bool verbose=true);
   
   void updateTemperature();
@@ -54,8 +52,8 @@ public:
   bool perturbate(int no_improvement, int iteration);
   
   vector < pair<int, int> > getShuffledIntensityNeighbors(Plan &P);
-  vector < pair<int, int> > getShuffledIntensityNeighbors(Plan &P, int station);
   vector < pair<pair<int, int>, pair<int, int> >> getShuffledApertureNeighbors(Plan &P);
+  vector < pair<pair<int, int>, pair<int, int> >> getOrderedApertureNeighbors(Plan &P);
   
   int getStepIntensity ();
     

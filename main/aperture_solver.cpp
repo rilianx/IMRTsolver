@@ -353,7 +353,11 @@ int main(int argc, char** argv){
 
   cout << "## Initial solution: " << best_eval << endl;
   cout  << "##" << endl;
-
+  
+  cout << endl;
+  for(int i=0;i<5;i++)
+    P.printIntensity(i);
+  cout << endl;
 
 
   ILS* ils;
@@ -361,10 +365,10 @@ int main(int argc, char** argv){
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
                           prob_intensity, step_intensity, initial_temperature,
                           alphaT, do_perturbate, perturbation, acceptance, ls_type);
-    if (!targeted_search)
+   /* if (!targeted_search)*/
       ils-> notTargetedSearch(P, maxtime, maxiter);
-    else
-      ils-> beamTargetedSearch(P, maxtime, maxiter);
+    /*else
+      ils-> beamTargetedSearch(P, maxtime, maxiter);*/
   }else if(strategy=="ibo_ls"){
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
     ils->beamTargetedSearch(P, maxtime, maxiter);

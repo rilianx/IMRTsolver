@@ -232,6 +232,7 @@ public:
   bool canReduceIntensity(int beam);
   void setApertureIntensity(int aperture, double value);
   double getApertureIntensity(int aperture);
+  int getMaxIntensity();
 
   list <pair<int,double>> undoLast ();
 

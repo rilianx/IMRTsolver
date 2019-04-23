@@ -182,6 +182,7 @@ public:
 
     double local_eval, aux_eval,  best_eval;
     double used_time=0;
+    double ls_time=0;
     bool flag=true, impils=true, impals=true;
     int no_improvement, iteration=1, perturbation_iteration=0;
     no_improvement = 0;
@@ -197,14 +198,16 @@ public:
         cout << "Iteration: " << iteration << ", per: " << local_eval << endl;
       }
       impals = impils = false;
+
+      if (max_time!=0) ls_time= max_time-used_time;
+
       
       // Intensity ls
-      aux_eval =iLocalSearch (current_plan, max_time-used_time, false);
+      aux_eval =iLocalSearch (current_plan, ls_time, true);
       if (aux_eval < local_eval) {
         local_eval = aux_eval;
         impils = true;
       }
-      //cout << "Iteration: " << iteration << ", ils: " << aux_eval <<" "<< local_eval << endl;
       
       // Termination criterion
       time_end = clock();
@@ -216,15 +219,24 @@ public:
           best_plan.newCopy(current_plan);
         }
         break;
+        cout << "## Timed out" << endl;
       }
+
+      if (max_time!=0) ls_time= max_time-used_time;
       
       // Aperture ls
-      aux_eval = aLocalSearch (current_plan, max_time-used_time, false);
+      aux_eval = aLocalSearch (current_plan, ls_time , false);
       if (aux_eval < local_eval) {
         local_eval = aux_eval;
         impals = true;
       }
-      //cout << "Iteration: " << iteration << ", als: " << aux_eval << " " << local_eval << endl;
+      
+      /*
+      cout << endl;
+      for(int j=0;j<5;j++)
+        current_plan.printIntensity(j);
+      cout << endl;
+      */
       
       if (local_eval < best_eval) {
         best_eval = local_eval;
