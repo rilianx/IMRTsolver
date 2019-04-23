@@ -267,8 +267,8 @@ namespace imrt {
     return(ydim);
   }
 
-  int Collimator::getNangleBeamlets(int angle) {
-    return(nb_angle_beamlets[angle]);
+  int Collimator::getNangleBeamlets(int angle) const {
+    return(nb_angle_beamlets.at(angle));
   }
 
   pair<int,int> Collimator::indexToPos(int index, int angle){
@@ -319,20 +319,20 @@ namespace imrt {
 
   }
 
-  list<int>& Collimator::getAngles(){
+  const list<int>& Collimator::getAngles() const{
     return angles;
   }
 
-  int Collimator::getAngle(int i){
-    std::list<int>::iterator it = angles.begin();
+  int Collimator::getAngle(int i) const{
+    std::list<int>::const_iterator it = angles.begin();
     std::advance(it, i);
     return *it;
   }
 
-  int Collimator::getNbAngles(){
+  int Collimator::getNbAngles() const{
     return(n_angles);
   }
-  
+
   void Collimator::generateReference () {
     int i = 0;
     reference[0] = make_pair(-1,-1);
@@ -346,18 +346,18 @@ namespace imrt {
     reference[i] = make_pair(0, getYdim()-1);
     ref_size = i;
   };
-  
+
   void Collimator::printReference () {
     cout << "Reference list" << endl;
     for (int i=0; i < ref_size; i++) {
       cout << i << " " << reference[i].first << "," << reference[i].second << endl;
     }
   };
-  
+
   pair <int, int> Collimator::getReference (int r) {
     return(reference[r]);
   };
-  
+
   int Collimator::searchReferenceIndex (pair<int, int> p) {
     for (int i=0;i<ref_size;i++) {
       if (reference[i].first == p.first && reference[i].second==p.second)
@@ -365,11 +365,11 @@ namespace imrt {
     }
     return(-1);
   };
-  
+
   int Collimator::getReferenceSize() {
     return(ref_size);
   };
-  
+
   void Collimator::generateIntensityLevels (int step_intensity, int max_intensity) {
     int aux=0;
     // Level 0 and 1 are always in the set
@@ -378,15 +378,15 @@ namespace imrt {
     levels_to_intensity.push_back(1);
     intensity_to_levels[1.0] = 1;
     aux = 1;
-    
+
     for (int i=2; aux< max_intensity; i++){
-      aux = aux + step_intensity; 
+      aux = aux + step_intensity;
       levels_to_intensity.push_back(aux);
       intensity_to_levels[aux] = i;
     }
     printIntensityLevels ();
   };
-  
+
   void Collimator::printIntensityLevels (){
     cout << "Intensity levels: "<< endl;
     for (int i=0; i<levels_to_intensity.size(); i++){
@@ -394,15 +394,15 @@ namespace imrt {
     }
     cout << endl;
   };
-  
+
   int Collimator::getIntensityLevel(double v) {
     return(intensity_to_levels[v]);
   };
-  
+
   double Collimator::getLevelIntensity(int l) {
     return(levels_to_intensity[l]);
   };
-  
+
   int Collimator::getIntensityLevelSize() {
     return(levels_to_intensity.size());
   };

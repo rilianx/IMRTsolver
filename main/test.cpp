@@ -85,7 +85,7 @@ int main(int argc, char** argv){
 	   stations[i]=station;
    }
 
-   EvaluationFunction F(volumes);
+   EvaluationFunction& F = EvaluationFunction::getInstance(volumes,collimator);
    Plan P(F);
    for(int i=0;i<5;i++)
 	   P.add_station(*stations[i]);

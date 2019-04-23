@@ -17,21 +17,31 @@ namespace imrt {
 
   Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,
              vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity,
-             int step_intensity, int open_apertures, int setup) : ev(volumes), w(w), Zmin(Zmin), Zmax(Zmax) {
+             int step_intensity, int open_apertures, int setup, char* file) :
+             ev(EvaluationFunction::getInstance(volumes, collimator)), w(w), Zmin(Zmin), Zmax(Zmax) {
 
     cout << "##Initilizing plan."<< endl;
 
+
+    fstream* myfile=NULL;
+    if(file) myfile=new fstream(file, std::ios_base::in);
+
     for (int i=0;i<collimator.getNbAngles();i++) {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures,
-                                     max_intensity, initial_intensity, step_intensity, open_apertures, setup);
-      //real_stations.push_back(*station);
+                                     max_intensity, initial_intensity, step_intensity, open_apertures, setup, myfile);
       add_station(*station);
-      //station->printIntensity();
+      angle2station[collimator.getAngle(i)]=station;
+    }
+    if(myfile){
+    	myfile->close();
+        delete myfile;
     }
     cout << "##  Created " << stations.size() << " stations."<< endl;
     eval();
     cout << "##  Initial evaluation: " << evaluation_fx << "."<< endl;
     last_changed=NULL;
+
+    //ev.create_beam2voxel_list(*this);
   };
 
   Plan::Plan(const Plan &p): ev(p.ev), w(p.w), Zmin(p.Zmin), Zmax(p.Zmax), last_changed(NULL) {
@@ -41,6 +51,7 @@ namespace imrt {
       Station* aux = new Station(**it);
       if (p.last_changed && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
       add_station(*aux);
+      angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
     }
     evaluation_fx=p.evaluation_fx;
@@ -48,8 +59,8 @@ namespace imrt {
 
   void Plan::newCopy(Plan& p) {
     last_changed=NULL;
-    EvaluationFunction* aux_ev= new EvaluationFunction (p.ev);
-    ev=*aux_ev;
+    //ev= EvaluationFunction::getInstance();
+
     w=p.w;
     Zmin=p.Zmin;
     Zmax=p.Zmax;
@@ -59,6 +70,7 @@ namespace imrt {
       Station* aux = new Station (**it);
       if (p.last_changed!=NULL && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
       stations.push_back(aux);
+      angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
     }
     evaluation_fx=p.evaluation_fx;
@@ -81,6 +93,8 @@ namespace imrt {
     evaluation_fx=eval;
     return eval;
   };
+
+
 
   double Plan::incremental_eval (Station& station, list< pair< int, double > >& diff) {
     evaluation_fx=ev.incremental_eval(station, w, Zmin, Zmax, diff);

@@ -113,7 +113,7 @@ int main(int argc, char** argv){
 	   stations[i]=station;
    }
 
-   EvaluationFunction F(volumes);
+   EvaluationFunction& F = EvaluationFunction::getInstance(volumes,collimator);
   // Plan P(F);
 
 	vector<double> w={1,1,1};

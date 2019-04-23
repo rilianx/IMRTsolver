@@ -27,7 +27,7 @@ public:
         Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
 
         Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator, vector<Volume>& volumes,
-       int max_apertures, int max_intensity, int initial_intensity, int step_intensity=2, int open_apertures=-1, int setup=6);
+       int max_apertures, int max_intensity, int initial_intensity, int step_intensity=2, int open_apertures=-1, int setup=6, char* file=NULL);
 
         Plan(const Plan &p);
 
@@ -42,7 +42,18 @@ public:
 
 	double eval();
 
+	double incremental_eval (Station& station, int i, int j, double intensity){
+		list< pair< int, double > > diff;
+		diff.push_back(make_pair(station.pos2beam[make_pair(i,j)],intensity));
+		return incremental_eval (station, diff);
+	}
+
 	double incremental_eval (Station& station, list< pair< int, double > >& diff);
+
+	double get_delta_eval (Station& s, int i, int j, double intensity, int n_voxels=999999){
+    return ev.get_delta_eval(s.getAngle(),
+    s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
+  }
 
 	// This function assumes that there are no changes made without evaluation
 	// performed with eval or incrementalEval
@@ -62,7 +73,7 @@ public:
 		  std::advance(it,rand()%sb.size());
 		  return make_pair(it->first.second, it->second);
 	}
-	
+
 	virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(int bsize, int vsize){
 	  auto sb=ev.best_beamlets(*this, bsize, vsize);
 	  auto it=sb.begin();
@@ -95,6 +106,8 @@ public:
      return(stations.size()) ;
   }
 
+
+  map<int, Station*> angle2station;
 private:
 	//The list of stations
 	//list<Station> real_stations;
@@ -105,7 +118,7 @@ private:
   Station* last_changed;
 	list< pair< int, double > > last_diff;
 
-	EvaluationFunction ev;
+	EvaluationFunction& ev;
 
 	vector<double> w;
 	vector<double> Zmin;

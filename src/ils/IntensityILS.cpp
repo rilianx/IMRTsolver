@@ -22,7 +22,7 @@ namespace imrt {
 		 return cells;
 	 }
 
-   double IntensityILS::iLocalSearch(Plan& P, bool verbose){
+   double IntensityILS::iLocalSearch(Plan& P, double max_time, bool verbose){
 		 const list<Station*> stations=P.get_stations();
 		 list< pair< int, double > > diff;
 		 double eval =P.getEvaluation();
@@ -32,16 +32,20 @@ namespace imrt {
 				for(auto cell:cells){
 					int a=rand()%2;
 					for(int b=0; b<2;b++){
-					  int i=cell.first;
-					  int j=cell.second;
-						if(a==b) diff=s->intensityUp(i,j);
-						else diff=s->intensityDown(i,j);
-						if(diff.empty()) continue;
+					  int i=cell.first, j=cell.second;
+            double intensity, old=s->I(i,j);
+						if(a==b) intensity=s->intensityUp(i,j);
+						else intensity=s->intensityDown(i,j);
+						if(intensity==s->I(i,j)) continue;
+            double delta_eval = P.get_delta_eval (*s, i, j, intensity-old);
 
-						double new_eval=P.incremental_eval(*s,diff);
-						if(new_eval<eval)
-							return eval;
-						undoLast(P);
+						if(delta_eval<-0.05){
+              cout << delta_eval << ":" << intensity-old << endl;
+              //cout << P.getEvaluationFunction()->get_impact_beamlet(s->getAngle(),s->pos2beam[make_pair(i,j)]) << endl;
+              s->change_intensity(i, j, intensity);
+              return P.incremental_eval(*s, i, j, intensity-old);
+            }
+
 					}
 				}
 		 }

@@ -71,11 +71,11 @@ private:
   int n_angles;
 
   vector< pair<int, string> > coord_files;
-  
+
   map < int, pair <int,int> > reference;
   vector<int> levels_to_intensity;
   map<double, int> intensity_to_levels;
-  
+
   int ref_size;
 
 public:
@@ -98,7 +98,7 @@ public:
   //int getNangles();
 
   // Number of beamlets active in an angle
-  int getNangleBeamlets(int angle);
+  int getNangleBeamlets (int angle) const;
 
   // Indicates if a beam located in position (x,y) is active
   bool isActiveBeamAngle(int x, int y, int angle);
@@ -109,32 +109,32 @@ public:
 
   void printActiveBeam();
 
-  list<int>& getAngles();
+  const list<int>& getAngles() const;
 
-  int getAngle(int i);
+  int getAngle(int i) const;
 
-  int getNbAngles();
+  int getNbAngles() const;
 
   static string delimiter;
-  
+
   void generateReference ();
-  
+
   void printReference ();
-  
+
   int getReferenceSize();
-  
+
   pair <int, int> getReference (int r) ;
-  
+
   int searchReferenceIndex (pair<int, int>);
-  
+
   void generateIntensityLevels(int step_intensity, int max_intensity);
-  
+
   void printIntensityLevels ();
-  
+
   int getIntensityLevelSize();
-    
+
   int getIntensityLevel(double v);
-  
+
   double getLevelIntensity(int l);
 };
 }
