@@ -598,7 +598,7 @@ namespace imrt {
     last_diff=diff;
     return(diff);
   }
-
+  
   /* Function that closes a beamlet in coordinate <x,y> from the left, if lside is true, or
    from the right size otherwise. Return true if the closing was performed.*/
   list<pair <int,double> > Station::closeBeamlet(pair<int,int> coord, int aperture, bool lside) {
@@ -791,5 +791,6 @@ namespace imrt {
   void Station::clearHistory() {
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
     last_diff.clear();
+    last_intensity.clear();
   }
 }

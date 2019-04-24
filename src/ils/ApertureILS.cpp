@@ -98,6 +98,11 @@ double ApertureILS::closeBeamlet(int beamlet, int side, int aperture, Station& s
   double aux_eval, l_eval, r_eval;
   list <pair<int, double> > diff;
   
+  if (P.get_delta_eval(station, beamlet, -station.getApertureIntensity(aperture)) > c_eval){
+    station.clearHistory();
+    return(c_eval);
+  }
+  
   if (side == 1) {
     diff = station.closeBeamlet(beamlet, aperture, true);
     if (diff.size() > 0) {
@@ -205,6 +210,11 @@ double ApertureILS::improvementIntensity(int beamlet, Station& station, bool ope
 double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P) {
   double aux_eval=0;
   list<pair<int, double> > diff;
+  
+  if (P.get_delta_eval(station, beamlet, station.getApertureIntensity(aperture)) > c_eval){
+    station.clearHistory();
+    return(c_eval);
+  }
 
   diff = station.openBeamlet(beamlet, aperture);
   if(diff.size() <1) return(c_eval);
