@@ -94,12 +94,10 @@ namespace imrt {
     return eval;
   };
 
-
-
   double Plan::incremental_eval (Station& station, list< pair< int, double > >& diff) {
-    evaluation_fx=ev.incremental_eval(station, w, Zmin, Zmax, diff);
-    last_changed=&station;
-    last_diff= diff;
+    evaluation_fx = ev.incremental_eval(station, w, Zmin, Zmax, diff);
+    last_changed = &station;
+    last_diff = diff;
     return(evaluation_fx);
   };
 

@@ -62,13 +62,12 @@ private:
    vector<vector<pair<int,int> > > A;
 
 
-
-
    void clearIntensity();
 
    //These auxiliar variables to track last changes
    pair<pair<int,int>, pair<int,int>> last_mem;
    list<pair<int,double>> last_diff;
+   vector<double> last_intensity;
 
 public:
 

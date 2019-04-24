@@ -15,6 +15,7 @@ namespace imrt {
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
 		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
                 step_intensity(step_intensity) {
+    
     min_intensity=1;
     if(open_apertures==-1) open_apertures=max_apertures;
 
@@ -47,6 +48,7 @@ namespace imrt {
     }
 
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
+    last_intensity = intensity; 
   }
 
   Station::Station(const Station &s): collimator(s.collimator){
@@ -316,7 +318,12 @@ namespace imrt {
 
   void Station::printIntensity(bool vector_form) {
 	  if(!vector_form){
-		  cout << "Angle "<< angle <<" intensity matrix:"<< endl;
+		  cout << "Angle "<< angle << endl; 
+	    cout << " aperture intensities: ";
+	    cout << intensity[1];
+	    for (int i=1;i<max_apertures;i++)
+	      cout << ", " << intensity[i];
+	    cout << endl <<" intensity matrix:"<< endl;
 		  for (int i=0; i<collimator.getXdim();i++) {
 			  for (int j=0; j<collimator.getYdim(); j++) {
 				  printf("%2.0f ", I(i,j));
@@ -552,8 +559,9 @@ namespace imrt {
   /* Function that closes a beamlet from the left, if lside is true, or
      from the right size otherwise. Return true if the closing was performed.*/
   list<pair <int,double> > Station::closeBeamlet(int beam, int aperture, bool lside) {
-    //cout << "Attempt to close beam: " << beam << endl;
+    
     list<pair <int, double> > diff;
+    //cout << "Attempt to close beam: " << beam << " from left? " << lside << endl;
     //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
 
     if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
@@ -561,8 +569,10 @@ namespace imrt {
       int row= coord.first;
       //cout << "Coordinates: " << coord.first << "," << coord.second << endl;
       if (lside) {
+        //cout << "lside" << endl;
         for (int i=0;i<=coord.second-A[aperture][row].first;i++) {
           diff.push_back(make_pair(beam-(coord.second-A[aperture][row].first)+i, -intensity[aperture]));
+          //cout << "el diff es " << beam-(coord.second-A[aperture][row].first)+i <<"," << -intensity[aperture] << endl; 
         }
         last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
         if (A[aperture][row].second == coord.second) {
@@ -585,7 +595,6 @@ namespace imrt {
       }
       updateIntensity(diff);
     }
-
     last_diff=diff;
     return(diff);
   }
@@ -593,11 +602,13 @@ namespace imrt {
   /* Function that closes a beamlet in coordinate <x,y> from the left, if lside is true, or
    from the right size otherwise. Return true if the closing was performed.*/
   list<pair <int,double> > Station::closeBeamlet(pair<int,int> coord, int aperture, bool lside) {
-    //cout << "Attempt to close beam: " << beam << endl;
+    
     list<pair <int, double> > diff;
-    //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
     int beam = getBeamIndex(coord);
 
+    //cout << "Attempt to close beam: " << beam << endl;
+    //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
+    
     if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
       auto coord = collimator.indexToPos(beam, angle);
       int row= coord.first;
@@ -687,6 +698,12 @@ namespace imrt {
         return (diff);
       }
     }
+    
+    // Save previous intensity
+    last_intensity.clear();
+    for (int i=0;i<max_apertures;i++) 
+      last_intensity.push_back(intensity[i]);
+    
     intensity[aperture] = intensity[aperture] + size;
 
     for (int i=0; i<collimator.getXdim(); i++) {
@@ -759,9 +776,14 @@ namespace imrt {
       I(coord.first,coord.second) = I(coord.first,coord.second) - (it->second);
       undo_diff.push_back(make_pair(it->first, -(it->second)));
     }
+    
+    for (int i=0;i<max_apertures;i++) {
+      intensity[i]=last_intensity[i];
+    }
 
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
     last_diff.clear();
+    last_intensity.clear();
 
     return(undo_diff);
   }

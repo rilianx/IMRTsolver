@@ -396,19 +396,20 @@ vector < pair<int, int> > ApertureILS::getShuffledIntensityNeighbors(Plan &P){
   list<Station*> stations = P.get_stations();
   vector<pair<int, int>> a_list;
   list<Station*>::iterator s;
-  int i,j;
   s = stations.begin();
-  for (i = 0; i < stations.size(); i++) {
-    for (j=0; j< (*s)->getNbApertures();j++){
+  for (int i = 0; i < stations.size(); i++) {
+    for (int j = 0; j < (*s)->getNbApertures();j++){
       //One pair -j (-aperture) for reducing intensity
       //One pair for increasing intensity (+j)
       if ((*s)->getApertureIntensity(j) > 0)
         a_list.push_back(make_pair(i,-(j+1)));
-      if ((*s)->getApertureIntensity(j) >= (*s)->getMaxIntensity())
+      
+      if ((*s)->getApertureIntensity(j) <= (*s)->getMaxIntensity())
         a_list.push_back(make_pair(i,(j+1)));
     }
     std::advance(s,1);
   }
+  //cout << "Size neighborhood " << a_list.size()<< endl;
   std::random_shuffle(a_list.begin(), a_list.end());
   return(a_list);
 };
@@ -578,7 +579,7 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
          std::advance(s, a_list[i].first);
          
          if (verbose)
-           cout << "  iLS Neighbor " << i << " over station " << (*s)->getAngle() << " aperture " <<  abs(a_list[i].second)-1  ;
+             cout << "  iLS Neighbor " << i << " over station " << (*s)->getAngle() << " aperture " <<  abs(a_list[i].second)-1;
          
          aux_eval = current_eval;
          
@@ -589,16 +590,18 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
              aux_eval = P.incremental_eval(*(*s), diff);
            }
            if (verbose)
-             cout << " (-" << step_intensity << ") diff size " << diff.size() << endl;
+             cout << " (-" << step_intensity << ")";
          } else {
            diff = (*s)->modifyIntensityAperture(a_list[i].second-1, step_intensity);
            if (diff.size() > 0) {
              aux_eval = P.incremental_eval(*(*s), diff);
            }
            if (verbose)
-             cout << " (+"<< step_intensity << ") diff size " << diff.size() << endl;
+             cout << " (+"<< step_intensity << ")";
          }
          
+         if (verbose )
+             cout << " result " << aux_eval <<endl;
          // First improvement
          if ((local_best_eval - aux_eval) > 0.00001){
            local_best_eval = aux_eval;
@@ -651,7 +654,7 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
        }
     }
     
-    cout << "   ils best: " << local_best_eval ;
+    cout << "  iLS best: " << local_best_eval ;
     if (!completed) cout << ": [nolo] : ";
     else  cout << ": [lo] : ";
     time_end = clock();
@@ -666,7 +669,7 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
   Station *s;
   std::clock_t time_end, time_begin;
   double used_time;
-  double local_best_eval, aux_eval;
+  double local_best_eval, aux_eval, current_eval;
   bool improvement=true, best_improvement=ls_type;
   vector < pair< pair<int, int>, pair<int, int>> > a_list;
   pair< pair<int, int>, pair<int, int>> tabu;
@@ -684,30 +687,31 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
   
   while (improvement) {
     j++;
-    //a_list = getShuffledApertureNeighbors(P);
-    a_list = getOrderedApertureNeighbors(P);
+    a_list = getShuffledApertureNeighbors(P);
+    //a_list = getOrderedApertureNeighbors(P);
     improvement = false;
     completed = false;
     
     if (verbose)
       cout << "Neighborhood "<<j<< " size "<< a_list.size() << "    current " << local_best_eval << endl;
     
+    current_eval = P.getEvaluation();
     for (i = 0; i < a_list.size(); i++) {
       s = P.get_station(a_list[i].first.first);
       aperture = a_list[i].first.second;
       beamlet = a_list[i].second.second;
       sign = a_list[i].second.first;
-      
-      if (verbose) {
-        cout << "  aLS Neighbor " << i << " over station " << s->getAngle() << " aperture " << aperture << " beamlet " << beamlet << " operator " << sign << endl;
-      }
-      
+            
       if (sign < 0) {
-        aux_eval = closeBeamlet(beamlet, abs(sign), aperture, *s, aux_eval, P); 
+        aux_eval = closeBeamlet(beamlet, abs(sign), aperture, *s, current_eval, P); 
       } else {
-        aux_eval = openBeamlet(beamlet, aperture, *s, aux_eval, P);
-      } 
-      
+        aux_eval = openBeamlet(beamlet, aperture, *s, current_eval, P);
+      }
+
+      if (verbose) {
+          cout << "  aLS Neighbor " << i << " over station " << s->getAngle() << " aperture " << aperture << " beamlet " << beamlet << " operator " << sign << " result " << aux_eval << endl;
+      }
+
       if ((local_best_eval - aux_eval) > 0.00001){
         local_best_eval = aux_eval;
         best_n = i;
@@ -716,6 +720,7 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
           cout << "     improvement " << aux_eval << endl ;
         if (!best_improvement) { 
           if (i==(a_list.size()-1)) completed=true;
+          i = a_list.size();
           break;
         }
       }
@@ -729,8 +734,11 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
       time_end = clock();
       used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
       if (max_time!=0 && used_time >= max_time) {
+        if (verbose)
+          cout << "  aLS timed out " << endl;
         break;
       }
+      
     }
     
     //Apply best neighbor
@@ -749,11 +757,13 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
     time_end = clock();
     used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
     if (max_time!=0 && used_time >= max_time) {
+      if (verbose)
+        cout << "  aLS timed out " << endl;
       break;
     }
   }
   
-  cout << "   als best: " << local_best_eval ;
+  cout << "  aLS best: " << local_best_eval ;
   if (!completed) cout << ": [nolo] : ";
   else  cout << ": [lo] : ";
   time_end = clock();

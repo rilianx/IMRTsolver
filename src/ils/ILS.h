@@ -197,48 +197,50 @@ public:
         local_eval = perturbation(current_plan);
         cout << "Iteration: " << iteration << ", per: " << local_eval << endl;
       }
-      impals = impils = false;
+      
+      impals = false;
+      impils = false;
 
       if (max_time!=0) ls_time= max_time-used_time;
-
       
       // Intensity ls
-      aux_eval =iLocalSearch (current_plan, ls_time, true);
-      if (aux_eval < local_eval) {
+      aux_eval =iLocalSearch (current_plan, ls_time, false);
+      if ((local_eval - aux_eval) > 0.00001) {
         local_eval = aux_eval;
         impils = true;
       }
+      
+      if ((best_eval - local_eval) > 0.00001) {
+        best_eval = local_eval;
+        best_plan.newCopy(current_plan);
+      }
+      
+      //Check print (comment if not needed)
+      /*current_plan.eval();
+      cout << "returned eval: " << aux_eval << " current local: " << local_eval << " in current plan: " << current_plan.getEvaluation()<< endl;
+      cout << endl;
+      for(int j=0;j<5;j++)
+      current_plan.printIntensity(j);
+      cout << endl;*/
       
       // Termination criterion
       time_end = clock();
       used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
       if (max_time!=0 && used_time >= max_time) {
         flag = false;
-        if (local_eval < best_eval) {
-          best_eval = local_eval;
-          best_plan.newCopy(current_plan);
-        }
         break;
-        cout << "## Timed out" << endl;
       }
 
       if (max_time!=0) ls_time= max_time-used_time;
       
       // Aperture ls
       aux_eval = aLocalSearch (current_plan, ls_time , false);
-      if (aux_eval < local_eval) {
+      if ((local_eval - aux_eval) > 0.00001) {
         local_eval = aux_eval;
         impals = true;
       }
       
-      /*
-      cout << endl;
-      for(int j=0;j<5;j++)
-        current_plan.printIntensity(j);
-      cout << endl;
-      */
-      
-      if (local_eval < best_eval) {
+      if ((best_eval - local_eval) > 0.00001) {
         best_eval = local_eval;
         best_plan.newCopy(current_plan);
       }
