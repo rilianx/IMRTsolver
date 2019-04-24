@@ -160,7 +160,7 @@ private:
 	double prev_F;
 
   //Extra data
-
+   //TODO: cambiar derivativas a +/-
 	// all the tumor voxels sorted by derivative (may be useful for algorithms)
   set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > voxels;
 
