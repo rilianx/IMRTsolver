@@ -40,14 +40,6 @@ class Plan;
  * Basically it penalizes voxels with doses larger than Zmax (healthy organs), and with doses smaller than Zmin (tumor)
  */
 
- struct MagnitudeCompare
- {
-     bool operator()(const double& lhs, const double& rhs)
-     {
-         return abs(lhs) > abs(rhs);
-     }
-};
-
 struct pair_hash
 {
   template <typename T, typename U>
@@ -56,6 +48,27 @@ struct pair_hash
     return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
   }
 };
+
+
+ struct MagnitudeCompare
+ {
+     bool operator()(const double& lhs, const double& rhs)
+     {
+         return abs(lhs) > abs(rhs);
+     }
+
+     bool operator()(const pair< double, pair<int,int> >& lhs, const pair< double, pair<int,int> >& rhs)
+     {
+    	 if(abs(lhs.first) > abs(rhs.first)) return true;
+    	 if(abs(lhs.first) == abs(rhs.first)){
+    		 //if(pair_hash()(lhs.second)< pair_hash()(rhs.second)) return true;
+    		 if(lhs.second.first < rhs.second.first) return true;
+    		 if(lhs.second.first == rhs.second.first &&  lhs.second.second < rhs.second.second) return true;
+    	 }
+         return false;
+     }
+};
+
 
 class EvaluationFunction {
 
@@ -180,7 +193,7 @@ private:
   //Extra data
    //TODO: cambiar derivativas a +/-
 	// all the tumor voxels sorted by derivative (may be useful for algorithms)
-  set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > voxels;
+   set< pair< double, pair<int,int> >, MagnitudeCompare >  voxels;
 
   //Beamlets (angle,b) sorted by impact (partial derivative magnitude)
   //multimap < double, pair<int, int>, MagnitudeCompare > sorted_beamlets;

@@ -141,7 +141,7 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 //And resorts the set of voxels
 void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, int o, int k){
-		voxels.erase(make_pair(abs(D[o][k]),make_pair(o,k)));
+		voxels.erase(make_pair(D[o][k],make_pair(o,k)));
 
 		if(Zmin[o]>0){
 			 if(Z[o][k] < Zmin[o])  D[o][k]=w[o]*(Z[o][k]-Zmin[o])/nb_voxels[o];
@@ -151,7 +151,7 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 			else D[o][k]=0.0;
 		}
 		if(D[o][k]!=0.0)
-			voxels.insert(make_pair(abs(D[o][k]),make_pair(o,k)));
+			voxels.insert(make_pair(D[o][k],make_pair(o,k)));
 }
 
 void EvaluationFunction::update_beamlets_impact(int o, int k, double prev_Dok){
@@ -348,6 +348,7 @@ EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
 		for(int b=0; b<s->getNbBeamlets(); b++){
 			double ev=0; int i=0;
 			for(auto voxel:voxels){
+
 				int o=voxel.second.first;
 				int k=voxel.second.second;
 				const Matrix&  Dep = s->getDepositionMatrix(o);
