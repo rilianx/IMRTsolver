@@ -135,6 +135,24 @@ public:
 
 	void generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
+	//update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
+	//if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
+	//return false if some voxel surpasses Zmax
+	bool Zupdate(int angle, int b, double delta_intensity, bool return_if_unfeasible,
+				 vector<double>& Zmax);
+
+	//regresa al savepoint para Z
+	void Zrollback();
+
+	void Zsavepoint(){
+		Z_diff.clear();
+	}
+
+	pair<double,double> get_value_cost(int angle, int b, vector<double>& Zmin, vector<double>& Zmax);
+
+	void get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, vector<double>& Zmax,
+			multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_set);
+
 	static int n_evaluations;
 
 	int n_volumes;

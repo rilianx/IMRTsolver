@@ -406,7 +406,71 @@ void EvaluationFunction::generate_voxel_dose_functions (){
 	}
 }
 
+bool EvaluationFunction::Zupdate(int angle, int b, double delta_intensity, bool return_if_unfeasible,
+			vector<double>& Zmax){
 
+	multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(make_pair(angle,b));
+	bool feasible = true;
+	 for(auto voxel:voxels){
+		 int o=voxel.second.first, k=voxel.second.second;
+		 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+		 double delta = Dep(k,b)*(delta_intensity);
+		 if(delta==0.0) continue;
 
+		 if(Z[o][k] + delta > Zmax[o]){
+			 feasible=false;
+			 if(return_if_unfeasible) return feasible;
+		 }
+
+		 Z[o][k] += delta;
+		 Z_diff.push_back(make_pair(make_pair(o,k),delta));
+	 }
+
+	 return feasible;
+}
+
+void EvaluationFunction::Zrollback(){
+	for(auto z:Z_diff){
+		int o=z.first.first;
+		int k=z.first.second;
+		Z[o][k]-=z.second;
+	}
+	Z_diff.clear();
+}
+
+pair<double,double> EvaluationFunction::get_value_cost(int angle, int b, vector<double>& Zmin, vector<double>& Zmax){
+	multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(make_pair(angle,b));
+	double cost=0.0, value=0.0;
+	 for(auto voxel:voxels){
+		 int o=voxel.second.first, k=voxel.second.second;
+		 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+		 if(Zmin[o]==0.0){//organ
+			 if(Zmax[o]-Z[o][k] == 0) cost=1e20;
+			 else{
+				 double c=Dep(k,b)/(Zmax[o]-Z[o][k]);
+			 	 if(c>cost) cost=c;
+			 }
+		 }else
+			 if(Z[o][k] < Zmin[o]) value += Dep(k,b);
+	 }
+
+	 return make_pair(value,cost);
+}
+
+void EvaluationFunction::get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, vector<double>& Zmax,
+		multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_set){
+	//the sorted set of beamlets
+
+	double max_ev=0.0;
+	for(auto s:p.get_stations()){
+		for(int b=0; b<s->getNbBeamlets(); b++){
+			pair<double,double> value_cost=get_value_cost(s->getAngle(), b, Zmin, Zmax);
+            double ev=value_cost.first/value_cost.second;
+			if(ev==0) continue;
+			sorted_set.insert(make_pair (ev,  make_pair(s,b)));
+		}
+	}
+
+}
 
 } /* namespace imrt */
