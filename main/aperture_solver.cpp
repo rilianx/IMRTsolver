@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "IntensityGenerator.h"
 #include "EvaluationFunction.h"
 #include "Plan.h"
 #include "Collimator.h"
@@ -375,37 +376,41 @@ int main(int argc, char** argv){
       ils-> beamTargetedSearch(P, maxtime, maxiter);*/
   }else if(strategy=="ibo_ls"){
 
-    for(auto s:P.get_stations()){
-      for (int i=0; i<collimator.getXdim();i++) {
-			  for (int j=0; j<collimator.getYdim(); j++) {
-          if(s->I(i,j)!=-1){
-            printf("%4.1f ",
-            EvaluationFunction::getInstance().get_ratio_beamlet(w,
-          	Zmin, Zmax, s->getAngle(), s->pos2beam[make_pair(i,j)] ));
-          }else cout << "  -1 " ;
-        }
-        cout << endl;
-      }
-      cout << endl;
-    }
+	    for(auto s:P.get_stations()){
+	      for (int i=0; i<collimator.getXdim();i++) {
+				  for (int j=0; j<collimator.getYdim(); j++) {
+	          if(s->I(i,j)!=-1){
+	        	  pair<double, double> vc=EvaluationFunction::getInstance().get_value_cost(
+	        	              		s->getAngle(), s->pos2beam[make_pair(i,j)], Zmin, Zmax);
+	            printf("%5.1f ",
+	            vc.first);
+	          }else cout << "   -1 " ;
+	        }
+	        cout << endl;
+	      }
+	      cout << endl;
+	    }
+
+	    for(auto s:P.get_stations()){
+	      for (int i=0; i<collimator.getXdim();i++) {
+				  for (int j=0; j<collimator.getYdim(); j++) {
+	          if(s->I(i,j)!=-1){
+	        	  pair<double, double> vc=EvaluationFunction::getInstance().get_value_cost(
+	        	              		s->getAngle(), s->pos2beam[make_pair(i,j)], Zmin, Zmax);
+	            printf("%6.1f ",
+	            1/vc.second);
+	          }else cout << "    -1 " ;
+	        }
+	        cout << endl;
+	      }
+	      cout << endl;
+	    }
 
 
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
     ils->beamTargetedSearch(P, maxtime, maxiter);
 
-    for(auto s:P.get_stations()){
-      for (int i=0; i<collimator.getXdim();i++) {
-			  for (int j=0; j<collimator.getYdim(); j++) {
-          if(s->I(i,j)!=-1){
-            printf("%4.1f ",
-            EvaluationFunction::getInstance().get_ratio_beamlet(w,
-          	Zmin, Zmax, s->getAngle(), s->pos2beam[make_pair(i,j)] ));
-          }else cout << "  -1 " ;
-        }
-        cout << endl;
-      }
-      cout << endl;
-    }
+
     
     cout << endl;
   	for(int i=0;i<5;i++)
@@ -416,6 +421,9 @@ int main(int argc, char** argv){
 
     for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     cout << P.eval() << endl  ;
+  }else if(strategy=="intgen"){
+	  IntensityGenerator intgen;
+	  intgen.generate(P);
   }
 
 
