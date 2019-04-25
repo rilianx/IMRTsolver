@@ -15,6 +15,7 @@ namespace imrt {
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
 		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
                 step_intensity(step_intensity) {
+    
     min_intensity=1;
     if(open_apertures==-1) open_apertures=max_apertures;
 
@@ -47,6 +48,7 @@ namespace imrt {
     }
 
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
+    last_intensity = intensity; 
   }
 
   Station::Station(const Station &s): collimator(s.collimator){
@@ -56,6 +58,7 @@ namespace imrt {
     max_intensity=s.max_intensity;
     min_intensity=s.min_intensity;
     initial_intensity=s.initial_intensity;
+    step_intensity=s.step_intensity;
     n_volumes=s.n_volumes;
     for (int i=0; i<n_volumes; i++){
       const Matrix * aux= s.D.find(i)->second;
@@ -79,6 +82,7 @@ namespace imrt {
     max_intensity=s.max_intensity;
     min_intensity=s.min_intensity;
     initial_intensity=s.initial_intensity;
+    step_intensity=s.step_intensity;
     n_volumes=s.n_volumes;
     for (int i=0; i<n_volumes; i++) {
       const Matrix * aux= s.D.find(i)->second;
@@ -102,7 +106,7 @@ namespace imrt {
     clearIntensity();
 
     vector<int> values(max_apertures+1);
-    values[0]=0;
+    values[0] = 0;
     for(int i=1; i<max_apertures+1;i++){
       int in=rand()%(max_intensity+1)/2.0;
       values[i]=in;
@@ -190,9 +194,14 @@ namespace imrt {
       for (int i=0; i<max_apertures; i++)
         intensity[i] = max_intensity;
     } else if (type==RAND_RAND_SETUP) {
-      int n_levels = ((max_intensity-min_intensity) / step_intensity);
-      for (int i=0; i<max_apertures; i++)
-        intensity[i] = min_intensity + step_intensity * (rand() %  (n_levels+1));
+      vector<int> levels;
+      for (int k=0; k<=max_intensity; k=k+step_intensity)
+        levels.push_back(k);
+      int sel;
+      for (int i=0; i<max_apertures; i++) {
+        sel = (rand() %  (levels.size()+1));
+        intensity[i] = levels[sel];
+      }
     } else {
       for (int i=0; i<max_apertures; i++)
         intensity[i] = initial_intensity;
@@ -309,7 +318,12 @@ namespace imrt {
 
   void Station::printIntensity(bool vector_form) {
 	  if(!vector_form){
-		  cout << "Angle "<< angle <<" intensity matrix:"<< endl;
+		  cout << "Angle "<< angle << endl; 
+	    cout << " aperture intensities: ";
+	    cout << intensity[1];
+	    for (int i=1;i<max_apertures;i++)
+	      cout << ", " << intensity[i];
+	    cout << endl <<" intensity matrix:"<< endl;
 		  for (int i=0; i<collimator.getXdim();i++) {
 			  for (int j=0; j<collimator.getYdim(); j++) {
 				  printf("%2.0f ", I(i,j));
@@ -442,7 +456,6 @@ namespace imrt {
             change_intensity(i, j, to, &diff);
   }
 
-
   list< pair< int, double > > Station::increaseIntensity_repair(int beam, double intensity, int ratio){
     list< pair< int, double > > diff=increaseIntensity(beam, intensity, ratio);
 
@@ -546,8 +559,9 @@ namespace imrt {
   /* Function that closes a beamlet from the left, if lside is true, or
      from the right size otherwise. Return true if the closing was performed.*/
   list<pair <int,double> > Station::closeBeamlet(int beam, int aperture, bool lside) {
-    //cout << "Attempt to close beam: " << beam << endl;
+    
     list<pair <int, double> > diff;
+    //cout << "Attempt to close beam: " << beam << " from left? " << lside << endl;
     //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
 
     if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
@@ -555,15 +569,17 @@ namespace imrt {
       int row= coord.first;
       //cout << "Coordinates: " << coord.first << "," << coord.second << endl;
       if (lside) {
+        //cout << "lside" << endl;
         for (int i=0;i<=coord.second-A[aperture][row].first;i++) {
           diff.push_back(make_pair(beam-(coord.second-A[aperture][row].first)+i, -intensity[aperture]));
+          //cout << "el diff es " << beam-(coord.second-A[aperture][row].first)+i <<"," << -intensity[aperture] << endl; 
         }
         last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
         if (A[aperture][row].second == coord.second) {
-          A[aperture][row].first=-1;
-          A[aperture][row].second=-1;
+          A[aperture][row].first = -1;
+          A[aperture][row].second = -1;
         } else {
-          A[aperture][row].first=coord.second+1;
+          A[aperture][row].first = coord.second+1;
         }
       } else {
         for (int i=0;i<=A[aperture][row].second-coord.second;i++) {
@@ -579,25 +595,26 @@ namespace imrt {
       }
       updateIntensity(diff);
     }
-
     last_diff=diff;
     return(diff);
   }
-
+  
   /* Function that closes a beamlet in coordinate <x,y> from the left, if lside is true, or
    from the right size otherwise. Return true if the closing was performed.*/
   list<pair <int,double> > Station::closeBeamlet(pair<int,int> coord, int aperture, bool lside) {
-    //cout << "Attempt to close beam: " << beam << endl;
+    
     list<pair <int, double> > diff;
-    //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
     int beam = getBeamIndex(coord);
 
+    //cout << "Attempt to close beam: " << beam << endl;
+    //cout << "active: " << isActiveBeamlet(beam) << "open: " << isOpenBeamlet(beam, aperture) << endl;
+    
     if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
       auto coord = collimator.indexToPos(beam, angle);
       int row= coord.first;
       //cout << "Coordinates: " << coord.first << "," << coord.second << endl;
       if (lside) {
-        for (int i=0;i<=coord.second-A[aperture][row].first;i++) {
+        for (int i=0; i<=coord.second-A[aperture][row].first; i++) {
           diff.push_back(make_pair(beam-(coord.second-A[aperture][row].first)+i, -intensity[aperture]));
         }
         last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
@@ -664,15 +681,34 @@ namespace imrt {
 
   list <pair< int,double> > Station::modifyIntensityAperture(int aperture, double size) {
     list < pair <int, double > > diff;
-    if (intensity[aperture]+size < 0 || intensity[aperture]+size>max_intensity) {
-      if (intensity[aperture]+size < 0  && intensity[aperture]!=0) size = intensity[aperture];
-      else if (intensity[aperture]+size>max_intensity && intensity[aperture]!=max_intensity) size = max_intensity-intensity[aperture];
-      else return (diff);
+    if ((intensity[aperture]+size) < 0 || (intensity[aperture]+size) > max_intensity) {
+      if (intensity[aperture]+size < 0) {
+        // Too low intensity
+        if (intensity[aperture]>0)
+          size = intensity[aperture];
+        else
+          return(diff);
+      } else if ((intensity[aperture]+size) > max_intensity) {
+        // Too high intensity
+        if (intensity[aperture] < max_intensity)
+          size = max_intensity - intensity[aperture];
+        else 
+          return(diff);
+      } else {
+        return (diff);
+      }
     }
-    intensity[aperture]=intensity[aperture]+size;
+    
+    // Save previous intensity
+    last_intensity.clear();
+    for (int i=0;i<max_apertures;i++) 
+      last_intensity.push_back(intensity[i]);
+    
+    intensity[aperture] = intensity[aperture] + size;
 
     for (int i=0; i<collimator.getXdim(); i++) {
-      if (A[aperture][i].first<0 || A[aperture][i].second<0) continue;
+      if (A[aperture][i].first<0 || A[aperture][i].second<0) 
+        continue;
       int beamlet = pos2beam[make_pair(i, A[aperture][i].first)];
       for(int j=A[aperture][i].first; j<=A[aperture][i].second; j++){
         diff.push_back(make_pair(beamlet, size));
@@ -680,16 +716,22 @@ namespace imrt {
       }
     }
     updateIntensity(diff);
-    last_diff=diff;
+    last_diff = diff;
     return (diff);
   }
 
   void Station::updateIntensity(list<pair<int,double> > diff) {
     pair<int,int> coord;
-    if (diff.size()==0){ return; }
-    for (auto it=diff.begin();it!=diff.end();it++) {
-      coord=collimator.indexToPos(it->first, angle);
+    if (diff.size()<1){ 
+      return; 
+    }
+    for (auto it=diff.begin(); it!=diff.end(); it++) {
+      coord = collimator.indexToPos(it->first, angle);
       I(coord.first,coord.second) = I(coord.first,coord.second) + it->second;
+      if (I(coord.first,coord.second) < 0) { 
+        cout <<"AHORA!!!!" << coord.first<<","<<coord.second << "-> "<< it->second << " is " << getApertureIntensity(0) << " " << I(coord.first,coord.second)<<endl;
+        getchar();
+      }
     }
   }
 
@@ -712,6 +754,10 @@ namespace imrt {
   double Station::getApertureIntensity(int aperture) {
     return(intensity[aperture]);
   };
+  
+  int Station::getMaxIntensity() {
+    return(max_intensity);
+  };
 
   list <pair<int,double> > Station::undoLast () {
     list <pair<int,double> > undo_diff;
@@ -719,6 +765,8 @@ namespace imrt {
       //return(undo_diff);
     //}
     pair<int,int> coord;
+    
+    if (last_diff.size()< 1) return(undo_diff);
 
     if (last_mem.first.first>=0)
       A[last_mem.first.first][last_mem.first.second] = last_mem.second;
@@ -728,9 +776,14 @@ namespace imrt {
       I(coord.first,coord.second) = I(coord.first,coord.second) - (it->second);
       undo_diff.push_back(make_pair(it->first, -(it->second)));
     }
+    
+    for (int i=0;i<max_apertures;i++) {
+      intensity[i]=last_intensity[i];
+    }
 
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
     last_diff.clear();
+    last_intensity.clear();
 
     return(undo_diff);
   }
@@ -738,5 +791,6 @@ namespace imrt {
   void Station::clearHistory() {
     last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
     last_diff.clear();
+    last_intensity.clear();
   }
 }
