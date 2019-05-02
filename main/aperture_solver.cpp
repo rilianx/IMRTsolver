@@ -375,7 +375,7 @@ int main(int argc, char** argv){
     /*else
       ils-> beamTargetedSearch(P, maxtime, maxiter);*/
   }else if(strategy=="ibo_ls"){
-
+/*
 	    for(auto s:P.get_stations()){
 	      for (int i=0; i<collimator.getXdim();i++) {
 				  for (int j=0; j<collimator.getYdim(); j++) {
@@ -405,7 +405,7 @@ int main(int argc, char** argv){
 	      }
 	      cout << endl;
 	    }
-
+*/
 
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
     ils->beamTargetedSearch(P, maxtime, maxiter);
