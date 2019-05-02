@@ -131,6 +131,9 @@ public:
   		ev.get_vc_sorted_beamlets(p, Zmin, Zmax, sorted_beamlets);
   	}
 
+  	pair<double,double> get_value_cost(Station* s, int b){
+  		ev.get_value_cost(s->getAngle(), b, Zmin, Zmax);
+  	}
 
   map<int, Station*> angle2station;
 private:
