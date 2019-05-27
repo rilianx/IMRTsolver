@@ -42,7 +42,22 @@ public:
 
 	double eval();
 
+	double incremental_eval (Station& station, int i, int j, double intensity){
+		list< pair< int, double > > diff;
+		diff.push_back(make_pair(station.pos2beam[make_pair(i,j)],intensity));
+		return incremental_eval (station, diff);
+	}
+
 	double incremental_eval (Station& station, list< pair< int, double > >& diff);
+
+	double get_delta_eval (Station& s, int i, int j, double intensity, int n_voxels=999999){
+    return ev.get_delta_eval(s.getAngle(),
+    s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
+  }
+	
+	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999){
+	  return ev.get_delta_eval(s.getAngle(), b, intensity, w, Zmin, Zmax, n_voxels);
+	}
 
 	// This function assumes that there are no changes made without evaluation
 	// performed with eval or incrementalEval
@@ -95,6 +110,32 @@ public:
      return(stations.size()) ;
   }
 
+  //update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
+  //if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
+  //return false if some voxel surpasses Zmax
+	
+	
+		 bool Zupdate(Station* s, int b, double delta_intensity, bool return_if_unfeasible){
+	  return ev.Zupdate(s->getAngle(), b, delta_intensity, return_if_unfeasible, Zmax);
+  	}
+
+  	//regresa al savepoint para Z
+  	void Zrollback(){
+  		ev.Zrollback();
+  	}
+
+  	void Zsavepoint(){
+  		ev.Zsavepoint();
+  	}
+
+  	//almacena en sorted_beamlets los beamlet (station, b) ordenados segun v/c
+  	void get_vc_sorted_beamlets( multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_beamlets){
+  		ev.get_vc_sorted_beamlets(*this, Zmin, Zmax, sorted_beamlets);
+  	}
+
+  	pair<double,double> get_value_cost(Station* s, int b){
+  		ev.get_value_cost(s->getAngle(), b, Zmin, Zmax);
+  	}
 
   map<int, Station*> angle2station;
 private:

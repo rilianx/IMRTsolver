@@ -74,7 +74,6 @@ namespace imrt {
       //real_stations.push_back(*aux);
     }
     evaluation_fx=p.evaluation_fx;
-    angle2station=p.angle2station;
   }
 
   void Plan::add_station(Station& s){
@@ -96,9 +95,9 @@ namespace imrt {
   };
 
   double Plan::incremental_eval (Station& station, list< pair< int, double > >& diff) {
-    evaluation_fx=ev.incremental_eval(station, w, Zmin, Zmax, diff);
-    last_changed=&station;
-    last_diff= diff;
+    evaluation_fx = ev.incremental_eval(station, w, Zmin, Zmax, diff);
+    last_changed = &station;
+    last_diff = diff;
     return(evaluation_fx);
   };
 
@@ -196,5 +195,6 @@ namespace imrt {
   	}
 
   }
+
 
 }

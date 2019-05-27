@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "IntensityGenerator.h"
 #include "EvaluationFunction.h"
 #include "Plan.h"
 #include "Collimator.h"
@@ -120,7 +121,9 @@ int main(int argc, char** argv){
   double initial_temperature = 10;
   double min_temperature = 0;
   double alphaT = 0.95;
-
+  
+  //Intensities Generator parameter
+  double alpha2 = 0.5;
 
   string file="data/testinstance_0_70_140_210_280.txt";
   string file2="data/test_instance_coordinates.txt";
@@ -358,22 +361,74 @@ int main(int argc, char** argv){
 
   cout << "## Initial solution: " << best_eval << endl;
   cout  << "##" << endl;
-
+  
+  cout << endl;
+  for(int i=0;i<5;i++)
+    P.printIntensity(i);
+  cout << endl;
 
   ILS* ils;
   if(strategy=="dao_ls"){
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
                           prob_intensity, step_intensity, initial_temperature,
                           alphaT, do_perturbate, perturbation, acceptance, ls_type);
-    if (!targeted_search)
+   /* if (!targeted_search)*/
       ils-> notTargetedSearch(P, maxtime, maxiter);
-    else
-      ils-> beamTargetedSearch(P, maxtime, maxiter);
+    /*else
+      ils-> beamTargetedSearch(P, maxtime, maxiter);*/
   }else if(strategy=="ibo_ls"){
+/*
+	    for(auto s:P.get_stations()){
+	      for (int i=0; i<collimator.getXdim();i++) {
+				  for (int j=0; j<collimator.getYdim(); j++) {
+	          if(s->I(i,j)!=-1){
+	        	  pair<double, double> vc=EvaluationFunction::getInstance().get_value_cost(
+	        	              		s->getAngle(), s->pos2beam[make_pair(i,j)], Zmin, Zmax);
+	            printf("%5.1f ",
+	            vc.first);
+	          }else cout << "   -1 " ;
+	        }
+	        cout << endl;
+	      }
+	      cout << endl;
+	    }
+
+	    for(auto s:P.get_stations()){
+	      for (int i=0; i<collimator.getXdim();i++) {
+				  for (int j=0; j<collimator.getYdim(); j++) {
+	          if(s->I(i,j)!=-1){
+	        	  pair<double, double> vc=EvaluationFunction::getInstance().get_value_cost(
+	        	              		s->getAngle(), s->pos2beam[make_pair(i,j)], Zmin, Zmax);
+	            printf("%6.1f ",
+	            1/vc.second);
+	          }else cout << "    -1 " ;
+	        }
+	        cout << endl;
+	      }
+	      cout << endl;
+	    }
+*/
+
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
     ils->beamTargetedSearch(P, maxtime, maxiter);
+
+
+    
+    cout << endl;
+  	for(int i=0;i<5;i++)
+  		P.printIntensity(i);
+  	cout << endl;
+
+
+
+    for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     cout << P.eval() << endl  ;
-    for(int i=0;i<10;i++) cout << ils->iLocalSearch(P, false) << endl;
+  }else if(strategy=="intgen"){
+    cout << "entra al if" << endl  ;
+	  IntensityGenerator intgen;
+    cout <<"Crea intgen" << endl  ;
+	  intgen.generate(P,alpha2);
+    exit(0);
   }
 
 

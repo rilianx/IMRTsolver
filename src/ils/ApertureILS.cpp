@@ -91,34 +91,50 @@ pair <bool, pair<Station*, int> > ApertureILS::getLSBeamlet(Plan& P){
   return(make_pair(sign, make_pair(s,beamlet)));
 }
 
-double ApertureILS::closeBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P) {
-  double aux_eval, t_eval, f_eval;
-  list<pair<int, double> > diff;
+// side=1 left
+// side=2 right
+// other will check both
+double ApertureILS::closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval, Plan& P) {
+  double aux_eval, l_eval, r_eval;
+  list <pair<int, double> > diff;
   
-  diff = station.closeBeamlet(beamlet, aperture, true);
-  if (diff.size()>=1) {
-    c_eval = t_eval = P.incremental_eval(station, diff);
-    //cout << "  Closing left eval: " << c_eval << " list: ";
-    //for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-    //cout << endl;
-    diff = station.undoLast();
-    aux_eval = P.incremental_eval(station, diff);
+  if (P.get_delta_eval(station, beamlet, -station.getApertureIntensity(aperture)) > c_eval){
+    station.clearHistory();
+    return(c_eval);
   }
   
-  diff = station.closeBeamlet(beamlet, aperture, false);
-  if (diff.size()>=1) {
-    f_eval = P.incremental_eval(station, diff);
-    //cout << "  Closing right eval: " << f_eval << " list: "; 
-    //for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-    //cout << endl;
-    
-    if ( f_eval > t_eval ) {
-      diff = station.undoLast();   
+  if (side == 1) {
+    diff = station.closeBeamlet(beamlet, aperture, true);
+    if (diff.size() > 0) {
+      c_eval = P.incremental_eval(station, diff);
+    } 
+  } else if (side==2) {
+    diff = station.closeBeamlet(beamlet, aperture, false);
+    if (diff.size() > 0) {
+      c_eval = P.incremental_eval(station, diff);
+    }
+  } else {
+    l_eval = c_eval;
+    diff = station.closeBeamlet(beamlet, aperture, true);
+    if (diff.size() > 0) {
+      l_eval = P.incremental_eval(station, diff);
+      diff = station.undoLast();
       aux_eval = P.incremental_eval(station, diff);
+    }
+    r_eval = c_eval;
+    diff = station.closeBeamlet(beamlet, aperture, false);
+    if (diff.size() > 0) {
+      r_eval = P.incremental_eval(station, diff);
+      diff = station.undoLast();
+      aux_eval = P.incremental_eval(station, diff);
+    }
+    
+    if (r_eval > l_eval){
       diff = station.closeBeamlet(beamlet, aperture, true);
-      c_eval   = P.incremental_eval(station, diff);
-    }else{
-      c_eval=f_eval;
+      c_eval = P.incremental_eval(station, diff);
+    } else {
+      diff = station.closeBeamlet(beamlet, aperture, false);
+      c_eval = P.incremental_eval(station, diff);
     }
   }
   return(c_eval);
@@ -194,15 +210,17 @@ double ApertureILS::improvementIntensity(int beamlet, Station& station, bool ope
 double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P) {
   double aux_eval=0;
   list<pair<int, double> > diff;
-  //cout << "open" << beamlet << "a" << aperture<< endl;  
+  
+  if (P.get_delta_eval(station, beamlet, station.getApertureIntensity(aperture)) > c_eval){
+    station.clearHistory();
+    return(c_eval);
+  }
+
   diff = station.openBeamlet(beamlet, aperture);
   if(diff.size() <1) return(c_eval);
-   //cout <<"passed"<< endl;  
-  aux_eval = P.incremental_eval(station, diff);
-  //cout << "  Opening eval: " << aux_eval << " size: " << aux_diff.size() << " list: ";
-  //for (list<pair<int,double>>::iterator it=aux_diff.begin();it!=aux_diff.end();it++) cout << it->first << " ";
-  //cout << endl;
-  return(aux_eval);
+  c_eval = P.incremental_eval(station, diff);
+
+  return(c_eval);
 }
 
 
@@ -229,7 +247,7 @@ double ApertureILS::improvementAperture(int beamlet, Station& station, bool open
   // Check every aperture 
   while(flag) {
     if (!open_beamlet) {
-      aux_eval = closeBeamlet(beamlet, a_list[a], station, c_eval, P); 
+      aux_eval = closeBeamlet(beamlet, 0, a_list[a], station, c_eval, P); 
     } else {
       aux_eval = openBeamlet(beamlet, a_list[a], station, c_eval, P);
     } 
@@ -254,7 +272,7 @@ double ApertureILS::improvementAperture(int beamlet, Station& station, bool open
   
   // If no improvement was found, return the best solution found.
   if (!open_beamlet) {
-    local_best = closeBeamlet(beamlet, a_list[local_a], station, c_eval, P);
+    local_best = closeBeamlet(beamlet, 0, a_list[local_a], station, c_eval, P);
   } else{
     local_best = openBeamlet(beamlet, a_list[local_a], station, c_eval, P);
   }
@@ -388,33 +406,20 @@ vector < pair<int, int> > ApertureILS::getShuffledIntensityNeighbors(Plan &P){
   list<Station*> stations = P.get_stations();
   vector<pair<int, int>> a_list;
   list<Station*>::iterator s;
-  int i,j;
   s = stations.begin();
-  for (i = 0; i < stations.size(); i++) {
-    for (j=0; j< (*s)->getNbApertures();j++){
+  for (int i = 0; i < stations.size(); i++) {
+    for (int j = 0; j < (*s)->getNbApertures();j++){
       //One pair -j (-aperture) for reducing intensity
       //One pair for increasing intensity (+j)
-      a_list.push_back(make_pair(i,-(j+1)));
-      a_list.push_back(make_pair(i,(j+1)));
+      if ((*s)->getApertureIntensity(j) > 0)
+        a_list.push_back(make_pair(i,-(j+1)));
+      
+      if ((*s)->getApertureIntensity(j) <= (*s)->getMaxIntensity())
+        a_list.push_back(make_pair(i,(j+1)));
     }
     std::advance(s,1);
   }
-  std::random_shuffle(a_list.begin(), a_list.end());
-  return(a_list);
-};
-
-vector < pair<int, int> > ApertureILS::getShuffledIntensityNeighbors(Plan &P, int station){
-  list<Station*> stations = P.get_stations();
-  vector<pair<int, int>> a_list;
-  list<Station*>::iterator s;
-  int j;
-  s = stations.begin();
-  for (j=0; j< (*s)->getNbApertures();j++){
-    //One pair -j (-aperture) for reducing intensity
-    //One pair for increasing intensity (+j)
-    a_list.push_back(make_pair(station,-(j+1)));
-    a_list.push_back(make_pair(station,(j+1)));
-  }
+  //cout << "Size neighborhood " << a_list.size()<< endl;
   std::random_shuffle(a_list.begin(), a_list.end());
   return(a_list);
 };
@@ -445,7 +450,7 @@ vector < pair<pair<int, int>, pair<int, int>> > ApertureILS::getShuffledAperture
 
         beamlet = (*st)->getBeamIndex(make_pair(k,pattern.second));
         if((*st)->isOpenBeamlet(beamlet, a))
-           a_list.push_back(make_pair(make_pair(s,a) , make_pair(-1,beamlet)));
+           a_list.push_back(make_pair(make_pair(s,a) , make_pair(-2,beamlet)));
         else 
            a_list.push_back(make_pair(make_pair(s,a) , make_pair( 1,beamlet)));
       }
@@ -456,38 +461,123 @@ vector < pair<pair<int, int>, pair<int, int>> > ApertureILS::getShuffledAperture
   return(a_list);
 };
 
+vector < pair<pair<int, int>, pair<int, int>> > ApertureILS::getOrderedApertureNeighbors(Plan &P){
+  list<Station*> stations = P.get_stations();
+  
+  pair<bool, pair<Station*, int>> target_beam = getBestLSBeamlet(P);
+  Station * target_station = target_beam.second.first;
+  int s_target;
+  
+  vector<pair< pair<int,int> , pair<int, int> >> a_list, final_list;
+  list<Station*>::iterator st;
+  int beamlet;
+  st = stations.begin();
+  
+  pair <int,int> pattern;
+  pair <int,int> active;
+  
+  for (int s = 0; s < stations.size(); s++) {
+    if ((*st)->getAngle() == target_station->getAngle()){
+      s_target=s;
+      continue;
+    }
+    for (int a = 0; a < (*st)->getNbApertures(); a++){
+      for (int k = 0; k< (*st)->collimator.getXdim() ; k++){
+        //One pair -k (-row) for closing aperture
+        //One pair (k) (row) for opening aperture
+        pattern = (*st)->getApertureShape(a, k);
+        active = (*st)->collimator.getActiveRange(k, (*st)->getAngle());
+        if (active.first == -1) continue;
+        beamlet = (*st)->getBeamIndex(make_pair(k,pattern.first));
+        if((*st)->isOpenBeamlet(beamlet, a))
+          a_list.push_back(make_pair(make_pair(s,a) , make_pair(-1,beamlet)));
+        else 
+          a_list.push_back(make_pair(make_pair(s,a) , make_pair( 1,beamlet)));
+        
+        if (pattern.first != pattern.second) {
+          beamlet = (*st)->getBeamIndex(make_pair(k,pattern.second));
+          if((*st)->isOpenBeamlet(beamlet, a))
+            a_list.push_back(make_pair(make_pair(s,a) , make_pair(-2,beamlet)));
+          else 
+            a_list.push_back(make_pair(make_pair(s,a) , make_pair( 1,beamlet)));
+        }
+      }
+    }
+    std::advance(st,1);
+  }
+  std::random_shuffle(a_list.begin(), a_list.end());
+  
+  // Add target station neighbors
+  for (int a = 0; a < target_station->getNbApertures(); a++) {
+    for (int k = 0; k< target_station->collimator.getXdim() ; k++) {
+      active = target_station->collimator.getActiveRange(k, target_station->getAngle());
+      if (active.first == -1) continue;
+      pattern = target_station->getApertureShape(a, k);
+      
+      beamlet = target_station->getBeamIndex(make_pair(k,pattern.first));
+      if (target_station->isOpenBeamlet(beamlet, a))
+        final_list.push_back (make_pair(make_pair(s_target,a) , make_pair(-1,beamlet)));
+      else 
+        final_list.push_back (make_pair(make_pair(s_target,a) , make_pair( 1,beamlet)));
+      
+      if (pattern.first != pattern.second) {
+        beamlet = target_station->getBeamIndex(make_pair(k,pattern.second));
+        if (target_station->isOpenBeamlet(beamlet, a))
+          final_list.push_back (make_pair(make_pair(s_target,a) , make_pair(-2,beamlet)));
+        else 
+          final_list.push_back(make_pair(make_pair(s_target,a) , make_pair( 1,beamlet)));
+      }
+    }
+  }
+  std::random_shuffle(final_list.begin(), final_list.end());
+  for (int i=0; i<a_list.size(); i++) {
+    final_list.push_back(a_list[i]);
+  }
+  
+  return(final_list);
+};
+
 // This function performs a local search over all the
 // aperture intensities in a treatment plan.
 double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
     list<Station*> stations = P.get_stations();
     list<Station*>::iterator s;
+    
     std::clock_t time_end, time_begin;
     double used_time; 
     
-    double local_best_eval , aux_eval;
+    double local_best_eval, current_eval, aux_eval;
     list<pair<int, double> > diff;
     vector<pair<int, int>> a_list;
     pair <int,int> tabu;
-    int i,j, best_n;
-    bool improvement = true, best_improvement=ls_type;
-    bool completed = false;
     
-    //check all neighbors
+    bool improvement = true;
+    bool best_improvement=ls_type;
+    bool completed = false;
+    int i, j, best_n;
+    
     tabu = make_pair(-1,-1);
     best_n = -1;
     j=-1;
-    local_best_eval = aux_eval = P.getEvaluation();
+    local_best_eval = current_eval = aux_eval = P.getEvaluation();
+    
     if (verbose)
       cout << "Staring intensity local search..." << endl;
     time_begin=clock();
     
+    // Main local search loop
     while (improvement) {
-      j++;
-      a_list = getShuffledIntensityNeighbors(P);
       improvement = false;
       completed = false;
-      if (verbose)
-        cout << "Neighborhood size "<< a_list.size() << "    current " << local_best_eval << endl;
+      j++;
+      current_eval = local_best_eval;
+      a_list = getShuffledIntensityNeighbors(P);
+
+      if (verbose) {
+        cout << "  iLS Neighborhood "<< j << " size "<< a_list.size() << "    current " << local_best_eval << endl;
+      }
+      
+      // Check all the neighbors
       for (i = 0; i < a_list.size(); i++) {
          //skip the tabu neighbor (returns the station to previous state)
          if (a_list[i].first == tabu.first && a_list[i].second == tabu.second) {
@@ -496,17 +586,32 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
          }
          //get the station of the movement
          s = stations.begin();
-         std::advance(s,a_list[i].first);
+         std::advance(s, a_list[i].first);
+         
+         if (verbose)
+             cout << "  iLS Neighbor " << i << " over station " << (*s)->getAngle() << " aperture " <<  abs(a_list[i].second)-1;
+         
+         aux_eval = current_eval;
+         
          //apply step_size intensity change (-(a+1) or +(a+1))
          if (a_list[i].second < 0 ){
            diff = (*s)->modifyIntensityAperture(abs(a_list[i].second)-1, -step_intensity);
-           aux_eval = P.incremental_eval(*(*s), diff);
+           if (diff.size() > 0) {
+             aux_eval = P.incremental_eval(*(*s), diff);
+           }
+           if (verbose)
+             cout << " (-" << step_intensity << ")";
          } else {
            diff = (*s)->modifyIntensityAperture(a_list[i].second-1, step_intensity);
-           aux_eval = P.incremental_eval(*(*s), diff);
+           if (diff.size() > 0) {
+             aux_eval = P.incremental_eval(*(*s), diff);
+           }
+           if (verbose)
+             cout << " (+"<< step_intensity << ")";
          }
-         if (verbose)
-           cout << "  iLS Neighbor " << j << " over station " << (*s)->getAngle() << " aperture " <<  abs(a_list[i].second)-1  << endl;
+         
+         if (verbose )
+             cout << " result " << aux_eval <<endl;
          // First improvement
          if ((local_best_eval - aux_eval) > 0.00001){
            local_best_eval = aux_eval;
@@ -559,7 +664,7 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
        }
     }
     
-    cout << "   ils best: " << local_best_eval ;
+    cout << "  iLS best: " << local_best_eval ;
     if (!completed) cout << ": [nolo] : ";
     else  cout << ": [lo] : ";
     time_end = clock();
@@ -570,14 +675,15 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
 
 // This function performs a local search over all the
 // aperture patterns in a treatment plan.
-double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
+double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
   Station *s;
   std::clock_t time_end, time_begin;
   double used_time;
-  double local_best_eval, aux_eval;
+  double local_best_eval, aux_eval, current_eval;
   bool improvement=true, best_improvement=ls_type;
   vector < pair< pair<int, int>, pair<int, int>> > a_list;
-  pair< pair<int,int>, pair<int,int>> best_move;
+  pair< pair<int, int>, pair<int, int>> tabu;
+  pair< pair<int, int>, pair<int,int>> best_move;
   list<pair<int, double> > diff;
   int i,j, best_n, aperture, beamlet, sign;
   bool completed = false;
@@ -592,25 +698,30 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
   while (improvement) {
     j++;
     a_list = getShuffledApertureNeighbors(P);
+    //a_list = getOrderedApertureNeighbors(P);
     improvement = false;
     completed = false;
+    
     if (verbose)
-      cout << "Neighborhood size "<< a_list.size() << "    current " << local_best_eval << endl;
+      cout << "Neighborhood "<<j<< " size "<< a_list.size() << "    current " << local_best_eval << endl;
+    
+    current_eval = P.getEvaluation();
     for (i = 0; i < a_list.size(); i++) {
       s = P.get_station(a_list[i].first.first);
       aperture = a_list[i].first.second;
       beamlet = a_list[i].second.second;
       sign = a_list[i].second.first;
-      
-      if (verbose)
-          cout << "  aLS Neighbor " << j << " over station " << s->getAngle() << " aperture " << aperture << " beamlet " << beamlet << endl;
-      
-      if (sign==-1) {
-        aux_eval = closeBeamlet(beamlet, aperture, *s, aux_eval, P); 
+            
+      if (sign < 0) {
+        aux_eval = closeBeamlet(beamlet, abs(sign), aperture, *s, current_eval, P); 
       } else {
-        aux_eval = openBeamlet(beamlet, aperture, *s, aux_eval, P);
-      } 
-      
+        aux_eval = openBeamlet(beamlet, aperture, *s, current_eval, P);
+      }
+
+      if (verbose) {
+          cout << "  aLS Neighbor " << i << " over station " << s->getAngle() << " aperture " << aperture << " beamlet " << beamlet << " operator " << sign << " result " << aux_eval << endl;
+      }
+
       if ((local_best_eval - aux_eval) > 0.00001){
         local_best_eval = aux_eval;
         best_n = i;
@@ -619,6 +730,7 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
           cout << "     improvement " << aux_eval << endl ;
         if (!best_improvement) { 
           if (i==(a_list.size()-1)) completed=true;
+          i = a_list.size();
           break;
         }
       }
@@ -632,8 +744,11 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
       time_end = clock();
       used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
       if (max_time!=0 && used_time >= max_time) {
+        if (verbose)
+          cout << "  aLS timed out " << endl;
         break;
       }
+      
     }
     
     //Apply best neighbor
@@ -642,8 +757,8 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
       aperture = a_list[best_n].first.second;
       beamlet = a_list[best_n].second.second;
       sign = a_list[best_n].second.first;
-      if (sign == -1) {
-        aux_eval = closeBeamlet(beamlet, aperture, *s, aux_eval, P);
+      if (sign < 0) {
+        aux_eval = closeBeamlet(beamlet, abs(sign), aperture, *s, aux_eval, P);
       } else{
         aux_eval = openBeamlet(beamlet, aperture, *s, aux_eval, P);
       }
@@ -652,166 +767,19 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose){
     time_end = clock();
     used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
     if (max_time!=0 && used_time >= max_time) {
+      if (verbose)
+        cout << "  aLS timed out " << endl;
       break;
     }
   }
   
-  cout << "   als best: " << local_best_eval ;
+  cout << "  aLS best: " << local_best_eval ;
   if (!completed) cout << ": [nolo] : ";
   else  cout << ": [lo] : ";
   time_end = clock();
   used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
   cout << max_time << " :" << used_time << endl;
   
-  return(local_best_eval);
-};
-
-// This function performs a local search over all the
-// aperture intensities of a station in a treatment plan.
-double ApertureILS::iSLocalSearch (Plan& P, bool verbose) {
-  pair<bool, pair<Station*, int>> target_beam = getBestLSBeamlet(P);
-  list<Station*> stations = P.get_stations();
-  list<Station*>::iterator s;
-  
-  double local_best_eval =P.getEvaluation(), aux_eval=0;
-  list<pair<int, double> > diff;
-  vector<pair<int, int>> a_list;
-  pair <int,int> tabu;
-  int i,j, best_n;
-  bool improvement = true, best_improvement=ls_type;
-  
-  // Get station number
-  int station=-1;
-  s = stations.begin();
-  for (i = 0; i < stations.size(); i++) {
-    if ((*s)->getAngle() == target_beam.second.first->getAngle()){
-      station = i;
-      break;
-    }
-    std::advance(s,1);
-  }
-  
-  //check all neighbors
-  tabu = make_pair(-1,-1);
-  best_n = -1;
-  j=-1;
-  while (improvement) {
-    j++;
-    if (verbose)
-      cout << "  iLS Iteration " << j << " over station " << station << endl;
-    a_list = getShuffledIntensityNeighbors(P, station);
-    improvement = false;
-    for (i = 0; i < a_list.size(); i++) {
-      //skip the tabu neighbor (returns the station to previous state)
-      if (a_list[i].first == tabu.first && a_list[i].second == tabu.second) continue;
-      //get the station
-      s = stations.begin();
-      std::advance(s,a_list[i].first);
-      //apply change
-      if (a_list[i].second < 0 ){
-        diff = (*s)->modifyIntensityAperture(abs(a_list[i].second)-1, -1.0);
-        aux_eval = P.incremental_eval(*(*s), diff);
-      } else {
-        diff = (*s)->modifyIntensityAperture(a_list[i].second-1, 1);
-        aux_eval = P.incremental_eval(*(*s), diff);
-      }
-      //cout << "    Neighbor " << i << " pair <" << a_list[i].first << "," << a_list[i].second << "> " << "eval " << aux_eval;
-      // First improvement
-      if ((local_best_eval - aux_eval) > 0.00001){
-        local_best_eval = aux_eval;
-        best_n = i;
-        improvement = true;
-        if (verbose)
-          cout << "     improvement " << aux_eval << endl ;
-        if (!best_improvement) { 
-          tabu.first = a_list[i].first;
-          tabu.second = -1*a_list[i].second;
-          break;
-        }
-      }
-      
-      diff = (*s)->undoLast();
-      if (diff.size()>0)
-        aux_eval = P.incremental_eval(*(*s), diff);
-    } 
-    
-    //Apply best neighbor
-    if (improvement && best_improvement) {
-      tabu.first = a_list[best_n].first;
-      tabu.second = -1*a_list[best_n].second;
-      if (a_list[best_n].second < 0 ){
-        diff = (*s)->modifyIntensityAperture(abs(a_list[best_n].second)-1, -1);
-        aux_eval = P.incremental_eval(*(*s), diff);
-      } else {
-        diff = (*s)->modifyIntensityAperture(a_list[best_n].second-1, 1);
-        aux_eval = P.incremental_eval(*(*s), diff);
-      }
-    }
-  }
-  return(local_best_eval);
-};
-
-// This function performs a local search over all the
-// aperture patterns of a station in a treatment plan.
-double ApertureILS::aSLocalSearch(Plan& P, bool verbose){
-  pair<bool, pair<Station*, int>> target_beam = getBestLSBeamlet(P);
-  //If no beamlet was found there is no reason to continue
-  if (target_beam.second.second < 0) return(P.getEvaluation());
-  
-  int beamlet = target_beam.second.second;
-  Station* s = target_beam.second.first;
-  bool sign = target_beam.first;
-  double local_best_eval =P.getEvaluation(), aux_eval=P.getEvaluation();
-  bool improvement=true, best_improvement=ls_type;
-  vector<int> a_list;
-  list<pair<int, double> > diff;
-  int i,j, best_n;
-  
-  best_n = -1;
-  j=-1;
-  while (improvement) {
-    j++;
-    if (verbose)
-      cout << "  aLS Iteration " << j << " over station " << s->getAngle() << endl;
-    //Get neighbor list randomized
-    if (sign) a_list = s->getOpen(beamlet);
-    else a_list = s->getClosed(beamlet);
-    std::random_shuffle(a_list.begin(), a_list.end());    
-    
-    improvement = false;
-    for (i = 0; i < a_list.size(); i++) {
-      if (sign) {
-        aux_eval = closeBeamlet(beamlet, a_list[i], *s, aux_eval, P); 
-      } else {
-        aux_eval = openBeamlet(beamlet, a_list[i], *s, aux_eval, P);
-      } 
-      
-      if ((local_best_eval - aux_eval) > 0.00001){
-        local_best_eval = aux_eval;
-        best_n = i;
-        improvement = true;
-        if (verbose)
-          cout << "     improvement " << aux_eval << endl ;
-        if (!best_improvement) { 
-          break;
-        }
-      }
-      
-      diff = s->undoLast();
-      if (diff.size()>0)
-        aux_eval = P.incremental_eval(*s, diff);
-    }
-    
-    //Apply best neighbor
-    if (improvement && best_improvement) {
-      if (sign) {
-        aux_eval = closeBeamlet(beamlet, a_list[best_n], *s, aux_eval, P);
-      } else{
-        aux_eval = openBeamlet(beamlet, a_list[best_n], *s, aux_eval, P);
-      }
-    }
-    
-  }
   return(local_best_eval);
 };
 

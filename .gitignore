@@ -22,6 +22,7 @@ plotter/organ_xls2.dat
 /fwk4exps/as
 data/equidistant-instances.tar.gz
 /AS
+/ACO
 /LSA
 fwk4exps/as2/
 *.pdf
@@ -31,3 +32,4 @@ fwk4exps/as2/
 fwk4exps/dao/
 fwk4exps/ibo/
 *~
+.vscode/

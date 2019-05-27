@@ -40,14 +40,6 @@ class Plan;
  * Basically it penalizes voxels with doses larger than Zmax (healthy organs), and with doses smaller than Zmin (tumor)
  */
 
- struct MagnitudeCompare
- {
-     bool operator()(const double& lhs, const double& rhs)
-     {
-         return abs(lhs) > abs(rhs);
-     }
-};
-
 struct pair_hash
 {
   template <typename T, typename U>
@@ -56,6 +48,27 @@ struct pair_hash
     return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
   }
 };
+
+
+ struct MagnitudeCompare
+ {
+     bool operator()(const double& lhs, const double& rhs)
+     {
+         return abs(lhs) > abs(rhs);
+     }
+
+     bool operator()(const pair< double, pair<int,int> >& lhs, const pair< double, pair<int,int> >& rhs)
+     {
+    	 if(abs(lhs.first) > abs(rhs.first)) return true;
+    	 if(abs(lhs.first) == abs(rhs.first)){
+    		 //if(pair_hash()(lhs.second)< pair_hash()(rhs.second)) return true;
+    		 if(lhs.second.first < rhs.second.first) return true;
+    		 if(lhs.second.first == rhs.second.first &&  lhs.second.second < rhs.second.second) return true;
+    	 }
+         return false;
+     }
+};
+
 
 class EvaluationFunction {
 
@@ -93,8 +106,17 @@ public:
 	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
 			list< pair< int, double > >& diff);
 
- // double delta_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
- //     list< pair< int, double > >& diff);
+  double get_delta_eval(int angle, int b, double delta_intensity,
+      	vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, int n_voxels=999999) const;
+
+  double get_impact_beamlet(int angle, int b);
+
+  //return a kind of evaluation of the beamlets: (impact o the tumor)/(impact to the organs)
+  //unlike get_impact_beamlet, it is not based on the evaluation function (only Z and constraints)
+  double get_ratio_beamlet(vector<double>& w,
+  	vector<double>& Zmin, vector<double>& Zmax, int angle, int b);
+
+
 
 	void undo_last_eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
@@ -126,6 +148,24 @@ public:
 
 	void generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
+	//update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
+	//if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
+	//return false if some voxel surpasses Zmax
+	bool Zupdate(int angle, int b, double delta_intensity, bool return_if_unfeasible,
+				 vector<double>& Zmax);
+
+	//regresa al savepoint para Z
+	void Zrollback();
+
+	void Zsavepoint(){
+		Z_diff.clear();
+	}
+
+	pair<double,double> get_value_cost(int angle, int b, vector<double>& Zmin, vector<double>& Zmax);
+
+	void get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, vector<double>& Zmax,
+			multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_set);
+
 	static int n_evaluations;
 
 	int n_volumes;
@@ -151,9 +191,9 @@ private:
 	double prev_F;
 
   //Extra data
-
+   //TODO: cambiar derivativas a +/-
 	// all the tumor voxels sorted by derivative (may be useful for algorithms)
-  set< pair <double, pair<int,int> >, std::greater< pair <double, pair<int,int> > > > voxels;
+   set< pair< double, pair<int,int> >, MagnitudeCompare >  voxels;
 
   //Beamlets (angle,b) sorted by impact (partial derivative magnitude)
   //multimap < double, pair<int, int>, MagnitudeCompare > sorted_beamlets;
@@ -163,7 +203,7 @@ private:
   unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > voxel2beamlet_list;
 
   //beamlet (angle,b) --> lista de voxels (o,k)
-  //unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > beam2voxel_list;
+  unordered_map < pair<int, int>, multimap<double, pair<int,int> >, pair_hash > beamlet2voxel_list;
 
 	//Matrix of derivatives for each organ and voxel (may be useful for algorithms)
 	//How much increase/decrease F increasing the voxel in one unity.
