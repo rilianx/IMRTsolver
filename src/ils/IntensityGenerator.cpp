@@ -18,12 +18,12 @@ void IntensityGenerator::generate(Plan& P, double alpha){
 	Start:	
 		Pprime.Zsavepoint();
 		multimap < double, pair<Station*, int>, MagnitudeCompare > sorted_beamlets;
-		Pprime.get_vc_sorted_beamlets(Pprime,sorted_beamlets);
+		Pprime.get_vc_sorted_beamlets(Pprime,sorted_beamlets); //ordeandos v/c
 		for (auto elem:sorted_beamlets){
 			Station* s = elem.second.first;
 			int b = elem.second.second;
 			pair<double,double> vc=Pprime.get_value_cost(s,b);
-			if (Pprime.Zupdate(s,b,int(alpha/vc.second+0.5), true)){
+			if ( !Pprime.Zupdate(s,b,int(alpha/vc.second+0.5), true)){
 				alpha = alpha * 0.9;//alpha decrease
 				Pprime.Zrollback();
 				goto Start;

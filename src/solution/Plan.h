@@ -113,8 +113,8 @@ public:
   //update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
   //if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
   //return false if some voxel surpasses Zmax
-  bool Zupdate(Station* s, int b, double delta_intensity, bool return_if_unfeasible){
-	  return ev.Zupdate(s->getAngle(), b, delta_intensity, return_if_unfeasible, Zmax);
+  bool Zupdate(Station* s, int b, double delta_intensity, bool return_immediatly_without_fixing_the_problem){
+	  return ev.Zupdate(s->getAngle(), b, delta_intensity, return_immediatly_without_fixing_the_problem, Zmax);
   }
 
   	//regresa al savepoint para Z

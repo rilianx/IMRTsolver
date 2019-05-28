@@ -18,7 +18,8 @@ src/ils
 src/aco
 )
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -no-pie -Qunused-arguments")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 # ADD_DEFINITION(-g -pg)
 
