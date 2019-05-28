@@ -101,7 +101,8 @@ public:
 	void generate_Z(const Plan& p);
 
 	// Eval the cost F based on the dose deposition matrix Z
-	double eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
+	double eval(const Plan& p, vector<double>& w, vector<double>& Zmin,
+    vector<double>& Zmax, bool generateZ=true);
 
 	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
 			list< pair< int, double > >& diff);

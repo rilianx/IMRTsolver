@@ -121,9 +121,9 @@ int main(int argc, char** argv){
   double initial_temperature = 10;
   double min_temperature = 0;
   double alphaT = 0.95;
-  
+
   //Intensities Generator parameter
-  double alpha2 = 0.5;
+  double alpha2 = 0.9;
 
   string file="data/testinstance_0_70_140_210_280.txt";
   string file2="data/test_instance_coordinates.txt";
@@ -180,9 +180,15 @@ int main(int argc, char** argv){
   args::Flag do_perturbate(dao_ls, "do_perturbate", "Perturbate after a selected criterion is triggered", {"perturbate"});
   args::ValueFlag<int> _perturbation(parser, "int", "Perturbation size  ("+to_string(perturbation)+")", {"perturbation-size"});
 
+  args::Group intgen (parser, "Intensity generator:", args::Group::Validators::DontCare);
+  args::ValueFlag<double> _alpha2(parser, "double", "alpha value", {"alpha2"});
+
+
   args::Group accept (parser, "Acceptance criterion:", args::Group::Validators::AtMostOne);
   args::Flag accept_best(accept, "accept-best", "Accept only improvement", {"accept-best"});
   args::Flag accept_sa(accept, "accept-sa", "Accept as simulated annealing", {"accept-sa"});
+
+
 
   args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
   args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
@@ -298,7 +304,7 @@ int main(int argc, char** argv){
 
   vector<double> w={1,1,1};
   vector<double> Zmin={0,0,76};
-  vector<double> Zmax={65,60,1000};
+  vector<double> Zmax={65,60,100000};
 
   Collimator collimator(file2, get_angles(file, 5));
   vector<Volume> volumes= createVolumes (file, collimator);
@@ -361,7 +367,7 @@ int main(int argc, char** argv){
 
   cout << "## Initial solution: " << best_eval << endl;
   cout  << "##" << endl;
-  
+
   cout << endl;
   for(int i=0;i<5;i++)
     P.printIntensity(i);
@@ -413,7 +419,7 @@ int main(int argc, char** argv){
     ils->beamTargetedSearch(P, maxtime, maxiter);
 
 
-    
+
     cout << endl;
   	for(int i=0;i<5;i++)
   		P.printIntensity(i);
@@ -427,6 +433,7 @@ int main(int argc, char** argv){
     cout << "entra al if" << endl  ;
 	  IntensityGenerator intgen;
     cout <<"Crea intgen" << endl  ;
+    if(_alpha2) alpha2=_alpha2.Get();
 	  intgen.generate(P,alpha2);
     exit(0);
   }

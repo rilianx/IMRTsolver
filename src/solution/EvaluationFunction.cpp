@@ -111,9 +111,10 @@ void EvaluationFunction::generate_Z(const Plan& p){
 }
 
 
-double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
+double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>& Zmin,
+	vector<double>& Zmax, bool generateZ){
 	voxels.clear();
-	generate_Z(p);
+	if(generateZ) generate_Z(p);
 	F=0.0;
 	for(int o=0; o<nb_organs; o++){
 		double pen=0.0;
@@ -441,21 +442,22 @@ void EvaluationFunction::Zrollback(){
 
 pair<double,double> EvaluationFunction::get_value_cost(int angle, int b, vector<double>& Zmin, vector<double>& Zmax){
 	multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(make_pair(angle,b));
-	double cost=0.0, value=0.0;
+	double cost=0.0, cost2=0.0, value=0.0;
 	 for(auto voxel:voxels){
 		 int o=voxel.second.first, k=voxel.second.second;
 		 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
 		 if(Zmin[o]==0.0){//organ
-			 if(Zmax[o]-Z[o][k] == 0) cost=1e20;
+			 if(Zmax[o]-Z[o][k] <= 0) cost=1e20;
 			 else{
 				 double c=Dep(k,b)/(Zmax[o]-Z[o][k]);
 			 	 if(c>cost) cost=c;
+				 cost2+=Dep(k,b);
 			 }
 		 }else
-			 if(Z[o][k] < Zmin[o]) value += Dep(k,b);
+			 if(Z[o][k] < Zmin[o]) value += min(Dep(k,b),Zmin[o]-Z[o][k]);
 	 }
 
-	 return make_pair(value,cost);
+	 return make_pair(value/cost2,cost);
 }
 
 void EvaluationFunction::get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, vector<double>& Zmax,
@@ -466,7 +468,7 @@ void EvaluationFunction::get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, v
 	for(auto s:p.get_stations()){
 		for(int b=0; b<s->getNbBeamlets(); b++){
 			pair<double,double> value_cost=get_value_cost(s->getAngle(), b, Zmin, Zmax);
-            double ev=value_cost.first/value_cost.second;
+            double ev=value_cost.first;
 			if(ev==0) continue;
 			sorted_set.insert(make_pair (ev,  make_pair(s,b)));
 		}
