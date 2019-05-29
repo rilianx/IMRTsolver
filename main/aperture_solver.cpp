@@ -383,7 +383,7 @@ int main(int argc, char** argv){
     /*else
       ils-> beamTargetedSearch(P, maxtime, maxiter);*/
   }else if(strategy=="ibo_ls"){
-/*
+
 	    for(auto s:P.get_stations()){
 	      for (int i=0; i<collimator.getXdim();i++) {
 				  for (int j=0; j<collimator.getYdim(); j++) {
@@ -413,7 +413,22 @@ int main(int argc, char** argv){
 	      }
 	      cout << endl;
 	    }
-*/
+
+	    for(auto s:P.get_stations()){
+	      for (int i=0; i<collimator.getXdim();i++) {
+				  for (int j=0; j<collimator.getYdim(); j++) {
+	          if(s->I(i,j)!=-1){
+	        	  pair<double, double> vc=EvaluationFunction::getInstance().get_value_cost(
+	        	              		s->getAngle(), s->pos2beam[make_pair(i,j)], Zmin, Zmax);
+	            printf("%8.1f ",
+	            vc.first/vc.second);
+	          }else cout << "      -1 " ;
+	        }
+	        cout << endl;
+	      }
+	      cout << endl;
+	    }
+
 
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
     ils->beamTargetedSearch(P, maxtime, maxiter);
@@ -434,7 +449,7 @@ int main(int argc, char** argv){
 	  IntensityGenerator intgen;
     cout <<"Crea intgen" << endl  ;
     if(_alpha2) alpha2=_alpha2.Get();
-	  intgen.generate(P,alpha2);
+	  intgen.generate(P,alpha2,max_intensity);
     exit(0);
   }
 

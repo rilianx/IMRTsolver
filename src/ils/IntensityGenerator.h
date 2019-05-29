@@ -16,7 +16,7 @@ class IntensityGenerator {
 public:
 	IntensityGenerator();
 
-	void generate(Plan& P,double alpha);
+	void generate(Plan& P,double alpha, int max_intensity);
 	virtual ~IntensityGenerator();
 };
 

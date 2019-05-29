@@ -4,6 +4,7 @@
  *  Created on: Apr 23, 2019
  *      Author: iaraya
  */
+#include <algorithm>
 
 #include "IntensityGenerator.h"
 #include "Plan.h"
@@ -12,7 +13,7 @@
 
 namespace imrt {
 
-void IntensityGenerator::generate(Plan& P, double alpha){
+void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
 	Plan Pprime(P);
 	cout <<"OldPlan:"<< Pprime.eval() << endl  ;
 	Start:
@@ -24,25 +25,23 @@ void IntensityGenerator::generate(Plan& P, double alpha){
 			int b = elem.second.second;
 			pair<double,double> vc=Pprime.get_value_cost(s,b);
 
-			if ( !Pprime.Zupdate(s,b,int(alpha/vc.second+0.5), true)){
+			int i=s->beam2pos[b].first; int j=s->beam2pos[b].second;
+			s->change_intensity(i, j, s->I(i,j) + std::min(int(alpha/vc.second+0.5),max_intensity));
+
+			//Pprime.Zupdate(s,b,int(alpha/vc.second+0.5), false);
+			/*
+			if ( !Pprime.Zupdate(s,b,int(alpha/vc.second+0.5), false)){
 				alpha = alpha * 0.9;//alpha decrease
 				Pprime.Zrollback();
 				goto Start;
 				//cout << alpha << endl;
-			}
+			}*/
 		}
 
     //se modifican las intensidades en la solucion (arreglar)
-		for (auto elem:sorted_beamlets){
-			Station* s = elem.second.first;
-			int b = elem.second.second;
-			int i=s->beam2pos[b].first; int j=s->beam2pos[b].second;
-			pair<double,double> vc=Pprime.get_value_cost(s,b);
-			s->change_intensity(i, j, s->I(i,j) + int(alpha/vc.second+0.5));
-		}
 
 		cout << alpha << endl;
-		cout <<"NewPlan:"<< Pprime.eval(false) << endl  ;
+		cout <<"NewPlan:"<< Pprime.eval() << endl  ;
 		cout << endl;
   		for(int i=0;i<5;i++)
   		Pprime.printIntensity(i);

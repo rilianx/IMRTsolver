@@ -457,7 +457,7 @@ pair<double,double> EvaluationFunction::get_value_cost(int angle, int b, vector<
 			 if(Z[o][k] < Zmin[o]) value += min(Dep(k,b),Zmin[o]-Z[o][k]);
 	 }
 
-	 return make_pair(value/cost2,cost);
+	 return make_pair(value,cost);
 }
 
 void EvaluationFunction::get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, vector<double>& Zmax,
