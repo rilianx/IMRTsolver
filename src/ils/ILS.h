@@ -50,16 +50,6 @@ public:
     return 0.0;
   };
   
-  virtual double iSLocalSearch(Plan& P, bool verbose=true) {
-    cout << "Not implemented "<< endl;
-    return 0.0;
-  };
-  
-  virtual double aSLocalSearch(Plan& P, bool verbose=true) {
-    cout << "Not implemented "<< endl;
-    return 0.0;
-  };
-  
   virtual bool acceptanceCriterion(double new_eval, double prev_eval)=0;
 
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
@@ -84,39 +74,39 @@ public:
 
   virtual void updateTemperature() {};
 
-  //  Plan* init_plan;
-  double beamTargetedSearch(Plan& current_plan, int max_time, int max_iterations) {
+
+  /* Targeted version of the local search where a beamlert is identified as 
+     promising and local search is directed to it */
+  double beamTargetedSearch (Plan& current_plan, int max_time, int max_iterations) {
 
     cout << "## Staring ILS search." << endl;
-    std::clock_t time_end;
 
+    //Start time
+    std::clock_t time_end;
     time_begin=clock();
 
-  //  if(init_plan) delete init_plan;
-  //  init_plan = new Plan(current_plan);
-
-
+    //Best plan found so far
     Plan& best_plan= *new Plan(current_plan);
 
     pair<bool, pair<Station*, int>> target_beam;
     double local_eval, aux_eval,  best_eval=current_plan.eval();
     double used_time=0;
-    bool flag=true;
+    // flag is used for the termination criterion
+    bool flag = true;
     int no_improvement, iteration=1, perturbation_iteration=0;
     no_improvement = 0;
 
     local_eval=best_eval;
-    //Start time
-
-
+    
     while (flag) {
-      //cout << "ss"<< endl;
+      // Get the targeted beamlet for local search
       target_beam = getLSBeamlet(current_plan);
-      //cout << target_beam.second.second << endl;
       while (target_beam.second.second < 0) {
+        // If there is no beamlet available perturbate
+        // until we get one
         cout << "NOTE: No beamlet available." << endl;
         local_eval = perturbation(current_plan);
-        perturbation_iteration=iteration;
+        perturbation_iteration = iteration;
         target_beam = getLSBeamlet(current_plan);
         if (local_eval < best_eval) {
           best_eval=local_eval;
@@ -124,49 +114,65 @@ public:
         }
       }
 
-      cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval <<
-              ", current: " << local_eval  << ", beamlet: " << target_beam.second.second  <<
-              ", station: " << target_beam.second.first->getAngle() << ", +-: " << target_beam.first;
+      cout << "Iteration: " << iteration << 
+              ", eval: " << 
+              EvaluationFunction::n_evaluations << 
+              ", time: " << 
+              (roundf(used_time * 1000) / 1000)  << 
+              ", best: " << best_eval <<
+              ", current: " << local_eval  << 
+              ", beamlet: " << target_beam.second.second  <<
+              ", station: " << target_beam.second.first->getAngle() << 
+              ", +-: " << target_beam.first;
+
+      // Apply local search on the targeted beamlet
       aux_eval = localSearch (target_beam, current_plan);
       cout << endl;
 
+      // Check if there is a new global best solution 
       if (aux_eval < best_eval) {
         best_eval=aux_eval;
         best_plan.newCopy(current_plan);
       }
 
+      // Acceptance criterion
       if (aux_eval < local_eval) {
+        // Accept improving solution
         local_eval = aux_eval;
         no_improvement = 0;
       } else if (aux_eval!= local_eval && acceptanceCriterion(aux_eval, local_eval)) {
+        // Accept non-improving solution
         local_eval = aux_eval;
         no_improvement = 0;
       } else {
+        // Not accept solution
         undoLast(current_plan);
         no_improvement ++;
       }
 
+      // Update SA temperature
       if (acceptance==ACCEPT_SA)
          updateTemperature();
+
       iteration++;
 
       // Termination criterion
       time_end=clock();
       used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
-      if (max_time!=0 && used_time >= max_time) flag=false;
-      if (max_iterations!=0 && iteration>=max_iterations) flag=false;
+      if (max_time!=0 && used_time >= max_time) flag = false;
+      if (max_iterations!=0 && iteration>=max_iterations) flag = false;
 
+      // Check if we should perturbate
       if ( perturbate(no_improvement, iteration )) {
         local_eval = perturbation(current_plan);
         perturbation_iteration = iteration;
         no_improvement=no_improvement/2;
       }
     }
+
     current_plan.newCopy(best_plan);
     aux_eval=current_plan.getEvaluation();
-    cout << 1 << endl;
     best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
-    cout << 2 << endl;
     return(aux_eval);
   };
 
@@ -178,38 +184,47 @@ public:
 
     //Start time
     time_begin=clock();
+
+    //Best plan found so far
     Plan& best_plan= *new Plan(current_plan);
 
     double local_eval, aux_eval,  best_eval;
     double used_time=0;
     double ls_time=0;
-    bool flag=true, impils=true, impals=true;
+    // flag is used for the termination criterion
+    bool flag=true;
+    // improvement signals a new best solution found
+    bool improvement=true;
     int no_improvement, iteration=1, perturbation_iteration=0;
     no_improvement = 0;
     
     best_eval = local_eval = current_plan.getEvaluation();
     while (flag) {
-      cout << "Iteration: " << iteration << ", eval: " << EvaluationFunction::n_evaluations << 
-        ", time: "<< (roundf(used_time * 1000) / 1000)  << ", best: " << best_eval << ", current: " << local_eval << endl;
+      cout << "Iteration: " << iteration << ", eval: " << 
+              EvaluationFunction::n_evaluations << 
+              ", time: "<< (roundf(used_time * 1000) / 1000)  << 
+              ", best: " << best_eval << ", current: " << 
+              local_eval << endl;
       
       // Perturbate if we haven't improved last iteration
-      if (!impals) {
+      if (!improvement) {
         local_eval = perturbation(current_plan);
         cout << "Iteration: " << iteration << ", per: " << local_eval << endl;
       }
       
-      impals = false;
-      impils = false;
+      improvement = false;
 
-      if (max_time!=0) ls_time= max_time-used_time;
+      // Track the used time
+      if (max_time!=0) ls_time = max_time - used_time;
       
-      // Intensity ls
-      aux_eval =iLocalSearch (current_plan, ls_time, false);
+      // Apply intensity ls
+      aux_eval = iLocalSearch (current_plan, ls_time, false);
+      // Check if there if there is a new solution was found
       if ((local_eval - aux_eval) > 0.00001) {
         local_eval = aux_eval;
-        impils = true;
       }
       
+      // Check if there is a better global best
       if ((best_eval - local_eval) > 0.00001) {
         best_eval = local_eval;
         best_plan.newCopy(current_plan);
@@ -223,42 +238,46 @@ public:
       current_plan.printIntensity(j);
       cout << endl;*/
       
-      // Termination criterion
+      // Check termination criterion
       time_end = clock();
       used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
       if (max_time!=0 && used_time >= max_time) {
         flag = false;
         break;
       }
-
-      if (max_time!=0) ls_time= max_time-used_time;
+      // Update used time
+      if (max_time!=0) ls_time = max_time-used_time;
       
-      // Aperture ls
+      // Apply aperture ls
       aux_eval = aLocalSearch (current_plan, ls_time , false);
+      // Check if there if there is a new solution was found
       if ((local_eval - aux_eval) > 0.00001) {
         local_eval = aux_eval;
-        impals = true;
+        improvement = true;
       }
       
+      // Check if there is a better global best
       if ((best_eval - local_eval) > 0.00001) {
         best_eval = local_eval;
         best_plan.newCopy(current_plan);
       }
+
       iteration++;
 
-      // Termination criterion
+      // Check termination criterion
       time_end=clock();
       used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
-      if (max_time!=0 && used_time >= max_time) flag=false;
-      if (max_iterations!=0 && iteration>=max_iterations) flag=false;
+      if (max_time!=0 && used_time >= max_time) flag = false;
+      if (max_iterations!=0 && iteration>=max_iterations) flag = false;
     }
+
     current_plan.newCopy(best_plan);
-    aux_eval=current_plan.getEvaluation();
+    aux_eval = current_plan.getEvaluation();
     best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
     
-    time_end=clock();
-    used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
-    cout << "## Total used time: "<< used_time << endl;
+    time_end = clock();
+    used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+    cout << "## Total used time: " << used_time << endl;
     return(aux_eval);
   };
 
