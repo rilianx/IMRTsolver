@@ -595,16 +595,26 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
          
          //apply step_size intensity change (-(a+1) or +(a+1))
          if (a_list[i].second < 0 ){
-           diff = (*s)->modifyIntensityAperture(abs(a_list[i].second)-1, -step_intensity);
-           if (diff.size() > 0) {
-             aux_eval = P.incremental_eval(*(*s), diff);
+           diff = (*s)->getModifyIntensityApertureDiff(abs(a_list[i].second)-1, -step_intensity);
+           if (P.get_delta_eval((*(*s)), diff) > current_eval) {
+             (*s)->clearHistory();
+           } else {
+             diff = (*s)->modifyIntensityAperture(abs(a_list[i].second)-1, -step_intensity);
+             if (diff.size() > 0) {
+               aux_eval = P.incremental_eval(*(*s), diff);
+             }
            }
            if (verbose)
              cout << " (-" << step_intensity << ")";
          } else {
-           diff = (*s)->modifyIntensityAperture(a_list[i].second-1, step_intensity);
-           if (diff.size() > 0) {
-             aux_eval = P.incremental_eval(*(*s), diff);
+           diff = (*s)->getModifyIntensityApertureDiff(a_list[i].second-1, step_intensity);
+           if (P.get_delta_eval((*(*s)), diff) > current_eval) {
+             (*s)->clearHistory();
+           } else {
+             diff = (*s)->modifyIntensityAperture(a_list[i].second-1, step_intensity);
+             if (diff.size() > 0) {
+               aux_eval = P.incremental_eval(*(*s), diff);
+             }
            }
            if (verbose)
              cout << " (+"<< step_intensity << ")";

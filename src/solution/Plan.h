@@ -58,6 +58,10 @@ public:
 	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999){
 	  return ev.get_delta_eval(s.getAngle(), b, intensity, w, Zmin, Zmax, n_voxels);
 	}
+	
+	double get_delta_eval (Station& s, list< pair< int, double > >& diff, int n_voxels=999999){
+	  return ev.get_delta_eval(diff, s.getAngle(), w, Zmin, Zmax, n_voxels);
+	};
 
 	// This function assumes that there are no changes made without evaluation
 	// performed with eval or incrementalEval

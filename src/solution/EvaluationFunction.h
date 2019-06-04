@@ -95,6 +95,9 @@ public:
 
   double get_delta_eval(int angle, int b, double delta_intensity,
       	vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, int n_voxels=999999) const;
+  
+  double get_delta_eval(list< pair< int, double > >& diff, double angle,
+                        vector<double>& w, vector<double>& Zmin, vector<double>& Zmax, int n_voxels=999999) const;
 
   double get_impact_beamlet(int angle, int b);
 

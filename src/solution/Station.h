@@ -228,6 +228,7 @@ public:
   list<pair<int,double>> closeBeamlet(int beam, int aperture, bool lside);
   list<pair<int,double>> closeBeamlet(pair<int,int> coord, int aperture, bool lside);
   list<pair<int,double>> modifyIntensityAperture(int aperture, double size);
+  list<pair< int,double>> getModifyIntensityApertureDiff (int aperture, double size);
   void updateIntensity(list<pair<int,double>> diff);
   bool canIncreaseIntensity(int beam);
   bool canReduceIntensity(int beam);

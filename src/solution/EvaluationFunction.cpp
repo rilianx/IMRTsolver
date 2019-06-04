@@ -258,6 +258,51 @@ double EvaluationFunction::get_delta_eval(int angle, int b, double delta_intensi
 	 return delta_F;
 }
 
+double EvaluationFunction::get_delta_eval(list< pair< int, double > >& diff, double angle,
+                                          vector<double>& w, vector<double>& Zmin, 
+                                          vector<double>& Zmax,int n_voxels) const{
+  
+  double delta_F=0.0;
+  int b;
+  double delta_intensity, delta;
+  
+  int i=0;
+  for(auto voxel:voxels){
+    int o=voxel.second.first;
+    int k=voxel.second.second;
+    const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+    
+    delta = 0;
+    for (auto let:diff){
+      b = let.first;
+      delta_intensity = let.second;
+      delta = delta + Dep(k,b)*(delta_intensity);
+    }
+    if(delta==0.0) continue;
+    
+    double pen=0.0;
+    //with the change in the dose of a voxel we can incrementally modify the value of F
+    if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
+      pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
+    else if(Z[o][k] < Zmin[o]) //the penalty disappears
+      pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
+    else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
+      pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
+    
+    if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
+      pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
+    else if(Z[o][k] > Zmax[o]) //the penalty disappears
+      pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
+    else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
+      pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
+    
+    delta_F += pen/nb_voxels[o];
+    i++; if(i>n_voxels) break;
+  }
+  return delta_F;
+}
+
+
 double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
 

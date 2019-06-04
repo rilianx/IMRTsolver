@@ -679,6 +679,38 @@ namespace imrt {
 		return(diff);
   }
 
+  list <pair< int,double> > Station::getModifyIntensityApertureDiff (int aperture, double size) {
+    list < pair <int, double > > diff;
+    if ((intensity[aperture]+size) < 0 || (intensity[aperture]+size) > max_intensity) {
+      if (intensity[aperture]+size < 0) {
+        // Too low intensity
+        if (intensity[aperture]>0)
+          size = intensity[aperture];
+        else
+          return(diff);
+      } else if ((intensity[aperture]+size) > max_intensity) {
+        // Too high intensity
+        if (intensity[aperture] < max_intensity)
+          size = max_intensity - intensity[aperture];
+        else 
+          return(diff);
+      } else {
+        return (diff);
+      }
+    }
+    for (int i=0; i<collimator.getXdim(); i++) {
+      if (A[aperture][i].first<0 || A[aperture][i].second<0) 
+        continue;
+      int beamlet = pos2beam[make_pair(i, A[aperture][i].first)];
+      for(int j=A[aperture][i].first; j<=A[aperture][i].second; j++){
+        diff.push_back(make_pair(beamlet, size));
+        beamlet++;
+      }
+    }
+    return(diff);
+    
+  }
+  
   list <pair< int,double> > Station::modifyIntensityAperture(int aperture, double size) {
     list < pair <int, double > > diff;
     if ((intensity[aperture]+size) < 0 || (intensity[aperture]+size) > max_intensity) {
@@ -729,7 +761,9 @@ namespace imrt {
       coord = collimator.indexToPos(it->first, angle);
       I(coord.first,coord.second) = I(coord.first,coord.second) + it->second;
       if (I(coord.first,coord.second) < 0) { 
-        cout <<"AHORA!!!!" << coord.first<<","<<coord.second << "-> "<< it->second << " is " << getApertureIntensity(0) << " " << I(coord.first,coord.second)<<endl;
+        cout <<"ERROR INTENSIDAD NEGATIVA EN updateIntensity!!!!" << coord.first<<
+          ","<<coord.second << "-> "<< it->second << " is " << 
+            getApertureIntensity(0) << " " << I(coord.first,coord.second)<<endl;
         getchar();
       }
     }
