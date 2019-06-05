@@ -171,7 +171,8 @@ namespace imrt {
         }
         A[i]=aux;
       }
-    } else {
+    } 
+    /*else {
       //Keeping this for backwards compatibility
       for (int i=0; i<max_apertures; i++) {
         vector<pair<int,int> > aux;
@@ -184,7 +185,7 @@ namespace imrt {
         open_apertures--;
         A[i]=aux;
       }
-    }
+    }*/
 
     // Generating intensity
     if (type==OPEN_MIN_SETUP || type==CLOSED_MIN_SETUP) {

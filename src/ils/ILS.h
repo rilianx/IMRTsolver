@@ -14,6 +14,22 @@
 
 namespace imrt {
 
+struct NeighborMove {
+  // Type
+  // 1: intensity
+  // 2: aperture
+  int type;
+  int station_id;
+  int aperture_id;
+  // Action
+  // 1: open (increase)
+  // -1 close left (reduce intensity)
+  // -2 close right
+  int action;
+  int beamlet_id;
+};
+
+
 class ILS {
 private:
   double max_no_improvement=100;
@@ -73,6 +89,103 @@ public:
   }
 
   virtual void updateTemperature() {};
+
+  virtual NeighborMove getNeighborhood(Plan & current_plan, int ls_neighborhood, int ls_target)=0;
+
+  virtual double applyMove (Plan & current_plan, NeighborMove move)=0;
+
+  double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluation, 
+                              int ls_type, int ls_neighborhood, int ls_target) {
+     int current_iteration = 0;
+     double aux_eval = current_plan.getEvaluation();
+     double used_time = 0;
+     double used_evaluations = 0;
+
+     //Start time
+     std::clock_t time_end;
+     time_begin=clock();
+ 
+     while (true) {
+       // Apply local search
+       aux_eval = localSearch(current_plan, max_time, max_evaluations, time_begin, 
+                   used_evaluations, ls_type, ls_neighborhood, ls_target)
+        
+       if (aux_eval < current_eval) {
+         current_eval = aux_eval;
+       }
+
+       current_iteration++;
+
+      // Termination criterion
+      time_end = clock();
+      used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+      if (max_time!=0 && used_time >= max_time) break;
+      if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
+
+       //Perturbation
+       perturbation(current_plan);
+
+     }
+     return(current_eval);
+  }
+
+  double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
+                      int& used_evaluations, int ls_type, int ls_neighborhood, 
+                      int ls_target) {
+    bool improvement = true;
+    vector <NeighborMove> neighborhood;
+    double current_eval = current_plan.getEvaluation();    
+    NeighborMove best_move = {0,0,0,0,0}; 
+    //Start time
+    std::clock_t time_end;
+
+    while (improvement) {
+      improvement = false;
+      //TODO: Hacer enum para ls_neighbothood, ls_target, ls_type
+      neighborhood = getNeighborhood(current_plan, ls_neighborhood, ls_target); //TODO: implementar
+      for (NeighborMove move:neighborhood) {
+        applyMove(current_plan, move);  //TODO: implementar
+        // Improvement!!
+        if (current_plan.getEvaluation()< current_eval) {
+          improvement=true;
+          if (ls_type == 1) {
+            // First improvement  
+            current_eval =current_plan.getEvaluation();
+            break;
+          } else {
+            // Best improvement
+            current_eval = current_plan.getEvaluation();
+            best_move = move;
+            current_plan.undoLast(); //TODO: ignacio implementame.
+          }
+        } else {
+          current_plan.undoLast();
+        }
+       
+        used_evaluations++;
+
+        // Termination criterion
+        time_end = clock();
+        used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+        if (max_time!=0 && used_time >= max_time) break;
+        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
+      }
+
+      // Apply best improvement move    
+      if (ls_type==2 && improvement) {
+        applyMove(current_plan, best_move);
+        current_eval = current_plan.getEvaluation();
+        used_evaluations++;
+      }     
+
+      // Termination criterion
+      time_end = clock();
+      used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+      if (max_time!=0 && used_time >= max_time) break;
+      if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
+    }
+    return(current_eval);
+  }
 
 
   /* Targeted version of the local search where a beamlert is identified as 

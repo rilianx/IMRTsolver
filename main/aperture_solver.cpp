@@ -83,7 +83,7 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
 
 int main(int argc, char** argv){
 
-  // Target heuristic
+  // Target beamlet heuristic
   int vsize = 50;
   int bsize = 20;
   double maxdelta = 5.0;
@@ -104,7 +104,7 @@ int main(int argc, char** argv){
   int initial_setup;
   int initial_intensity = 2;
   int max_intensity = 28;
-  int step_intensity = 2;
+  int step_intensity = 1;
 
   // Type of local search
   string strategy = "dao_ls";
@@ -130,67 +130,149 @@ int main(int argc, char** argv){
   string path=".";
 
   // Tabu list <<beam,station*>, open> for intensity
-  vector<pair<pair<int,Station*>,  bool > > tabu_list_inten;
+  //vector<pair<pair<int,Station*>,  bool > > tabu_list_inten;
   // Tabu list <<beam,station*>, <aperture,open>> for aperture
-  vector<pair<pair<int,Station*>, pair<int, bool> > > tabu_list_aper;
-  int tabusize=10;
+  //vector<pair<pair<int,Station*>, pair<int, bool> > > tabu_list_aper;
+  //int tabusize=10;
 
 
 	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********",
                              "Example.\n./AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4 --step-intensity=1 --file-dep=data/Equidistantes/equidist00.txt --file-coord=data/Equidistantes/equidist-coord.txt");
+
 	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
-	//args::ValueFlag<string> _format(parser, "string", "Format: (BR, BRw, 1C)", {'f'});
-  args::ValueFlag<string> _strategy (parser, "string", "Strategy  (dao_ls|ibo_ls)", {'s', "strategy"});
+  // Representation ls seleccion parameter
+  args::ValueFlag<string> _strategy (parser, "string", 
+                                     "Strategy  (dao_ls|ibo_ls)", 
+                                     {'s', "strategy"});
 
-  args::ValueFlag<int> _bsize(parser, "int", "Number of considered beamlets for selection ("+to_string(bsize)+")", {"bsize"});
-	args::ValueFlag<int> _vsize(parser, "int", "Number of considered worst voxels ("+to_string(vsize)+")", {"vsize"});
- // args::ValueFlag<int> _int0(parser, "int", "Initial intensity for beams  ("+to_string(int0)+")", {"int0"});
-  args::ValueFlag<int> _maxdelta(parser, "int", "Max delta  ("+to_string(maxdelta)+")", {"maxdelta"});
-  args::ValueFlag<int> _maxratio(parser, "int", "Max ratio  ("+to_string(maxratio)+")", {"maxratio"});
+  // Execution parameters
+  args::ValueFlag<int>    _maxiter  (parser, "int", 
+                                    "Number of iterations (" + 
+                                     to_string(maxiter)+ ")", {"maxiter"});
+  args::ValueFlag<int>    _maxtime  (parser, "int", 
+                                    "Maximum time in seconds (" + 
+                                     to_string(maxtime)+")", {"maxtime"});
+  args::ValueFlag<int>    _seed     (parser, "int", "Seed  (" + 
+                                     to_string(seed)+")", {"seed"});
 
-  args::ValueFlag<int> _maxiter(parser, "int", "Number of iterations ("+to_string(maxiter)+")", {"maxiter"});
-  args::ValueFlag<int> _maxtime(parser, "int", "Maximum time in seconds ("+to_string(maxtime)+")", {"maxtime"});
-  args::ValueFlag<int> _seed(parser, "int", "Seed  ("+to_string(seed)+")", {"seed"});
+  // Intensity matrix representation ls parameters 
+  args::ValueFlag<int>    _maxdelta (parser, "int", 
+                                    "Max delta  (" + 
+                                     to_string(maxdelta)+")", {"maxdelta"});
+  args::ValueFlag<int>    _maxratio (parser, "int", 
+                                    "Max ratio  (" + 
+                                     to_string(maxratio)+")", {"maxratio"});
+  args::ValueFlag<double> _alpha    (parser, "double", 
+                                    "Initial temperature for intensities  (" + 
+                                     to_string(alpha)+")", {"alpha"});
+  args::ValueFlag<double> _beta     (parser, "double", 
+                                    "Initial temperature for ratio  (" + 
+                                     to_string(beta)+")", {"beta"});
 
-  args::ValueFlag<double> _alpha(parser, "double", "Initial temperature for intensities  ("+to_string(alpha)+")", {"alpha"});
-  args::ValueFlag<double> _beta(parser, "double", "Initial temperature for ratio  ("+to_string(beta)+")", {"beta"});
+  // Target beamlet heuristic parameters
+  args::ValueFlag<int>    _bsize    (parser, "int", 
+                                    "Number of considered beamlets for selection (" + 
+                                     to_string(bsize)+")", {"bsize"});
+	args::ValueFlag<int>    _vsize    (parser, "int", 
+                                    "Number of considered worst voxels (" + 
+                                     to_string(vsize)+")", {"vsize"});
+  
+  // Initial solution generation parameters 
+  args::Group setup (parser, 
+                    "Initial solution setup (these override all provided configurations):", 
+                    args::Group::Validators::DontCare);
+  args::Flag open_max    (setup, "open_max", 
+                         "Open aperture setup with max intensity", 
+                         {"open-max-setup"});
+  args::Flag open_min    (setup, "open_min", 
+                         "Open aperture setup with min intensity", 
+                         {"open-min-setup"});
+  args::Flag closed_min  (setup, "closed_min", 
+                         "Closed aperture setup with min intensity", 
+                         {"closed-min-setup"});
+  args::Flag closed_max  (setup, "closed_max", 
+                         "Closed aperture setup with max intensity", 
+                         {"closed-max-setup"});
+  args::Flag all_rand    (setup, "all_rand", 
+                         "Random aperture setup with random intensity", 
+                         {"rand-setup"});
 
-  args::Group setup (parser, "Initial solution setup (these override all provided configurations):", args::Group::Validators::DontCare);
-  args::Flag open_max(setup, "open_max", "Open aperture setup with max intensity", {"open-max-setup"});
-  args::Flag open_min(setup, "open_min", "Open aperture setup with min intensity", {"open-min-setup"});
-  args::Flag closed_min(setup, "closed_min", "Closed aperture setup with min intensity", {"closed-min-setup"});
-  args::Flag closed_max(setup, "closed_max", "Closed aperture setup with max intensity", {"closed-max-setup"});
-  args::Flag all_rand(setup, "all_rand", "Random aperture setup with random intensity", {"rand-setup"});
+  // Aperture and intensity aperture configuration parameters
+  args::ValueFlag<int> _max_apertures     (parser, "int", 
+                                          "Number of apertures per angle (station) (" + 
+                                           to_string(max_apertures)+")", {"max-apertures"});
+  args::ValueFlag<int> _open_apertures    (parser, "int", 
+                                          string("Number of initialized open apertures ") + 
+                                          "(-1: all, default:" + 
+                                           to_string(open_apertures) + ")", 
+                                          {"open-apertures"});
+  args::ValueFlag<int> _initial_intensity (parser, "int", 
+                                          "Initial value aperture intensity  (" + 
+                                           to_string(initial_intensity) + ")", 
+                                          {"initial-intensity"});
+  args::ValueFlag<int> _max_intensity     (parser, "int", 
+                                          "Max value aperture intensity  (" + 
+                                           to_string(max_intensity)+")", 
+                                          {"max-intensity"});
+  args::ValueFlag<int> _step_intensity    (parser, "int", 
+                                          "Step size for aperture intensity  (" + 
+                                           to_string(step_intensity)+")", 
+                                          {"step-intensity"});
 
-  args::ValueFlag<int> _max_apertures(parser, "int", "Initial intensity for the station  ("+to_string(max_apertures)+")", {"max-apertures"});
-  args::ValueFlag<int> _open_apertures(parser, "int", "Number of initialized open apertures (-1: all, default:"+to_string(open_apertures)+")", {"open-apertures"});
-  args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial-intensity"});
-  args::ValueFlag<int> _max_intensity(parser, "int", "Max value aperture intensity  ("+to_string(max_intensity)+")", {"max-intensity"});
-  args::ValueFlag<int> _step_intensity(parser, "int", "Step size for aperture intensity  ("+to_string(step_intensity)+")", {"step-intensity"});
+  // Aperture representation local search parameters
+  args::Group dao_ls (parser, "Direct aperture local search:", 
+                      args::Group::Validators::DontCare);
+  /*TODO: mayeb do this*/
+  args::Flag _targeted_search             (dao_ls, "targeted_search", 
+                                          "Apply targeted local search", {"targeted"});
+  args::Flag ls_aperture                  (dao_ls, "ls_apertures", 
+                                          "Apply aperture local search", {"ls-aperture"});
+  args::Flag ls_intensity                 (dao_ls, "ls_intensity", 
+                                          "Apply intensity local search", {"ls-intensity"});
+  args::ValueFlag<double> _prob_intensity (dao_ls, "double", 
+                                          "Probability to search over intensity  (" + 
+                                           to_string(prob_intensity)+")", 
+                                          {"prob-intensity"});
+  args::Flag best_improv                  (dao_ls, "best_improv", 
+                                          string("Apply best improvement when searching ") +
+                                          "intensity or apertures", {"best-improvement"});
+  args::Flag first_improv                 (dao_ls, "first_improv", 
+                                          string("Apply first improvement when searching ") + 
+                                          "intensity or apertures", {"first-improvement"});
+  args::Flag do_perturbate                (dao_ls, "do_perturbate", 
+                                          string("Perturbation is triggered  after a ") + 
+                                          "selected criterion ", {"perturbate"});
+  args::ValueFlag<int> _perturbation      (parser, "int", 
+                                          "Perturbation size  (" + 
+                                          to_string(perturbation)+")", 
+                                          {"perturbation-size"});
 
-  args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
-  args::Flag _targeted_search(dao_ls, "targeted_search", "Apply targeted local search", {"targeted"});
-  args::Flag ls_aperture(dao_ls, "ls_apertures", "Apply aperture local search", {"ls-aperture"});
-  args::Flag ls_intensity(dao_ls, "ls_intensity", "Apply intensity local search", {"ls-intensity"});
-  args::ValueFlag<double> _prob_intensity(dao_ls, "double", "Probability to search over intensity  ("+to_string(prob_intensity)+")", {"prob-intensity"});
-  args::Flag best_improv(dao_ls, "best_improv", "Apply best improvement when searching intensity or apertures", {"best-improvement"});
-  args::Flag first_improv(dao_ls, "first_improv", "Apply first improvement when searching intensity or apertures", {"first-improvement"});
-  args::Flag do_perturbate(dao_ls, "do_perturbate", "Perturbate after a selected criterion is triggered", {"perturbate"});
-  args::ValueFlag<int> _perturbation(parser, "int", "Perturbation size  ("+to_string(perturbation)+")", {"perturbation-size"});
+  // Acceptance criterion parameters
+  args::Group accept (parser, "Acceptance criterion:", 
+                      args::Group::Validators::AtMostOne);
+  args::Flag accept_best                 (accept, "accept-best", 
+                                         "Accept only improvement", {"accept-best"});
+  args::Flag accept_sa                   (accept, "accept-sa", 
+                                         "Accept as simulated annealing", {"accept-sa"});
+  args::ValueFlag<double> _temperature   (parser, "double", 
+                                         "Temperature for acceptance criterion  (" + 
+                                         to_string(temperature) + ")", {"temperature"});
+  args::ValueFlag<double> _alphaT        (parser, "double", 
+                                         "Reduction rate of the temperature  (" + 
+                                         to_string(alphaT)+")", {"alphaT"});
 
-  args::Group accept (parser, "Acceptance criterion:", args::Group::Validators::AtMostOne);
-  args::Flag accept_best(accept, "accept-best", "Accept only improvement", {"accept-best"});
-  args::Flag accept_sa(accept, "accept-sa", "Accept as simulated annealing", {"accept-sa"});
-
-  args::ValueFlag<double> _temperature(parser, "double", "Temperature for acceptance criterion  ("+to_string(temperature)+")", {"temperature"});
-  args::ValueFlag<double> _alphaT(parser, "double", "Reduction rate of the temperature  ("+to_string(alphaT)+")", {"alphaT"});
-
-	//args::Flag trace(parser, "trace", "Trace", {"trace"});
-  args::ValueFlag<string> _file(parser, "string", "File with the deposition matrix", {"file-dep"});
-  args::ValueFlag<string> _file2(parser, "string", "File with the beam coordinates", {"file-coord"});
-  args::ValueFlag<string> _file3(parser, "string", "File with initial intensities", {"file-sol"});
-  args::ValueFlag<string> _path(parser, "string", "Absolute path of the executable (if it is executed from other directory)", {"path"});
-  args::Flag _plot(parser, "bool", "Generate plot and save in file", {"plot"});
+  // Problem file parameters
+  args::ValueFlag<string> _file  (parser, "string", 
+                                 "File with the deposition matrix", {"file-dep"});
+  args::ValueFlag<string> _file2 (parser, "string", 
+                                 "File with the beam coordinates", {"file-coord"});
+  args::ValueFlag<string> _file3 (parser, "string", 
+                                 "File with initial intensities", {"file-sol"});
+  args::ValueFlag<string> _path  (parser, "string", 
+                                 string("Absolute path of the executable ") + 
+                                 "(if it is executed from other directory)", {"path"});
+  args::Flag _plot               (parser, "bool",  
+                                 "Generate plot and save in file", {"plot"});
 
 	try
 	{
@@ -217,21 +299,20 @@ int main(int argc, char** argv){
 
 	if(_strategy) strategy=_strategy.Get();
 
-	if(_bsize) bsize=_bsize.Get();
-	if(_vsize) vsize=_vsize.Get();
-	if(_maxdelta) maxdelta=_maxdelta.Get();
-	if(_maxratio) maxratio=_maxratio.Get();
-
 	if(_maxiter) maxiter=_maxiter.Get();
 	if(_maxtime) maxtime=_maxtime.Get();
 	if(_seed) seed=_seed.Get();
 
+	if(_maxdelta) maxdelta=_maxdelta.Get();
+	if(_maxratio) maxratio=_maxratio.Get();
 	if(_alpha) alpha=_alpha.Get();
 	if(_beta) beta=_beta.Get();
 
+	if(_bsize) bsize=_bsize.Get();
+	if(_vsize) vsize=_vsize.Get();
+
   if(_max_apertures) max_apertures=_max_apertures.Get();
   if(_open_apertures) open_apertures=_open_apertures.Get();
-
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
   if(_max_intensity) max_intensity=_max_intensity.Get();
   if(_step_intensity) step_intensity=_step_intensity.Get();
@@ -254,7 +335,7 @@ int main(int argc, char** argv){
   if(_temperature) temperature=initial_temperature=_temperature.Get();
   if(_alphaT) alphaT=_alphaT.Get();
 
-  //This should be at the end given that will modify values
+  // This should be at the end given that will modify values
   if(open_max) {
     initial_setup=Station::OPEN_MAX_SETUP;
     initial_intensity=max_intensity;
@@ -284,30 +365,43 @@ int main(int argc, char** argv){
 
   chdir(path.c_str());
 
-  cout << "##**************************************************************************"<< endl;
-  cout << "##**************************************************************************"<< endl;
+  cout << "##**************************************************************************" 
+       << endl;
+  cout << "##**************************************************************************"
+       << endl;
   if(strategy=="dao_ls") {
-    cout << "##******** IMRT-Solver (Direct Aperture Optimization Local Search) *********"<< endl;
+    cout << "##******** IMRT-Solver (Direct Aperture Optimization Local Search) *********"
+         << endl;
   } else if(strategy=="ibo_ls") {
-    cout << "##******** IMRT-Solver (Intensity-based Optimization Local Search) *********"<< endl;
+    cout << "##******** IMRT-Solver (Intensity-based Optimization Local Search) *********"
+         << endl;
   }
-  cout << "##**************************************************************************"<< endl;
-  cout << "##**************************************************************************"<< endl;
+  cout << "##**************************************************************************"
+       << endl;
+  cout << "##**************************************************************************"
+       << endl;
 
   vector<double> w={1,1,1};
   vector<double> Zmin={0,0,76};
   vector<double> Zmax={65,60,1000};
 
-  Collimator collimator(file2, get_angles(file, 5));
-  vector<Volume> volumes= createVolumes (file, collimator);
+  // Create colimator object and volumes
+  Collimator collimator (file2, get_angles(file, 5));
+  vector<Volume> volumes = createVolumes (file, collimator);
 
-  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity, open_apertures, initial_setup,file3);
+  // Create an initial plan
+  Plan P (w, Zmin, Zmax, collimator, volumes, 
+         max_apertures, max_intensity, initial_intensity, step_intensity, 
+         open_apertures, initial_setup,file3);
+  double best_eval = P.getEvaluation();
 
-  double best_eval=P.getEvaluation();
-
-  cout << "##" << endl << "##**************************************************************************"<< endl;
-  cout << "##*********************************** INFO *********************************"<< endl;
-  cout << "##**************************************************************************"<< endl;
+  cout << "##" << endl 
+       << "##**************************************************************************"
+       << endl;
+  cout << "##*********************************** INFO *********************************"
+       << endl;
+  cout << "##**************************************************************************"
+       << endl;
   cout << "##" << endl << "## Solver: "<< endl;
   cout << "##   Iterations: " << maxiter << endl;
   cout << "##   Time: " << maxtime << endl;
@@ -343,7 +437,8 @@ int main(int argc, char** argv){
   cout << "##" << endl << "## Colimator configuration: "<< endl;
   cout << "##   Stations: " << collimator.getNbAngles() << endl;
   cout << "##   Angles: ";
-  for (int i=0; i<collimator.getNbAngles();i++) cout << collimator.getAngle(i) << " ";
+  for (int i=0; i<collimator.getNbAngles();i++) 
+    cout << collimator.getAngle(i) << " ";
   cout << endl;
   cout << "##   Apertures: " << max_apertures << endl;
 
@@ -351,9 +446,13 @@ int main(int argc, char** argv){
   cout << "##" << endl << "## Instance information: "<< endl;
   cout << "##   Volumes: " << volumes.size() << endl;
 
-  cout << "##" << endl << "##**************************************************************************"<< endl;
-  cout << "##********************************** SEARCH ********************************"<< endl;
-  cout << "##**************************************************************************"<< endl;
+  cout << "##" << endl 
+       << "##**************************************************************************"
+       << endl;
+  cout << "##********************************** SEARCH ********************************"
+       << endl;
+  cout << "##**************************************************************************"
+       << endl;
 
 
 
@@ -366,7 +465,7 @@ int main(int argc, char** argv){
   cout << endl;
 
   ILS* ils;
-  if(strategy=="dao_ls"){
+  if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
                           prob_intensity, step_intensity, initial_temperature,
                           alphaT, do_perturbate, perturbation, acceptance, ls_type);
@@ -429,15 +528,14 @@ int main(int argc, char** argv){
 
 
 
-  cout << "##**************************************************************************"<< endl;
-  cout << "##******************************* RESULTS **********************************"<< endl;
-  cout << "##**************************************************************************"<< endl;
-
-
-
+  cout << "##**************************************************************************"
+       << endl;
+  cout << "##******************************* RESULTS **********************************"
+       << endl;
+  cout << "##**************************************************************************"
+       << endl;
   cout << "##"<<endl;
   cout << "## Best solution found: " <<  P.getEvaluation() << endl;
-
   cout <<  P.getEvaluation() << " ";
 
   const list<Station*> stations=P.get_stations();

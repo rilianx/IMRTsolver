@@ -32,3 +32,5 @@ fwk4exps/as2/
 fwk4exps/dao/
 fwk4exps/ibo/
 *~
+.*
+#*
