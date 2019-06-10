@@ -14,6 +14,12 @@ namespace imrt {
 
 class IntensityGenerator {
 public:
+	typedef struct potencial_Gap{
+		int GAP;
+		int Suplier1; //biggest to the rigth
+		int Suplier2; //biggest to the left
+	}Gap;
+
 	IntensityGenerator();
 
 	void generate(Plan& P,double alpha, int max_intensity);
