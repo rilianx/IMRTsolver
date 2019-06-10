@@ -17,6 +17,7 @@ public:
 	IntensityGenerator();
 
 	void generate(Plan& P,double alpha, int max_intensity);
+	void IntensityRepair(Plan& P);
 	virtual ~IntensityGenerator();
 };
 

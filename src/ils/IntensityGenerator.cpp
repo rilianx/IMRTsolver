@@ -28,17 +28,7 @@ void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
 			int i=s->beam2pos[b].first; int j=s->beam2pos[b].second;
 			s->change_intensity(i, j, s->I(i,j) + std::min(int(alpha/vc.second+0.5),max_intensity));
 
-			//Pprime.Zupdate(s,b,int(alpha/vc.second+0.5), false);
-			/*
-			if ( !Pprime.Zupdate(s,b,int(alpha/vc.second+0.5), false)){
-				alpha = alpha * 0.9;//alpha decrease
-				Pprime.Zrollback();
-				goto Start;
-				//cout << alpha << endl;
-			}*/
 		}
-
-    //se modifican las intensidades en la solucion (arreglar)
 
 		cout << alpha << endl;
 		cout <<"NewPlan:"<< Pprime.eval() << endl  ;
@@ -47,11 +37,13 @@ void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
   		Pprime.printIntensity(i);
   		cout << endl;
 
-}
-// preguntar return_if_unfeasible
-// delta_intensity dentro de plan.h es el equivalente al alpha?
-// Por que se definieron las funciones el .h y no en el .cpp?
+		IntensityRepair(Pprime);
 
+}
+
+void IntensityGenerator::IntensityRepair(Plan& P){
+
+}
 IntensityGenerator::IntensityGenerator() {
 	// TODO Auto-generated constructor stub
 
