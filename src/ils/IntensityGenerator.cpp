@@ -42,7 +42,10 @@ void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
 }
 
 void IntensityGenerator::IntensityRepair(Plan& P){
-
+	list<Station*>& stations = P.get_stations();
+	for(Station* s:stations){
+		s->I.get_row(1);
+	}
 }
 IntensityGenerator::IntensityGenerator() {
 	// TODO Auto-generated constructor stub
