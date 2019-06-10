@@ -40,7 +40,7 @@ public:
 
 	double eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
-	double eval();
+	double eval(bool generateZ=true);
 
 	double incremental_eval (Station& station, int i, int j, double intensity){
 		list< pair< int, double > > diff;
@@ -54,7 +54,7 @@ public:
     return ev.get_delta_eval(s.getAngle(),
     s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
   }
-	
+
 	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999){
 	  return ev.get_delta_eval(s.getAngle(), b, intensity, w, Zmin, Zmax, n_voxels);
 	}
@@ -113,8 +113,8 @@ public:
   //update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
   //if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
   //return false if some voxel surpasses Zmax
-  bool Zupdate(Station* s, int b, double delta_intensity, bool return_if_unfeasible){
-	  return ev.Zupdate(s->getAngle(), b, delta_intensity, return_if_unfeasible, Zmax);
+  bool Zupdate(Station* s, int b, double delta_intensity, bool return_immediatly_without_fixing_the_problem){
+	  return ev.Zupdate(s->getAngle(), b, delta_intensity, return_immediatly_without_fixing_the_problem, Zmax);
   }
 
   	//regresa al savepoint para Z
@@ -132,10 +132,15 @@ public:
   	}
 
   	pair<double,double> get_value_cost(Station* s, int b){
-  		ev.get_value_cost(s->getAngle(), b, Zmin, Zmax);
+  	 return ev.get_value_cost(s->getAngle(), b, Zmin, Zmax);
   	}
 
   map<int, Station*> angle2station;
+
+	vector<double> w;
+	vector<double> Zmin;
+	vector<double> Zmax;
+
 private:
 	//The list of stations
 	//list<Station> real_stations;
@@ -148,9 +153,7 @@ private:
 
 	EvaluationFunction& ev;
 
-	vector<double> w;
-	vector<double> Zmin;
-	vector<double> Zmax;
+
 
 	double evaluation_fx;
 };

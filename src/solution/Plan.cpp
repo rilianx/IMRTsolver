@@ -87,8 +87,8 @@ namespace imrt {
     return eval;
   };
 
-  double Plan::eval() {
-    double eval=ev.eval(*this,w,Zmin,Zmax);
+  double Plan::eval(bool generateZ) {
+    double eval=ev.eval(*this,w,Zmin,Zmax,generateZ);
     ev.generate_voxel_dose_functions ();
     evaluation_fx=eval;
     return eval;

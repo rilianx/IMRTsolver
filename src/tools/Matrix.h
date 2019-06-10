@@ -56,6 +56,8 @@ class Matrix {
         void readSolutionsFromRREF(std::ostream& os);
         Matrix inverse();
 
+        double* get_row(int i){return p[i];}
+
     private:
         int rows_, cols_;
         double **p;
