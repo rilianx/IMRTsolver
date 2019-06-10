@@ -42,10 +42,40 @@ void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
 }
 
 void IntensityGenerator::IntensityRepair(Plan& P){
+	struct potencial_Gap{
+		double GAP;
+		double Suplier1; //biggest to the rigth
+		double Suplier2; //biggest to the left
+	}Gaps[8];
+	
 	list<Station*>& stations = P.get_stations();
+	
 	for(Station* s:stations){
-		s->I.get_row(1);
+		for (int i=0;i<10;i++){
+			 s->I.get_row(i);
+
+		}
 	}
+
+	for(int i;i<=8;i++){ //go over the struct array
+		for(int j;j</*row_size */;j++){ // go over the intensity row
+			Gaps[i].GAP=j;
+			Gaps[i].Suplier1=j+1;
+			Gaps[i].Suplier2=j-1;
+			for (int k=j+1;k</*row_size */;k++){ //rigth of intensity row
+				if(p[k]>p[Gaps[i].Suplier1]){
+					Gaps[i].Suplier1=k;
+				}
+			}
+			for(int k=j-1;k>=0;k--){ //left of intensity row
+				if(p[k]>p[Gaps[i].Suplier2]){
+					Gaps[i].Suplier2=k;
+				}
+			}
+		
+		}
+	}
+
 }
 IntensityGenerator::IntensityGenerator() {
 	// TODO Auto-generated constructor stub
