@@ -75,7 +75,13 @@ void IntensityGenerator::IntensityRepair(Plan& P){
 		
 		}
 	}
-
+	//search for the worst gap
+	int RealGap=Gaps[0].GAP;
+	for(int i=1;i<=8;i++){
+		if(p[RealGap]>p[Gaps[i].GAP]){
+			RealGap=Gaps[i].GAP;
+		}
+	}
 }
 IntensityGenerator::IntensityGenerator() {
 	// TODO Auto-generated constructor stub
