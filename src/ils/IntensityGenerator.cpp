@@ -42,46 +42,57 @@ void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
 }
 
 void IntensityGenerator::IntensityRepair(Plan& P){
-	struct potencial_Gap{
-		double GAP;
-		double Suplier1; //biggest to the rigth
-		double Suplier2; //biggest to the left
-	}Gaps[8];
+	typedef struct potencial_Gap{
+		int GAP;
+		int Suplier1; //biggest to the rigth
+		int Suplier2; //biggest to the left
+	}Gap;
 	
 	list<Station*>& stations = P.get_stations();
-	
+	double* intensities;
 	for(Station* s:stations){
-		for (int i=0;i<10;i++){
-			 s->I.get_row(i);
+		for (int i=0;i<s->I.nb_rows();i++){
+			intensities=s->I.get_row(i);
 
 		}
 	}
 
+	list<Gap> gaps;
+
 	for(int i;i<=8;i++){ //go over the struct array
-		for(int j;j</*row_size */;j++){ // go over the intensity row
-			Gaps[i].GAP=j;
-			Gaps[i].Suplier1=j+1;
-			Gaps[i].Suplier2=j-1;
+		Gap gap;
+		for(int j=1;j<s->I.nb_cols()/*row_size */;j++){ // go over the intensity row
+			gap.GAP=intensities[j];
+			gap.Suplier1=intensities[j+1];
+			gap.Suplier2=intensities[j-1];
 			for (int k=j+1;k</*row_size */;k++){ //rigth of intensity row
 				if(p[k]>p[Gaps[i].Suplier1]){
-					Gaps[i].Suplier1=k;
+					gap.Suplier1=k;
 				}
 			}
 			for(int k=j-1;k>=0;k--){ //left of intensity row
-				if(p[k]>p[Gaps[i].Suplier2]){
-					Gaps[i].Suplier2=k;
+				if(p[k]>p[gap.Suplier2]){
+					gap.Suplier2=k;
 				}
 			}
+
+			if(gap.GAP < gap.Suplier1 && gap.GAP < gap.Suplier2)
+				gaps.push_back(gap);
 		
 		}
 	}
+
+	if(gaps.empty()) break;
+
 	//search for the worst gap
-	int RealGap=Gaps[0].GAP;
-	for(int i=1;i<=8;i++){
-		if(p[RealGap]>p[Gaps[i].GAP]){
-			RealGap=Gaps[i].GAP;
+	Gap RealGap=gaps.front();
+	for(Gap gap: gaps){
+		if(intensities[RealGap.GAP] > intensities[gap.GAP]){
+			RealGap=gap;
 		}
 	}
+
+	//cambiar intensidades RealGap
 }
 IntensityGenerator::IntensityGenerator() {
 	// TODO Auto-generated constructor stub
