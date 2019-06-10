@@ -432,7 +432,10 @@ int main(int argc, char** argv){
   }
 
 
-
+//gdb --args orden
+//despues breakpoint b ubicacion de archivo y linea
+// con c continua al otro checkpoint
+//ccon n continua a la otra linea
 
   cout << "##**************************************************************************"<< endl;
   cout << "##******************************* RESULTS **********************************"<< endl;
