@@ -71,13 +71,15 @@ public:
   
   bool perturbate(int no_improvement, int iteration);
   
-  //vector < pair<int, int> > getShuffledIntensityNeighbors(Plan &P);
+ 
+  vector <NeighborMove> getNeighborhood(Plan& current_plan, 
+                                        NeighborhoodType ls_neighborhood, 
+                                        int ls_target);
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
-
-  bool applyMove (NeighborMove move, Plan &P);
+  double applyMove (Plan &P, NeighborMove move);
 
   int getStepIntensity ();
   

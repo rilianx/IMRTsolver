@@ -125,7 +125,7 @@ int main(int argc, char** argv){
 	   P.add_station(*stations[i]);
 
 	IntensityILS ils(1, bsize, vsize, maxdelta, maxratio, alpha, beta);
-	ils.beamTargetedSearch(P,1000,maxiter);
+	//ils.beamTargetedSearch(P,1000,maxiter);
 
 
    system("python plotter/plot.py");

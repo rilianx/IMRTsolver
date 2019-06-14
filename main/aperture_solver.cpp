@@ -92,6 +92,7 @@ int main(int argc, char** argv){
   // Budget and execution variables
   int maxiter = 5000;
   int maxtime = 0;
+  int maxeval = 0;
   int seed = time(NULL);
 
   // Intensity local search parameters
@@ -152,6 +153,9 @@ int main(int argc, char** argv){
   args::ValueFlag<int>    _maxtime  (parser, "int", 
                                     "Maximum time in seconds (" + 
                                      to_string(maxtime)+")", {"maxtime"});
+  args::ValueFlag<int>    _maxeval  (parser, "int", 
+                                    "Number of evaluations (" + 
+                                     to_string(maxiter)+ ")", {"maxiter"});
   args::ValueFlag<int>    _seed     (parser, "int", "Seed  (" + 
                                      to_string(seed)+")", {"seed"});
 
@@ -301,6 +305,7 @@ int main(int argc, char** argv){
 
 	if(_maxiter) maxiter=_maxiter.Get();
 	if(_maxtime) maxtime=_maxtime.Get();
+  if(_maxeval) maxeval=_maxeval.Get();
 	if(_seed) seed=_seed.Get();
 
 	if(_maxdelta) maxdelta=_maxdelta.Get();
@@ -405,6 +410,7 @@ int main(int argc, char** argv){
   cout << "##" << endl << "## Solver: "<< endl;
   cout << "##   Iterations: " << maxiter << endl;
   cout << "##   Time: " << maxtime << endl;
+  cout << "##   Evaluations: " << maxeval << endl;
   cout << "##   Seed: " << seed << endl;
   cout << "##   Temperature: " << temperature << endl;
   cout << "##   alpha: " << alpha << endl;
@@ -469,45 +475,11 @@ int main(int argc, char** argv){
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
                           prob_intensity, step_intensity, initial_temperature,
                           alphaT, do_perturbate, perturbation, acceptance, ls_type);
-   /* if (!targeted_search)*/
-      ils-> notTargetedSearch(P, maxtime, maxiter);
-    /*else
-      ils-> beamTargetedSearch(P, maxtime, maxiter);*/
+    ils->iteratedLocalSearch(P, maxtime, maxeval,1,NeighborhoodType::mixed,1 );
   }else if(strategy=="ibo_ls"){
-/*
-	    for(auto s:P.get_stations()){
-	      for (int i=0; i<collimator.getXdim();i++) {
-				  for (int j=0; j<collimator.getYdim(); j++) {
-	          if(s->I(i,j)!=-1){
-	        	  pair<double, double> vc=EvaluationFunction::getInstance().get_value_cost(
-	        	              		s->getAngle(), s->pos2beam[make_pair(i,j)], Zmin, Zmax);
-	            printf("%5.1f ",
-	            vc.first);
-	          }else cout << "   -1 " ;
-	        }
-	        cout << endl;
-	      }
-	      cout << endl;
-	    }
-
-	    for(auto s:P.get_stations()){
-	      for (int i=0; i<collimator.getXdim();i++) {
-				  for (int j=0; j<collimator.getYdim(); j++) {
-	          if(s->I(i,j)!=-1){
-	        	  pair<double, double> vc=EvaluationFunction::getInstance().get_value_cost(
-	        	              		s->getAngle(), s->pos2beam[make_pair(i,j)], Zmin, Zmax);
-	            printf("%6.1f ",
-	            1/vc.second);
-	          }else cout << "    -1 " ;
-	        }
-	        cout << endl;
-	      }
-	      cout << endl;
-	    }
-*/
 
     ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
-    ils->beamTargetedSearch(P, maxtime, maxiter);
+    ils->iteratedLocalSearch(P, maxtime, maxeval,1,NeighborhoodType::mixed,1 );
 
 
     

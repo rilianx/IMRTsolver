@@ -29,6 +29,11 @@ struct NeighborMove {
   int beamlet_id;
 };
 
+enum NeighborhoodType {
+  intensity = 1,
+  aperture = 2,
+  mixed = 3
+};
 
 class ILS {
 private:
@@ -53,8 +58,6 @@ public:
   };
 
   virtual ~ILS() { };
-
-  virtual double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) = 0;
   
   virtual double iLocalSearch(Plan& P,double max_time, bool verbose=true) {
     cout << "Not implemented "<< endl;
@@ -70,11 +73,11 @@ public:
 
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
-  }
+  };
 
   virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(Plan& P){
     return P.getBestLSBeamlet(bsize, vsize);
-  }
+  };
 
   virtual double perturbation(Plan& P) {
     return(P.getEvaluation());
@@ -90,16 +93,17 @@ public:
 
   virtual void updateTemperature() {};
 
-  virtual NeighborMove getNeighborhood(Plan & current_plan, int ls_neighborhood, int ls_target)=0;
+  virtual vector <NeighborMove> getNeighborhood(Plan & current_plan, NeighborhoodType ls_neighborhood, int ls_target) = 0;
 
-  virtual double applyMove (Plan & current_plan, NeighborMove move)=0;
+  virtual double applyMove (Plan & current_plan, NeighborMove move) = 0;
 
-  double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluation, 
-                              int ls_type, int ls_neighborhood, int ls_target) {
+  double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
+                              int ls_type, NeighborhoodType ls_neighborhood, int ls_target) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
+     double current_eval = current_plan.getEvaluation();
      double used_time = 0;
-     double used_evaluations = 0;
+     int used_evaluations = 0;
 
      //Start time
      std::clock_t time_end;
@@ -107,8 +111,8 @@ public:
  
      while (true) {
        // Apply local search
-       aux_eval = localSearch(current_plan, max_time, max_evaluations, time_begin, 
-                   used_evaluations, ls_type, ls_neighborhood, ls_target)
+       aux_eval = localSearch(current_plan, max_time, max_evaluations,  
+                  used_evaluations, ls_type, ls_neighborhood, ls_target);
         
        if (aux_eval < current_eval) {
          current_eval = aux_eval;
@@ -130,7 +134,7 @@ public:
   }
 
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
-                      int& used_evaluations, int ls_type, int ls_neighborhood, 
+                      int& used_evaluations, int ls_type, NeighborhoodType ls_neighborhood, 
                       int ls_target) {
     bool improvement = true;
     vector <NeighborMove> neighborhood;
@@ -138,14 +142,15 @@ public:
     NeighborMove best_move = {0,0,0,0,0}; 
     //Start time
     std::clock_t time_end;
+    double used_time;
 
     while (improvement) {
       improvement = false;
-      //TODO: Hacer enum para ls_neighbothood, ls_target, ls_type
+      //TODO: Hacer enum para ls_neighborhood, ls_target, ls_type
       neighborhood = getNeighborhood(current_plan, ls_neighborhood, ls_target); //TODO: implementar
       for (NeighborMove move:neighborhood) {
         applyMove(current_plan, move);  //TODO: implementar
-        // Improvement!!
+        // Check if there is an improvement
         if (current_plan.getEvaluation()< current_eval) {
           improvement=true;
           if (ls_type == 1) {
@@ -190,7 +195,7 @@ public:
 
   /* Targeted version of the local search where a beamlert is identified as 
      promising and local search is directed to it */
-  double beamTargetedSearch (Plan& current_plan, int max_time, int max_iterations) {
+  /*double beamTargetedSearch (Plan& current_plan, int max_time, int max_iterations) {
 
     cout << "## Staring ILS search." << endl;
 
@@ -287,10 +292,10 @@ public:
     aux_eval=current_plan.getEvaluation();
     best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
     return(aux_eval);
-  };
+  };*/
 
   /* Not targeted version having first ils and then als */
-  double notTargetedSearch(Plan& current_plan, int max_time, int max_iterations) {
+ /* double notTargetedSearch(Plan& current_plan, int max_time, int max_iterations) {
 
     cout << "## Staring ILS search." << endl;
     std::clock_t time_end;
@@ -344,12 +349,12 @@ public:
       }
       
       //Check print (comment if not needed)
-      /*current_plan.eval();
-      cout << "returned eval: " << aux_eval << " current local: " << local_eval << " in current plan: " << current_plan.getEvaluation()<< endl;
-      cout << endl;
-      for(int j=0;j<5;j++)
-      current_plan.printIntensity(j);
-      cout << endl;*/
+      //current_plan.eval();
+      //cout << "returned eval: " << aux_eval << " current local: " << local_eval << " in current plan: " << current_plan.getEvaluation()<< endl;
+      //cout << endl;
+      //for(int j=0;j<5;j++)
+      //current_plan.printIntensity(j);
+      //cout << endl;
       
       // Check termination criterion
       time_end = clock();
@@ -392,7 +397,7 @@ public:
     used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
     cout << "## Total used time: " << used_time << endl;
     return(aux_eval);
-  };
+  };*/
 
 };
 

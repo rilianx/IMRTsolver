@@ -59,6 +59,11 @@ public:
 		return (perturbation_size>0 && no_improvement>100);
 	};
 
+  virtual vector <NeighborMove> getNeighborhood(Plan & current_plan, NeighborhoodType ls_neighborhood, int ls_target){
+  };
+
+  virtual double applyMove (Plan & current_plan, NeighborMove move) {};
+
 	private:
 
 	int step_intensity;
