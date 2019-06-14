@@ -81,8 +81,14 @@ void IntensityGenerator::changeworst(double* intensities,list<Gap> gaps){
 			RealGap=gap;
 		}
 	}
-//cambiar intensidades RealGap
-
+	//cambiar intensidades RealGap
+	if(intensities[RealGap.Suplier1]<intensities[RealGap.Suplier2]){
+		intensities[RealGap.GAP]=intensities[RealGap.GAP] - 1;
+		intensities[RealGap.Suplier2]=intensities[RealGap.Suplier2] - 1;
+	} else {
+		intensities[RealGap.GAP]=intensities[RealGap.GAP] - 1;
+		intensities[RealGap.Suplier1]=intensities[RealGap.Suplier1] - 1;
+	}
 
 }
 IntensityGenerator::IntensityGenerator(){
