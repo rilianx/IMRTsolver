@@ -42,51 +42,51 @@ void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
 }
 
 void IntensityGenerator::IntensityRepair(Plan& P){
-	
-	list<Station*>& stations = P.get_stations();
+	list<Gap> gaps;
+	Gap gap;
+	list<Station*>& stations=P.get_stations();
 	double* intensities;
 	for(Station* s:stations){
 		for (int i=0;i<s->I.nb_rows();i++){
 			intensities=s->I.get_row(i);
-
+			for(int j=1;j<s->I.nb_cols();j++){ // go over the intensity row
+				gap.GAP=j;
+				gap.Suplier1=j+1;
+				gap.Suplier2=j-1;
+				for (int k=j+1;k<s->I.nb_cols();k++){ //rigth of intensity row
+					if(intensities[k]>intensities[gap.Suplier1]){
+						gap.Suplier1=k;
+					}
+				}
+				for(int k=j-1;k>=0;k--){ //left of intensity row
+					if(intensities[k]>intensities[gap.Suplier2]){
+						gap.Suplier2=k;
+					}
+				}
+				if(intensities[gap.GAP] < intensities[gap.Suplier1] && intensities[gap.GAP] < intensities[gap.Suplier2]){
+					gaps.push_back(gap);	
+				}
+	
+				if(gaps.empty()) break;
+				changeworst(intensities, gaps);
+			}
 		}
 	}
-	list<Gap> gaps;
-	Gap gap;
-	for(int j=1;j<s->I.nb_cols()/*row_size */;j++){ // go over the intensity row
-		gap.GAP=intensities[j];
-		gap.Suplier1=intensities[j+1];
-		gap.Suplier2=intensities[j-1];
-		for (int k=j+1;k</*row_size */;k++){ //rigth of intensity row
-			if(p[k]>p[Gaps[i].Suplier1]){
-				gap.Suplier1=k;
-			}
-		}
-		for(int k=j-1;k>=0;k--){ //left of intensity row
-			if(p[k]>p[gap.Suplier2]){
-				gap.Suplier2=k;
-			}
-		}
-
-		if(gap.GAP < gap.Suplier1 && gap.GAP < gap.Suplier2){
-			gaps.push_back(gap);	
-		}
-	
-	if(gaps.empty()) break;
-	//search for the worst gap
+}
+//search for the worst gap and changeit
+void IntensityGenerator::changeworst(double* intensities,list<Gap> gaps){
 	Gap RealGap=gaps.front();
 	for(Gap gap: gaps){
 		if(intensities[RealGap.GAP] > intensities[gap.GAP]){
 			RealGap=gap;
 		}
 	}
+//cambiar intensidades RealGap
 
-	//cambiar intensidades RealGap
+
 }
-
-IntensityGenerator::IntensityGenerator() {
+IntensityGenerator::IntensityGenerator(){
 	// TODO Auto-generated constructor stub
-
 }
 
 IntensityGenerator::~IntensityGenerator() {

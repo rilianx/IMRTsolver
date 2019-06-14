@@ -24,6 +24,7 @@ public:
 
 	void generate(Plan& P,double alpha, int max_intensity);
 	void IntensityRepair(Plan& P);
+	void changeworst(double* intensities, list<Gap> gaps);
 	virtual ~IntensityGenerator();
 };
 
