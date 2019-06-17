@@ -33,7 +33,8 @@ enum NeighborhoodType {
   intensity = 1,
   aperture = 2,
   mixed = 3,
-  sequential = 4
+  sequential = 4,
+  sequentialp = 5
 };
 
 enum LSType {
@@ -150,6 +151,37 @@ public:
      return(current_eval);
   }
 
+  NeighborhoodType selectNeighborhood (NeighborhoodType current, NeighborhoodType user, 
+                                       bool previous_checked) {
+    
+     if (user == NeighborhoodType::intensity || 
+         user == NeighborhoodType::aperture ||
+         user == NeighborhoodType::mixed) 
+       return (user);
+
+     //TODO: add probability parameter
+     if (user == NeighborhoodType::sequentialp) {
+       if (previous_checked) {
+         if (current == NeighborhoodType::aperture)
+           return (NeighborhoodType::intensity);
+         return(NeighborhoodType::aperture); 
+       } else { 
+         float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+         if (r < 0.5) return(NeighborhoodType::intensity);
+         else return(NeighborhoodType::aperture);
+       }
+     }
+
+     if (user == NeighborhoodType::sequential) {
+       if (current == NeighborhoodType::aperture)
+         return (NeighborhoodType::intensity);
+       return(NeighborhoodType::aperture);  
+     }
+
+     cout << "Error: Unknown neighborhood operator" << endl;
+     return(NeighborhoodType::intensity);  
+  };
+
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
                       int& used_evaluations, LSType ls_type, NeighborhoodType ls_neighborhood, 
                       LSTarget ls_target) {
@@ -157,22 +189,42 @@ public:
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();    
     NeighborMove best_move = {0,0,0,0,0}; 
+    NeighborhoodType current_neighborhood = ls_neighborhood;
+    int n_neighbor = 1;
+
+    // the sequential flag indicates that the previous neighborhood was checked
+    // unsuccesfully 
+    bool sequential_flag = false; 
+    bool is_sequential = (ls_neighborhood == NeighborhoodType::sequential) ||
+                         (ls_neighborhood == NeighborhoodType::sequentialp);
+
     //Start time
     std::clock_t time_end;
-    double used_time;
-
+    double used_time;   
     cout << "Starting local search" << endl;
 
     while (improvement) {
       improvement = false;
-      //TODO: Hacer enum para ls_neighborhood, ls_target, ls_type
-      neighborhood = getNeighborhood(current_plan, ls_neighborhood, ls_target); //TODO: implementar
-      cout << " Neighborhood size: " << neighborhood.size() << endl;
+      //Select the neighborhood (doone for the cases in which sequenced neighborhoods are chosen)
+      current_neighborhood = selectNeighborhood (current_neighborhood, 
+                                                 ls_neighborhood, 
+                                                 sequential_flag);
+      //Get the moves in the neighborhood (this is possible because the moves are not that many!)
+      //TODO: ignacio implementame!.
+      neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target); 
+      n_neighbor = 1;//neighbor counter
+
+      cout << " Neighborhood: " << current_neighborhood << "; size: " << 
+              neighborhood.size() << endl;
+
       for (NeighborMove move:neighborhood) {
-        applyMove(current_plan, move);  //TODO: implementar
+        //Generate the solution in the neighborhood
+        applyMove(current_plan, move);  //TODO: ignacio implementame!.
+
         // Check if there is an improvement
-        if (current_plan.getEvaluation() < current_eval) {
-            cout << "  Improvement" << current_plan.getEvaluation()<< endl;
+        if (current_plan.getEvaluation() < (current_eval-0.001)) {
+          cout << "  Neighbor: " << n_neighbor << "; Improvement: " << 
+                  current_plan.getEvaluation() << endl;
           improvement = true;
           if (ls_type == LSType::first) {
             // First improvement  
@@ -182,13 +234,16 @@ public:
             // Best improvement
             current_eval = current_plan.getEvaluation();
             best_move = move;
-            current_plan.undoLast(); //TODO: ignacio implementame.
+            current_plan.undoLast(); //TODO: ignacio revisame!.
           }
         } else {
+          //No improvement
           current_plan.undoLast();
         }
        
+        //Counter updates 
         used_evaluations++;
+        n_neighbor++;
 
         // Termination criterion
         time_end = clock();
@@ -203,6 +258,20 @@ public:
         current_eval = current_plan.getEvaluation();
         used_evaluations++;
       }     
+
+      // Check sequential neighborhood
+      if (is_sequential) {
+        if (!improvement & !sequential_flag) {
+          // If we are in sequential mode, when there is no 
+          // improvement we allow to check also the next neighborhood
+          // Note: this should be coordinated with the select neighborhood 
+          // function.
+				  sequential_flag = true;
+          improvement = true;
+        } else {
+          sequential_flag = false;
+        }
+      }
 
       // Termination criterion
       time_end = clock();

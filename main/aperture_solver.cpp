@@ -469,7 +469,7 @@ int main(int argc, char** argv){
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
                           prob_intensity, step_intensity, initial_temperature,
                           alphaT, do_perturbate, perturbation, acceptance);
-    ils->iteratedLocalSearch(P, maxtime, maxeval,LSType::first,NeighborhoodType::aperture,
+    ils->iteratedLocalSearch(P, maxtime, maxeval,LSType::first,NeighborhoodType::mixed,
                              LSTarget::none);
   }else if(strategy=="ibo_ls"){
 
