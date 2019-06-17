@@ -109,10 +109,14 @@ public:
     Station *st;
     int aux;
     double deposit;
-    ils = new ApertureILS(1, 1, true, true, 1, step_intensity, 100, 0.5, false, 0, ILS::ACCEPT_NONE, ApertureILS::FIRST_IMPROVEMENT);
+    ils = new ApertureILS(1, 1, true, true, 1, step_intensity, 100,
+                          0.5, false, 0, ILS::ACCEPT_NONE,
+                          ApertureILS::FIRST_IMPROVEMENT);
     cout << "Initializing heuristic information with " << nls << " ls executions"<< endl;
     for (int i=0 ;i < nls; i++) {
-      Plan *p = new Plan(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity, -1, Station::OPEN_MIN_SETUP);
+      Plan *p = new Plan (w, Zmin, Zmax, collimator, volumes,
+                          max_apertures, max_intensity, initial_intensity,
+                          step_intensity, -1, Station::OPEN_MIN_SETUP);
       ils->simpleLocalSearch (*p, false);
       cout << " Local search "<<i<<": "<< p->getEvaluation() << endl;
       

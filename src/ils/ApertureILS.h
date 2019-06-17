@@ -32,7 +32,7 @@ public:
               bool search_aperture, double prob_intensity, 
               int step_intensity, double initial_temperature, 
               double alpha, bool do_perturbate, 
-              int perturbation_size, int acceptance, int ls_type);
+              int perturbation_size, int acceptance);
 
   ApertureILS(const ApertureILS & ils);
   
@@ -42,27 +42,15 @@ public:
   
   bool isBeamletModifiable(int beamlet, Station* station, bool open_flag) ;
   
-  double improvementIntensity(int beamlet, Station& station, bool open_beamlet, 
-                                   double c_eval, Plan &P, bool best_improvement); 
-  
   double openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P);
   
   double closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval,  Plan& P);
   
-  double improvementAperture(int beamlet, Station& station, bool open_beamlet, 
-                             double c_eval, Plan& P, bool best_improvement); 
-  
   bool acceptanceCriterion(double new_eval, double prev_eval);
-  
-  double localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P);
-
-  double localSearch(int type, int target, Plan& P);
   
   double iLocalSearch(Plan& P, double max_time, bool verbose=true);
   double aLocalSearch(Plan& P, double max_time, bool verbose=true);
 
-
-  //double aiLocalSearch (Plan& P, double max_time, bool verbose=true);
   double simpleLocalSearch(Plan& P, bool verbose=true);
   
   void updateTemperature();
@@ -74,7 +62,7 @@ public:
  
   vector <NeighborMove> getNeighborhood(Plan& current_plan, 
                                         NeighborhoodType ls_neighborhood, 
-                                        int ls_target);
+                                        LSTarget ls_target);
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
@@ -90,7 +78,6 @@ private:
   bool search_aperture;
   double prob_intensity;
   int step_intensity;
-  int ls_type;
   
   double temperature;
   double initial_temperature;

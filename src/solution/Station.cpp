@@ -11,18 +11,17 @@ namespace imrt {
 
 
   Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures,
-                   int max_intensity, int initial_intensity, int step_intensity, int open_apertures, int setup, fstream* myfile):
+                   int max_intensity, int initial_intensity, int step_intensity, int open_apertures,
+                   int setup, fstream* myfile):
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
 		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
                 step_intensity(step_intensity) {
-    
     min_intensity=1;
     if(open_apertures==-1) open_apertures=max_apertures;
 
     n_volumes=volumes.size();
     for (int i=0; i<volumes.size(); i++)
       D[i]=&volumes[i].getDepositionMatrix(angle);
-
     // Initialize empty matrix of intensity
     I = Matrix (collimator.getXdim(), collimator.getYdim());
     for (int i=0; i<collimator.getXdim(); i++) {
@@ -34,22 +33,20 @@ namespace imrt {
         }
       }
     }
-
     // Iniatialize apertures (alternative representation)
     initializeStation(setup, open_apertures);
-
     if(myfile) {
     	for (int i=0; i<collimator.getXdim(); i++) {
     	   for (int j=0; j<collimator.getYdim(); j++) {
-    		   int a; *myfile>>a;
+    		   int a;*myfile>>a;
     		   if(a!=-1) change_intensity(i, j, a);
     	   }
     	}
     }
 
-    last_mem= make_pair(make_pair(-1,-1), make_pair(-1,-1));
+    last_mem = make_pair(make_pair(-1,-1), make_pair(-1,-1));
     last_intensity = intensity; 
-  }
+  };
 
   Station::Station(const Station &s): collimator(s.collimator){
     collimator=s.collimator;
@@ -136,14 +133,13 @@ namespace imrt {
   void Station::initializeStation(int type, int open_apertures) {
     // Generating aperture patterns
 
-
     if (type==OPEN_MAX_SETUP || type==OPEN_MIN_SETUP) {
       for (int i=0; i<max_apertures; i++) {
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++){
           aux.push_back(collimator.getActiveRange(j,angle));
         }
-	      A[i] =aux;
+	A[i] =aux;
       }
     } else if (type==CLOSED_MAX_SETUP || type==CLOSED_MIN_SETUP) {
       for (int i=0; i<max_apertures; i++){

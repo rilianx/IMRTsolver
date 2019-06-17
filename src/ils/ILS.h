@@ -32,7 +32,18 @@ struct NeighborMove {
 enum NeighborhoodType {
   intensity = 1,
   aperture = 2,
-  mixed = 3
+  mixed = 3,
+  sequential = 4
+};
+
+enum LSType {
+  best = 1,
+  first = 2
+};
+
+enum LSTarget {
+  none = 1,
+  beamlet = 2  
 };
 
 class ILS {
@@ -48,7 +59,8 @@ public:
   static const int ACCEPT_NONE = 0;
   static const int ACCEPT_SA = 1;
 
-  ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize), vsize(vsize), acceptance(acceptance){
+  ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize),
+                                  vsize(vsize), acceptance(acceptance){
   };
 
   ILS(const ILS & ils ){
@@ -69,7 +81,7 @@ public:
     return 0.0;
   };
   
-  virtual bool acceptanceCriterion(double new_eval, double prev_eval)=0;
+  virtual bool acceptanceCriterion(double new_eval, double prev_eval) = 0;
 
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
@@ -93,12 +105,15 @@ public:
 
   virtual void updateTemperature() {};
 
-  virtual vector <NeighborMove> getNeighborhood(Plan & current_plan, NeighborhoodType ls_neighborhood, int ls_target) = 0;
+  virtual vector <NeighborMove> getNeighborhood(Plan & current_plan,
+                                                NeighborhoodType ls_neighborhood,
+                                                LSTarget ls_target) = 0;
 
   virtual double applyMove (Plan & current_plan, NeighborMove move) = 0;
 
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
-                              int ls_type, NeighborhoodType ls_neighborhood, int ls_target) {
+                              LSType ls_type, NeighborhoodType ls_neighborhood,
+                              LSTarget ls_target) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double current_eval = current_plan.getEvaluation();
@@ -107,8 +122,9 @@ public:
 
      //Start time
      std::clock_t time_end;
-     time_begin=clock();
- 
+     time_begin = clock();
+
+     cout << "Starting iterated local search " << endl;
      while (true) {
        // Apply local search
        aux_eval = localSearch(current_plan, max_time, max_evaluations,  
@@ -119,12 +135,13 @@ public:
        }
 
        current_iteration++;
+       cout << "  iteration: " << current_iteration << " ; eval: " << aux_eval << " ; best: " << current_eval << endl;
 
-      // Termination criterion
-      time_end = clock();
-      used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
-      if (max_time!=0 && used_time >= max_time) break;
-      if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
+       // Termination criterion
+       time_end = clock();
+       used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
+       if (max_time!=0 && used_time >= max_time) break;
+       if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
 
        //Perturbation
        perturbation(current_plan);
@@ -134,8 +151,8 @@ public:
   }
 
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
-                      int& used_evaluations, int ls_type, NeighborhoodType ls_neighborhood, 
-                      int ls_target) {
+                      int& used_evaluations, LSType ls_type, NeighborhoodType ls_neighborhood, 
+                      LSTarget ls_target) {
     bool improvement = true;
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();    
@@ -144,18 +161,22 @@ public:
     std::clock_t time_end;
     double used_time;
 
+    cout << "Starting local search" << endl;
+
     while (improvement) {
       improvement = false;
       //TODO: Hacer enum para ls_neighborhood, ls_target, ls_type
       neighborhood = getNeighborhood(current_plan, ls_neighborhood, ls_target); //TODO: implementar
+      cout << " Neighborhood size: " << neighborhood.size() << endl;
       for (NeighborMove move:neighborhood) {
         applyMove(current_plan, move);  //TODO: implementar
         // Check if there is an improvement
-        if (current_plan.getEvaluation()< current_eval) {
-          improvement=true;
-          if (ls_type == 1) {
+        if (current_plan.getEvaluation() < current_eval) {
+            cout << "  Improvement" << current_plan.getEvaluation()<< endl;
+          improvement = true;
+          if (ls_type == LSType::first) {
             // First improvement  
-            current_eval =current_plan.getEvaluation();
+            current_eval = current_plan.getEvaluation();
             break;
           } else {
             // Best improvement
@@ -171,13 +192,13 @@ public:
 
         // Termination criterion
         time_end = clock();
-        used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+        used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
         if (max_time!=0 && used_time >= max_time) break;
         if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
       }
 
       // Apply best improvement move    
-      if (ls_type==2 && improvement) {
+      if (ls_type == LSType::best && improvement) {
         applyMove(current_plan, best_move);
         current_eval = current_plan.getEvaluation();
         used_evaluations++;
@@ -190,7 +211,7 @@ public:
       if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
     }
     return(current_eval);
-  }
+  };
 
 
   /* Targeted version of the local search where a beamlert is identified as 

@@ -130,17 +130,10 @@ int main(int argc, char** argv){
 
   string path=".";
 
-  // Tabu list <<beam,station*>, open> for intensity
-  //vector<pair<pair<int,Station*>,  bool > > tabu_list_inten;
-  // Tabu list <<beam,station*>, <aperture,open>> for aperture
-  //vector<pair<pair<int,Station*>, pair<int, bool> > > tabu_list_aper;
-  //int tabusize=10;
-
-
-	args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********",
+  args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********",
                              "Example.\n./AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4 --step-intensity=1 --file-dep=data/Equidistantes/equidist00.txt --file-coord=data/Equidistantes/equidist-coord.txt");
 
-	args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+  args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
   // Representation ls seleccion parameter
   args::ValueFlag<string> _strategy (parser, "string", 
                                      "Strategy  (dao_ls|ibo_ls)", 
@@ -177,7 +170,7 @@ int main(int argc, char** argv){
   args::ValueFlag<int>    _bsize    (parser, "int", 
                                     "Number of considered beamlets for selection (" + 
                                      to_string(bsize)+")", {"bsize"});
-	args::ValueFlag<int>    _vsize    (parser, "int", 
+  args::ValueFlag<int>    _vsize    (parser, "int", 
                                     "Number of considered worst voxels (" + 
                                      to_string(vsize)+")", {"vsize"});
   
@@ -393,11 +386,12 @@ int main(int argc, char** argv){
   // Create colimator object and volumes
   Collimator collimator (file2, get_angles(file, 5));
   vector<Volume> volumes = createVolumes (file, collimator);
-
+  
   // Create an initial plan
   Plan P (w, Zmin, Zmax, collimator, volumes, 
          max_apertures, max_intensity, initial_intensity, step_intensity, 
          open_apertures, initial_setup,file3);
+
   double best_eval = P.getEvaluation();
 
   cout << "##" << endl 
@@ -474,12 +468,14 @@ int main(int argc, char** argv){
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, search_intensity, search_aperture,
                           prob_intensity, step_intensity, initial_temperature,
-                          alphaT, do_perturbate, perturbation, acceptance, ls_type);
-    ils->iteratedLocalSearch(P, maxtime, maxeval,1,NeighborhoodType::mixed,1 );
+                          alphaT, do_perturbate, perturbation, acceptance);
+    ils->iteratedLocalSearch(P, maxtime, maxeval,LSType::first,NeighborhoodType::aperture,
+                             LSTarget::none);
   }else if(strategy=="ibo_ls"){
 
-    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
-    ils->iteratedLocalSearch(P, maxtime, maxeval,1,NeighborhoodType::mixed,1 );
+//    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
+//    ils->iteratedLocalSearch(P, maxtime, maxeval,LSType::first,NeighborhoodType::mixed,
+      //                           LSTarget::none);
 
 
     

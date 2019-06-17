@@ -9,9 +9,10 @@
 
 namespace imrt {
 
-  Plan::Plan(EvaluationFunction &ev) : ev(ev), last_changed(NULL) {};
+  Plan::Plan (EvaluationFunction &ev) : ev(ev), last_changed(NULL) {};
 
-  Plan::Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax): ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {
+  Plan::Plan (EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax):
+             ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {
     last_changed=NULL;
   }
 
@@ -22,15 +23,15 @@ namespace imrt {
 
     cout << "##Initilizing plan."<< endl;
 
-
     fstream* myfile=NULL;
     if(file) myfile=new fstream(file, std::ios_base::in);
 
     for (int i=0;i<collimator.getNbAngles();i++) {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures,
-                                     max_intensity, initial_intensity, step_intensity, open_apertures, setup, myfile);
+                                     max_intensity, initial_intensity, step_intensity, open_apertures,
+                                     setup, myfile);
       add_station(*station);
-      angle2station[collimator.getAngle(i)]=station;
+      angle2station[collimator.getAngle(i)] = station;
     }
     if(myfile){
     	myfile->close();
