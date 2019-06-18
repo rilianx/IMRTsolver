@@ -118,7 +118,7 @@ namespace imrt {
     ev.undo_last_eval(w,Zmin,Zmax);
   }
 
-  const list<Station*>& Plan::get_stations() const{
+  list<Station*>& Plan::get_stations(){
     return stations;
   }
 

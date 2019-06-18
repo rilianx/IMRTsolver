@@ -63,7 +63,7 @@ public:
 	// performed with eval or incrementalEval
 	double getEvaluation();
 
-	const list<Station*>& get_stations() const;
+	list<Station*>& get_stations();
 
 	void write_open_beamlets();
 

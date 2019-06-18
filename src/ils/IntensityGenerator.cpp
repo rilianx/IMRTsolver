@@ -10,6 +10,9 @@
 #include "Plan.h"
 #include "Station.h"
 
+/*
+./AS -s intgen --maxiter=200 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=0 --step-intensity=1 --file-dep=data/Equidistantes/equidist00.txt --file-coord=data/Equidistantes/equidist-coord.txt --alpha2=0.1
+ */
 
 namespace imrt {
 
@@ -38,6 +41,10 @@ void IntensityGenerator::generate(Plan& P, double alpha, int max_intensity){
   		cout << endl;
 
 		IntensityRepair(Pprime);
+
+		for(int i=0;i<5;i++)
+	  		Pprime.printIntensity(i);
+	  		cout << endl;
 
 }
 
@@ -72,6 +79,9 @@ void IntensityGenerator::IntensityRepair(Plan& P){
 			}
 		}
 	}
+
+
+
 }
 //search for the worst gap and changeit
 void IntensityGenerator::changeworst(double* intensities,list<Gap> gaps){

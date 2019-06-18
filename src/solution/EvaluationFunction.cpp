@@ -45,7 +45,7 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator
 
 EvaluationFunction::~EvaluationFunction() { }
 
-void EvaluationFunction::generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
+void EvaluationFunction::generate_linear_system(Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax){
 	bool flag=false;
 	for(int o=0; o<nb_organs; o++){
 		double pen=0.0;
@@ -89,7 +89,7 @@ void EvaluationFunction::generate_linear_system(const Plan& p, vector<double>& w
 }
 
 
-void EvaluationFunction::generate_Z(const Plan& p){
+void EvaluationFunction::generate_Z(Plan& p){
 	const list<Station*>& stations=p.get_stations();
 
 	for(int o=0; o<nb_organs; o++)
@@ -111,7 +111,7 @@ void EvaluationFunction::generate_Z(const Plan& p){
 }
 
 
-double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>& Zmin,
+double EvaluationFunction::eval(Plan& p, vector<double>& w, vector<double>& Zmin,
 	vector<double>& Zmax, bool generateZ){
 	voxels.clear();
 	if(generateZ) generate_Z(p);

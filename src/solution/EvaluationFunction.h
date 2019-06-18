@@ -98,10 +98,10 @@ public:
 	virtual ~EvaluationFunction();
 
 	// Generate the dose distribution matrices Z for each organ
-	void generate_Z(const Plan& p);
+	void generate_Z(Plan& p);
 
 	// Eval the cost F based on the dose deposition matrix Z
-	double eval(const Plan& p, vector<double>& w, vector<double>& Zmin,
+	double eval(Plan& p, vector<double>& w, vector<double>& Zmin,
     vector<double>& Zmax, bool generateZ=true);
 
 	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
@@ -147,7 +147,7 @@ public:
   //returns a map of beamlets sorted by their impact in F (derivative, (station, beamlet))
 	multimap < double, pair<Station*, int>, MagnitudeCompare > get_sorted_beamlets(Plan& p);
 
-	void generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
+	void generate_linear_system(Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
 
 	//update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
 	//if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
