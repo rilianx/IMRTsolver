@@ -28,11 +28,8 @@ public:
      acceptance: type of acceptnace criterion to be used
      ls_type: type of local search to be initialized
   */
-  ApertureILS(int bsize, int vsize, bool search_intensity, 
-              bool search_aperture, double prob_intensity, 
-              int step_intensity, double initial_temperature, 
-              double alpha, bool do_perturbate, 
-              int perturbation_size, int acceptance);
+  ApertureILS(int bsize, int vsize, double _prob_intensity, 
+              int _step_intensity);
 
   ApertureILS(const ApertureILS & ils);
   
@@ -45,15 +42,11 @@ public:
   double openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P);
   
   double closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval,  Plan& P);
-  
-  bool acceptanceCriterion(double new_eval, double prev_eval);
-  
+    
   double iLocalSearch(Plan& P, double max_time, bool verbose=true);
   double aLocalSearch(Plan& P, double max_time, bool verbose=true);
 
   double simpleLocalSearch(Plan& P, bool verbose=true);
-  
-  void updateTemperature();
   
   double perturbation (Plan& P);
   
@@ -70,23 +63,16 @@ public:
   double applyMove (Plan &P, NeighborMove move);
 
   int getStepIntensity ();
-  
-  static const int FIRST_IMPROVEMENT=0;
-  static const int BEST_IMPROVEMENT=1;
+
 private:
   bool search_intensity;
   bool search_aperture;
   double prob_intensity;
   int step_intensity;
   
-  double temperature;
-  double initial_temperature;
-  double max_temperature;
-  double alpha;
   int perturbation_size;  
   bool do_perturbate;
 
-  list<pair<Station*, int>> tabu;
 };
 
 }

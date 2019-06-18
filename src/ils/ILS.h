@@ -55,19 +55,17 @@ private:
 public:
   int bsize;
   int vsize;
-  int acceptance;
 
   static const int ACCEPT_NONE = 0;
   static const int ACCEPT_SA = 1;
 
   ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize),
-                                  vsize(vsize), acceptance(acceptance){
+                                  vsize(vsize){
   };
 
   ILS(const ILS & ils ){
     bsize=ils.bsize;
     vsize=ils.vsize;
-    acceptance=ils.acceptance;
   };
 
   virtual ~ILS() { };
@@ -82,8 +80,6 @@ public:
     return 0.0;
   };
   
-  virtual bool acceptanceCriterion(double new_eval, double prev_eval) = 0;
-
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
   };

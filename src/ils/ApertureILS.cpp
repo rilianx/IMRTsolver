@@ -11,48 +11,24 @@ namespace imrt {
 
 /* bsize: number of beamlets to be used in the target beamlet heuristic
    vsize: number of voxels to be considered when selecting the targeted beamlets
-   search_intensity: perform local search over intensity
-   search_aperture: perform local search over aperture
    prob_intensity: probability to perform local search over intensity
    step_intensity: step size for intensity
-   initial_temperature: initial temperature for acceptance criterion
-   alpha: alpha value for acceptance criterion
    do_perturbate: boolean variable that indicates if perturbation must be performed
    acceptance: type of acceptnace criterion to be used
 */
-ApertureILS::ApertureILS(int bsize, int vsize, bool search_intensity, 
-                         bool search_aperture, double prob_intensity, 
-                         int step_intensity , double initial_temperature,  
-                         double alpha, bool do_perturbate, 
-                         int perturbation_size, int acceptance=0): 
-                         ILS(bsize, vsize, acceptance), 
-                         search_intensity(search_intensity), 
-                         search_aperture(search_aperture), 
-                         prob_intensity(prob_intensity), 
-                         step_intensity(step_intensity) , 
-                         initial_temperature(initial_temperature), 
-                         alpha(alpha), do_perturbate(do_perturbate), 
-                         perturbation_size(perturbation_size) {
-  temperature = initial_temperature;
+ApertureILS::ApertureILS(int bsize, int vsize, double _prob_intensity, 
+                         int _step_intensity): 
+                         ILS(bsize, vsize, 0),
+                         prob_intensity(_prob_intensity),
+                         step_intensity(_step_intensity) {
 };
 
 ApertureILS::ApertureILS(const ApertureILS & ils): ILS(ils) {
-  search_intensity=ils.search_intensity;
-  search_aperture=ils.search_aperture;
   prob_intensity=ils.prob_intensity;
   step_intensity=ils.step_intensity;
-  initial_temperature=ils.initial_temperature;
-  alpha=ils.alpha;
-  do_perturbate=ils.do_perturbate;
-  perturbation_size=ils.perturbation_size;
-  temperature=ils.temperature;
 };
 
 bool ApertureILS::isBeamletModifiable (int beamlet, Station* station, bool open_flag) {
-  for (auto it=tabu.begin(); it!=tabu.end();it++){
-    if (it->first->getAngle() == station->getAngle() && it->second == beamlet) 
-      return(false);
-  }
   
   if (!station->isActiveBeamlet(beamlet)) return(false);
   if (!open_flag) {
@@ -297,26 +273,8 @@ double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, dou
   
   }*/
 
-bool ApertureILS::acceptanceCriterion(double new_eval, double prev_eval) {
-  if (acceptance==0){
-    //Only best solutions
-    if (new_eval < prev_eval) return(true);
-     return(false);
-  } else if (acceptance==1) {
-    //SA criterion
-    double p = exp((double)-(new_eval-prev_eval)/temperature);
-    double r = ((double)rand() / (RAND_MAX));
-    if (r <= p){
-      cout << "  Accept worst. temperature: "<< temperature<<endl;
-      return(true);
-    }
-    return(false);
-  }
-}
 
-void ApertureILS::updateTemperature(){
-  temperature=alpha*temperature;
-}
+
 
 /* Local search procedure used in the HM2019*/
 /*double ApertureILS::localSearch(pair<bool, pair<Station*, int>> target_beam, Plan& P) {
@@ -371,7 +329,7 @@ double ApertureILS::perturbation(Plan& P) {
   
   cout << "##  Perturbation: " ;
   if (perturbation_size==0) cout << "none";   
-  else tabu.clear();
+  //else tabu.clear();
   for (int i=0; i<perturbation_size; i++) {
     list<Station*>::iterator s=stations.begin();
     std::advance(s,rand()%stations.size());
@@ -602,14 +560,14 @@ double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
     if (action < 0) {
       // Reduce intensity
       diff = s->modifyIntensityAperture(aperture, 
-                                           -step_intensity);
+                                        -step_intensity);
       if (diff.size() > 0) {
         aux_eval = current_plan.incremental_eval(*s, diff);
       }
     } else {
       // Increase intensity
       diff = s->modifyIntensityAperture(aperture, 
-                                           step_intensity);
+                                        step_intensity);
       if (diff.size() > 0) {
         aux_eval = current_plan.incremental_eval(*s, diff);
       }

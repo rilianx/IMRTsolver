@@ -11,13 +11,11 @@ namespace imrt {
 
 
   Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures,
-                   int max_intensity, int initial_intensity, int step_intensity, int open_apertures,
-                   int setup, fstream* myfile):
+                   int max_intensity, int initial_intensity, int step_intensity, int setup, fstream* myfile):
 		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
 		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
                 step_intensity(step_intensity) {
     min_intensity=1;
-    if(open_apertures==-1) open_apertures=max_apertures;
 
     n_volumes=volumes.size();
     for (int i=0; i<volumes.size(); i++)
@@ -34,7 +32,7 @@ namespace imrt {
       }
     }
     // Iniatialize apertures (alternative representation)
-    initializeStation(setup, open_apertures);
+    initializeStation(setup);
     if(myfile) {
     	for (int i=0; i<collimator.getXdim(); i++) {
     	   for (int j=0; j<collimator.getYdim(); j++) {
@@ -130,7 +128,7 @@ namespace imrt {
   //  printIntensity();
   }
 
-  void Station::initializeStation(int type, int open_apertures) {
+  void Station::initializeStation(int type) {
     // Generating aperture patterns
 
     if (type==OPEN_MAX_SETUP || type==OPEN_MIN_SETUP) {
@@ -168,20 +166,6 @@ namespace imrt {
         A[i]=aux;
       }
     } 
-    /*else {
-      //Keeping this for backwards compatibility
-      for (int i=0; i<max_apertures; i++) {
-        vector<pair<int,int> > aux;
-        for (int j=0; j<collimator.getXdim(); j++) {
-          if (open_apertures>0)
-            aux.push_back(collimator.getActiveRange(j,angle));
-          else
-            aux.push_back(make_pair(-1,-1));
-        }
-        open_apertures--;
-        A[i]=aux;
-      }
-    }*/
 
     // Generating intensity
     if (type==OPEN_MIN_SETUP || type==CLOSED_MIN_SETUP) {

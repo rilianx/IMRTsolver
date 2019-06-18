@@ -86,7 +86,6 @@ int main(int argc, char** argv){
   int maxiter=5000;
   int maxtime=0;
   int max_apertures=5;
-  int open_apertures=-1;
   double alpha=1.0;
   double beta=1.0;
   double maxdelta=5.0;
@@ -140,7 +139,6 @@ int main(int argc, char** argv){
 
   args::Group dao_ls (parser, "Direct aperture local search:", args::Group::Validators::DontCare);
   args::ValueFlag<int> _max_apertures(parser, "int", "Initial intensity for the station  ("+to_string(max_apertures)+")", {"max-apertures"});
-  args::ValueFlag<int> _open_apertures(parser, "int", "Number of initialized open apertures (-1: all, default:"+to_string(open_apertures)+")", {"open-apertures"});
   args::ValueFlag<int> _initial_intensity(parser, "int", "Initial value aperture intensity  ("+to_string(initial_intensity)+")", {"initial-intensity"});
   args::ValueFlag<int> _max_intensity(parser, "int", "Max value aperture intensity  ("+to_string(max_intensity)+")", {"max-intensity"});
   args::ValueFlag<int> _step_intensity(parser, "int", "Step size for aperture intensity  ("+to_string(step_intensity)+")", {"step-intensity"});
@@ -203,7 +201,6 @@ int main(int argc, char** argv){
   if(_maxiter) maxiter=_maxiter.Get();
   if(_maxtime) maxtime=_maxtime.Get();
   if(_max_apertures) max_apertures=_max_apertures.Get();
-  if(_open_apertures) open_apertures=_open_apertures.Get();
   if(_seed) seed=_seed.Get();
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
   if(_max_intensity) max_intensity=_max_intensity.Get();
@@ -262,7 +259,7 @@ int main(int argc, char** argv){
   Collimator collimator(file2, get_angles(file, 5));
   vector<Volume> volumes= createVolumes (file, collimator);
 
-  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity, open_apertures, initial_setup);
+  Plan P(w, Zmin, Zmax, collimator, volumes, max_apertures, max_intensity, initial_intensity, step_intensity, initial_setup);
 
   P.writeIntensities("data/Equidistantes/optimalSolutions.txt",n);
 

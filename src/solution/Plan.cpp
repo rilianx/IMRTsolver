@@ -18,7 +18,7 @@ namespace imrt {
 
   Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator,
              vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity,
-             int step_intensity, int open_apertures, int setup, char* file) :
+             int step_intensity, int setup, char* file) :
              ev(EvaluationFunction::getInstance(volumes, collimator)), w(w), Zmin(Zmin), Zmax(Zmax) {
 
     cout << "##Initilizing plan."<< endl;
@@ -28,7 +28,7 @@ namespace imrt {
 
     for (int i=0;i<collimator.getNbAngles();i++) {
       Station* station = new Station(collimator, volumes, collimator.getAngle(i), max_apertures,
-                                     max_intensity, initial_intensity, step_intensity, open_apertures,
+                                     max_intensity, initial_intensity, step_intensity,
                                      setup, myfile);
       add_station(*station);
       angle2station[collimator.getAngle(i)] = station;
