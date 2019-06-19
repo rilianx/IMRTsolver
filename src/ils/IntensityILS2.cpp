@@ -9,8 +9,6 @@
 
 namespace imrt {
 
-
-
 /*
 struct NeighborMove {
   // Type
@@ -35,9 +33,12 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   for(auto s:stations){
 
 	  for(pair <int, int> intensity : s->int2nb){
-		  NeighborMove move = {2,k,intensity.first,+1,0};
-		  moves.push_back(move);
-		  move = {2,k,intensity.first,-1,0};
+		  if (intensity.first < s->getMaxIntensity()){
+			  NeighborMove move = {2,k,intensity.first,+1,0};
+			  moves.push_back(move);
+		  }
+
+		  NeighborMove move = {2,k,intensity.first,-1,0};
 		  moves.push_back(move);
 	  }
 	  k++;
@@ -75,7 +76,6 @@ vector < NeighborMove > IntensityILS2::getShuffledBeamletNeighbors(Plan &P){
    std::random_shuffle ( moves.begin(), moves.end(), myrandom);
    return moves;
  }
-
 
 
 

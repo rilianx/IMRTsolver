@@ -378,7 +378,7 @@ namespace imrt {
             //next available intensity
             if(I(i,j)==0) return int2nb.begin()->first;
             else{
-              map< int, int >::iterator it = int2nb.find(I(i,j)); it++;
+              map< int, int >::iterator it = int2nb.find(I(i,j)+0.5); it++;
               if(it!=int2nb.end())
                 return it->first;
             }
@@ -391,7 +391,7 @@ namespace imrt {
     if(j==0 || j==I.nb_cols() ||
         I(i,j-1)<I(i,j) || I(i,j+1)<I(i,j) ){
             //previous available intensity
-            map< int, int >::iterator it = int2nb.find(I(i,j));
+            map< int, int >::iterator it = int2nb.find(I(i,j)+0.5);
             if(it!=int2nb.begin()){
               it--; return it->first;
             }else
