@@ -59,7 +59,7 @@ public:
   static const int ACCEPT_NONE = 0;
   static const int ACCEPT_SA = 1;
 
-  ILS(int bsize, int vsize, int acceptance=ACCEPT_NONE): bsize(bsize),
+  ILS(int bsize=1, int vsize=10, int acceptance=ACCEPT_NONE): bsize(bsize),
                                   vsize(vsize){
   };
 
