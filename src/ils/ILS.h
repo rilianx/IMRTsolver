@@ -100,8 +100,6 @@ public:
 	  p.undoLast();
   }
 
-  virtual void updateTemperature() {};
-
   virtual vector <NeighborMove> getNeighborhood(Plan & current_plan,
                                                 NeighborhoodType ls_neighborhood,
                                                 LSTarget ls_target) = 0;
@@ -132,7 +130,8 @@ public:
        }
 
        current_iteration++;
-       cout << "  iteration: " << current_iteration << " ; eval: " << aux_eval << " ; best: " << current_eval << endl;
+       cout << "  iteration: " << current_iteration << " ; eval: " << 
+               aux_eval << " ; best: " << current_eval << endl;
 
        // Termination criterion
        time_end = clock();
@@ -147,7 +146,8 @@ public:
      return(current_eval);
   }
 
-  NeighborhoodType selectNeighborhood (NeighborhoodType current, NeighborhoodType user, 
+  NeighborhoodType selectNeighborhood (NeighborhoodType current, 
+                                       NeighborhoodType user, 
                                        bool previous_checked) {
     
      if (user == NeighborhoodType::intensity || 
@@ -179,7 +179,8 @@ public:
   };
 
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
-                      int& used_evaluations, LSType ls_type, NeighborhoodType ls_neighborhood, 
+                      int& used_evaluations, LSType ls_type, 
+                      NeighborhoodType ls_neighborhood, 
                       LSTarget ls_target) {
     bool improvement = true;
     vector <NeighborMove> neighborhood;
@@ -217,6 +218,12 @@ public:
         //Generate the solution in the neighborhood
         applyMove(current_plan, move);  //TODO: ignacio implementame!.
 
+    cout << endl;
+  	for(int i=0;i<5;i++)
+  		current_plan.printIntensity(i);
+  	cout << endl;
+   // getchar();
+
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
           cout << "  Neighbor: " << n_neighbor << "; Improvement: " << 
@@ -225,6 +232,7 @@ public:
           if (ls_type == LSType::first) {
             // First improvement  
             current_eval = current_plan.getEvaluation();
+            current_plan.clearLast();
             break;
           } else {
             // Best improvement
@@ -252,6 +260,7 @@ public:
       if (ls_type == LSType::best && improvement) {
         applyMove(current_plan, best_move);
         current_eval = current_plan.getEvaluation();
+        current_plan.clearLast();
         used_evaluations++;
       }     
 

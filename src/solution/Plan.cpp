@@ -106,12 +106,87 @@ namespace imrt {
     return(evaluation_fx);
   }
 
+  double Plan::openBeamlet(int station, int aperture, int beamlet) {
+    Station * s = get_station(station);
+    double aux_eval=0;
+    list<pair<int, double> > diff;
+
+    if (get_delta_eval(*s, beamlet, s->getApertureIntensity(aperture)) > evaluation_fx){
+			clearLast();
+      return(evaluation_fx);
+    }
+
+    diff = s->openBeamlet(beamlet, aperture);
+    if(diff.size() <1) {
+      clearLast();
+      return(evaluation_fx);
+    }    
+    return(incremental_eval(*s, diff));
+  };
+
+  double Plan::closeBeamlet(int station, int aperture, int beamlet, int side) {
+    Station * s = get_station(station);
+    list<pair<int, double> > diff;
+    double l_eval, r_eval;
+
+    if (get_delta_eval(*s, beamlet, -(s)->getApertureIntensity(aperture)) > evaluation_fx){
+      clearLast();
+      return(evaluation_fx);
+    }
+
+    if (side == 1) {
+      diff = s->closeBeamlet(beamlet, aperture, true);
+      if (diff.size() > 0) {
+        incremental_eval(*s, diff);
+      } else {
+        clearLast();
+      }
+    } else if (side==2) {
+      diff = s->closeBeamlet(beamlet, aperture, false);
+      if (diff.size() > 0) {
+        incremental_eval(*s, diff);
+      } else {
+        clearLast();
+      }
+    } else {
+      cout << "ERROR!! you must specify a  valid side for closing a beamlet!" << endl;
+      cout << "side " << side << endl;
+      getchar();
+    }
+    return(evaluation_fx);
+  };
+
+  double Plan::modifyIntensityAperture (int station, int aperture, int delta) {
+    Station * s = get_station(station);
+    list<pair<int, double> > diff;
+
+    diff = s->modifyIntensityAperture(aperture, delta);
+    if (diff.size() > 0) {
+      incremental_eval(*s, diff);
+    } else {
+      clearLast();
+    }
+    return(evaluation_fx);
+  }
+
   void Plan::undoLast() {
     if (last_changed==NULL) return;
+
     list< pair< int, double > > diff = last_changed->undoLast();
     if (diff.size()>0)
       incremental_eval (*last_changed, diff);
-  }
+
+    last_changed->clearHistory();
+    last_changed = NULL;
+    last_diff.clear();
+  };
+
+  void Plan::clearLast() {
+		if (last_changed==NULL) return;
+    last_changed->clearHistory();
+    last_changed = NULL;
+    last_diff.clear();
+  };
 
   //Lepi's version
   void Plan::undoLast2() {

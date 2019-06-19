@@ -90,7 +90,8 @@ double ApertureILS::closeBeamlet(int beamlet, int side, int aperture,
   list <pair<int, double> > diff;
   
   if (P.get_delta_eval(station, beamlet, -station.getApertureIntensity(aperture)) > c_eval){
-    station.clearHistory();
+    P.clearLast();
+    //station.clearHistory();
     return(c_eval);
   }
   
@@ -98,11 +99,15 @@ double ApertureILS::closeBeamlet(int beamlet, int side, int aperture,
     diff = station.closeBeamlet(beamlet, aperture, true);
     if (diff.size() > 0) {
       c_eval = P.incremental_eval(station, diff);
-    } 
+    } else {
+      P.clearLast();
+    }
   } else if (side==2) {
     diff = station.closeBeamlet(beamlet, aperture, false);
     if (diff.size() > 0) {
       c_eval = P.incremental_eval(station, diff);
+    } else {
+      P.clearLast();
     }
   } else {
     l_eval = c_eval;
@@ -111,6 +116,8 @@ double ApertureILS::closeBeamlet(int beamlet, int side, int aperture,
       l_eval = P.incremental_eval(station, diff);
       diff = station.undoLast();
       aux_eval = P.incremental_eval(station, diff);
+    } else {
+      P.clearLast();
     }
     r_eval = c_eval;
     diff = station.closeBeamlet(beamlet, aperture, false);
@@ -118,6 +125,8 @@ double ApertureILS::closeBeamlet(int beamlet, int side, int aperture,
       r_eval = P.incremental_eval(station, diff);
       diff = station.undoLast();
       aux_eval = P.incremental_eval(station, diff);
+    } else {
+      P.clearLast();
     }
     
     if (r_eval > l_eval){
@@ -205,12 +214,16 @@ double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, dou
   list<pair<int, double> > diff;
   
   if (P.get_delta_eval(station, beamlet, station.getApertureIntensity(aperture)) > c_eval){
-    station.clearHistory();
+    P.clearLast();
+    //station.clearHistory();
     return(c_eval);
   }
 
   diff = station.openBeamlet(beamlet, aperture);
-  if(diff.size() <1) return(c_eval);
+  if(diff.size() <1) {
+    P.clearLast();
+    return(c_eval);
+  }
   c_eval = P.incremental_eval(station, diff);
 
   return(c_eval);
@@ -416,18 +429,33 @@ vector < NeighborMove > ApertureILS::getShuffledApertureNeighbors(Plan &P){
         //One pair (k) (row) for opening aperture
         pattern = (*st)->getApertureShape(a, k);
         active = (*st)->collimator.getActiveRange(k, (*st)->getAngle());
-        if (active.first == -1) continue;
-        beamlet = (*st)->getBeamIndex(make_pair(k,pattern.first));
-        if((*st)->isOpenBeamlet(beamlet, a))
-          a_list.push_back({2,s,a,-1,beamlet});
-        else 
-          a_list.push_back({2,s,a,1,beamlet});          
 
-        beamlet = (*st)->getBeamIndex(make_pair(k,pattern.second));
-        if((*st)->isOpenBeamlet(beamlet, a))
-          a_list.push_back({2,s,a,-2,beamlet});
-        else 
-          a_list.push_back({2,s,a,1,beamlet});
+        // this row is not active for this station
+        if (active.first == -1) continue;
+        
+        if (pattern.first == -1) {
+          // all beamlets are closed in this row so we test 
+          // opening all beamlets
+          for (int i=active.first; i<=active.second; i++){
+            beamlet = (*st)->getBeamIndex(make_pair(k,i));
+            a_list.push_back({2,s,a,1,beamlet});
+          }
+        } else {
+          // open slid, try closing or opening
+          beamlet = (*st)->getBeamIndex(make_pair(k,pattern.first));
+          if((*st)->isOpenBeamlet(beamlet, a))
+            a_list.push_back({2,s,a,-1,beamlet});
+          else 
+            a_list.push_back({2,s,a,1,beamlet});          
+
+          if (pattern.first != pattern.second) {
+            beamlet = (*st)->getBeamIndex(make_pair(k,pattern.second));
+            if((*st)->isOpenBeamlet(beamlet, a))
+              a_list.push_back({2,s,a,-2,beamlet});
+            else 
+              a_list.push_back({2,s,a,1,beamlet});
+          }
+        }
       }
     }
     std::advance(st,1);
@@ -462,19 +490,32 @@ vector < NeighborMove > ApertureILS::getOrderedApertureNeighbors(Plan &P){
         //One pair (k) (row) for opening aperture
         pattern = (*st)->getApertureShape(a, k);
         active = (*st)->collimator.getActiveRange(k, (*st)->getAngle());
+ 
+        // this row is not active for this station
         if (active.first == -1) continue;
-        beamlet = (*st)->getBeamIndex(make_pair(k,pattern.first));
-        if((*st)->isOpenBeamlet(beamlet, a))
-          a_list.push_back({2,s,a,-1,beamlet});
-        else 
-          a_list.push_back({2,s,a,1,beamlet});
-        
-        if (pattern.first != pattern.second) {
-          beamlet = (*st)->getBeamIndex(make_pair(k,pattern.second));
+
+        if (pattern.first == -1) {
+          // all beamlets are closed in this row so we test 
+          // opening all beamlets
+          for (int i=active.first; i<=active.second; i++){
+            beamlet = (*st)->getBeamIndex(make_pair(k,i));
+            a_list.push_back({2,s,a,1,beamlet});
+          }
+        } else {
+          // open slid, try closing or opening
+          beamlet = (*st)->getBeamIndex(make_pair(k,pattern.first));
           if((*st)->isOpenBeamlet(beamlet, a))
-            a_list.push_back({2,s,a,-2,beamlet});
+            a_list.push_back({2,s,a,-1,beamlet});
           else 
             a_list.push_back({2,s,a,1,beamlet});
+        
+          if (pattern.first != pattern.second) {
+            beamlet = (*st)->getBeamIndex(make_pair(k,pattern.second));
+            if((*st)->isOpenBeamlet(beamlet, a))
+              a_list.push_back({2,s,a,-2,beamlet});
+            else 
+              a_list.push_back({2,s,a,1,beamlet});
+          }
         }
       }
     }
@@ -545,7 +586,7 @@ vector < NeighborMove> ApertureILS::getNeighborhood(Plan& current_plan,
   return(neighborList);
 }
 
-double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
+/*double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
   double current_eval = current_plan.getEvaluation();
   double aux_eval = current_plan.getEvaluation();
   list<pair<int, double> > diff;
@@ -555,6 +596,9 @@ double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
   int beamlet         = move.beamlet_id;
   int action          = move.action;
 
+  cout << "  move type " << move.type << ", s:" << 
+          move.station_id << ", a:" << aperture << 
+          ", b:" << beamlet << ", e:"<< action << endl;
   if (type == 1) {
     // Intensity move
     if (action < 0) {
@@ -563,6 +607,8 @@ double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
                                         -step_intensity);
       if (diff.size() > 0) {
         aux_eval = current_plan.incremental_eval(*s, diff);
+      } else {
+        current_plan.clearLast();
       }
     } else {
       // Increase intensity
@@ -570,14 +616,52 @@ double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
                                         step_intensity);
       if (diff.size() > 0) {
         aux_eval = current_plan.incremental_eval(*s, diff);
+      } else {
+        current_plan.clearLast();
       }
     }
   } else {
     // Aperture move
     if (action < 0) {
-      aux_eval = closeBeamlet(beamlet, beamlet, aperture, *s, current_eval, current_plan); 
+      aux_eval = closeBeamlet(beamlet, abs(action), aperture, *s, current_eval, current_plan); 
     } else {
       aux_eval = openBeamlet(beamlet, aperture, *s, current_eval, current_plan);
+    }
+  }
+  current_eval=aux_eval;
+  return(current_eval);
+            
+};*/
+
+double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
+  double current_eval = current_plan.getEvaluation();
+  double aux_eval = current_plan.getEvaluation();
+  list<pair<int, double> > diff;
+  int type            = move.type;
+  int station_id      = move.station_id;
+  Station * s         = current_plan.get_station(move.station_id);
+  int aperture        = move.aperture_id;
+  int beamlet         = move.beamlet_id;
+  int action          = move.action;
+
+  cout << "  move type " << move.type << ", s:" << 
+          move.station_id << ", a:" << aperture << 
+          ", b:" << beamlet << ", e:"<< action << endl;
+  if (type == 1) {
+    // Intensity move
+    if (action < 0) {
+      // Reduce intensity
+      aux_eval = current_plan.modifyIntensityAperture(station_id, aperture, -step_intensity);
+    } else {
+      // Increase intensity
+      aux_eval = current_plan.modifyIntensityAperture(station_id, aperture, step_intensity);
+    }
+  } else {
+    // Aperture move
+    if (action < 0) {
+      aux_eval = current_plan.closeBeamlet(station_id, aperture, beamlet, abs(action));
+    } else {
+      aux_eval = current_plan.openBeamlet(station_id, aperture, beamlet);
     }
   }
   current_eval=aux_eval;

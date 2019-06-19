@@ -62,7 +62,7 @@ private:
    vector<vector<pair<int,int> > > A;
 
 
-   void clearIntensity();
+   void clearIntensityMatrix();
 
    //These auxiliar variables to track last changes
    pair<pair<int,int>, pair<int,int>> last_mem;
@@ -159,7 +159,7 @@ public:
 
   // Function to generate the intensity matrix from the
   // defined apertures and the intensity vector
-  void generateIntensity();
+  void generateIntensityMatrix();
 
   void setUniformIntensity(double i);
 

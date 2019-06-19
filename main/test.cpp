@@ -80,7 +80,7 @@ int main(int argc, char** argv){
    Station* station;
    for(int i=0;i<5;i++){
 	   station = new Station(collimator,volumes, i*70, 4);
-	   station->generateIntensity();
+	   station->generateIntensityMatrix();
 	   station->printIntensity();
 	   stations[i]=station;
    }

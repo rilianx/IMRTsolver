@@ -90,14 +90,22 @@ public:
 	  return make_pair(it->first.second, it->second);
 	}
 
+  double openBeamlet(int station, int aperture, int beamlet);
+
+  double closeBeamlet(int station, int aperture, int beamlet, int side);
+
+  double modifyIntensityAperture (int station, int aperture, int delta);
+
 	void undoLast();
+
+  void clearLast();
 
 	//Lepi's version
 	void undoLast2();
 
-        void printSolution ();
+  void printSolution ();
 
-        void printIntensity(int station);
+  void printIntensity(int station);
 
 	void writeIntensities(string file, int n);
 
@@ -122,19 +130,19 @@ public:
 	  return ev.Zupdate(s->getAngle(), b, delta_intensity, return_if_unfeasible, Zmax);
   }
 
-  	//regresa al savepoint para Z
-  	void Zrollback(){
-  		ev.Zrollback();
-  	}
+  //regresa al savepoint para Z
+  void Zrollback(){
+  	ev.Zrollback();
+  }
 
-  	void Zsavepoint(){
-  		ev.Zsavepoint();
-  	}
+  void Zsavepoint(){
+  	ev.Zsavepoint();
+  }
 
-  	//almacena en sorted_beamlets los beamlet (station, b) ordenados segun v/c
-  	void get_vc_sorted_beamlets(Plan& p, multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_beamlets){
-  		ev.get_vc_sorted_beamlets(p, Zmin, Zmax, sorted_beamlets);
-  	}
+  //almacena en sorted_beamlets los beamlet (station, b) ordenados segun v/c
+  void get_vc_sorted_beamlets(Plan& p, multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_beamlets){
+  	ev.get_vc_sorted_beamlets(p, Zmin, Zmax, sorted_beamlets);
+  }
 
 
   map<int, Station*> angle2station;

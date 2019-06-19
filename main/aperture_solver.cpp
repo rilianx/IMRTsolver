@@ -464,6 +464,7 @@ int main(int argc, char** argv){
   for(int i=0;i<5;i++)
     P.printIntensity(i);
   cout << endl;
+  getchar();
 
   ILS* ils;
   if (strategy=="dao_ls") {
