@@ -391,7 +391,7 @@ namespace imrt {
             //next available intensity
             if(I(i,j)==0) return int2nb.begin()->first;
             else{
-              map< int, int >::iterator it = int2nb.find(I(i,j)); it++;
+              map< int, int >::iterator it = int2nb.find(I(i,j)+0.5); it++;
               if(it!=int2nb.end())
                 return it->first;
             }
@@ -404,13 +404,33 @@ namespace imrt {
     if(j==0 || j==I.nb_cols() ||
         I(i,j-1)<I(i,j) || I(i,j+1)<I(i,j) ){
             //previous available intensity
-            map< int, int >::iterator it = int2nb.find(I(i,j));
+            map< int, int >::iterator it = int2nb.find(I(i,j)+0.5);
             if(it!=int2nb.begin()){
               it--; return it->first;
             }else
               return 0.0;
      }
     return I(i,j);
+  }
+
+  list< pair< int, double > > Station::change_intensity(double intensity, double delta){
+	  list< pair< int, double > > diff;
+
+	  for (int i=0; i<collimator.getXdim();i++)
+		  for (int j=0; j<collimator.getYdim(); j++)
+			  if(I(i,j)==intensity)
+				  change_intensity(i, j, I(i,j)+delta, &diff);
+
+	  return diff;
+  }
+
+  void Station::diff_undo(list< pair< int, double > >& diff){
+	  for(pair< int, double > d:diff){
+		  int i = beam2pos[d.first].first;
+		  int j = beam2pos[d.first].second;
+		  change_intensity(i, j, I(i,j)-d.second);
+	  }
+	  diff.clear();
   }
 
   list< pair< int, double > > Station::increaseIntensity(int beam, double intensity, int ratio){

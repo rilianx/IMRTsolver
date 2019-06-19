@@ -201,6 +201,13 @@ public:
   //return the previous intensity level of the cell (if it is feasible)
   double intensityDown(int i, int j);
 
+  //increase (or decrease) the intesities equal to intensity to intensity+1
+  //return a list with the changes to be used by the incremental evaluation
+  list< pair< int, double > > change_intensity(double intensity, double delta);
+
+  //undo the changes in diff
+  void diff_undo(list< pair< int, double > >& diff);
+
   void reduce_apertures(list< pair< int, double > >& diff);
 
 

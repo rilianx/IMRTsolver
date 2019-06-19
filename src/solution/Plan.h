@@ -52,6 +52,8 @@ public:
 	double incremental_eval (Station& station, list< pair< int, double > >& diff);
 
 	double get_delta_eval (Station& s, int i, int j, double intensity, int n_voxels=999999){
+	if (intensity == 0) return getEvaluation();
+
     return ev.get_delta_eval(s.getAngle(),
     s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
   }
