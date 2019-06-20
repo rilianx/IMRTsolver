@@ -48,6 +48,13 @@ enum LSTarget {
   beamlet = 2  
 };
 
+// Basically this ones will be the same as the moves
+enum PerturbationType {
+  p_intensity = 1,
+  p_aperture = 2,
+  p_mixed = 3
+};
+
 class ILS {
 private:
   double max_no_improvement=100;
@@ -89,8 +96,38 @@ public:
     return P.getBestLSBeamlet(bsize, vsize);
   };
 
-  virtual double perturbation(Plan& P) {
-    return(P.getEvaluation());
+  double perturbation(Plan& current_plan, PerturbationType perturbation_type,
+                              int perturbation_size) {
+    vector <NeighborMove> neighborhood;
+    bool is_move = false;
+    NeighborhoodType neighborhood_type;
+    NeighborMove move;
+
+    // Move-based perturbation
+    if (perturbation_type == PerturbationType::p_intensity){
+      neighborhood_type = NeighborhoodType::intensity;
+      is_move = true;
+    } else if (perturbation_type == PerturbationType::p_aperture){
+      neighborhood_type = NeighborhoodType::aperture;
+      is_move = true;
+    } else if (perturbation_type == PerturbationType::p_mixed){
+      neighborhood_type = NeighborhoodType::mixed;
+      is_move = true;
+    }
+ 
+    if (is_move ){
+      neighborhood = getNeighborhood(current_plan, neighborhood_type, 
+                                     LSTarget::none);
+      cout << "Perturbation:" << endl; 
+      for (int i=0; i < perturbation_size; i++) {
+       cout << "  move type " << move.type << ", s:" << 
+               move.station_id << ", a:" << move.aperture_id << 
+               ", b:" << move.beamlet_id << ", action:"<< move.action << endl;
+        move = neighborhood[i];
+				applyMove(current_plan, move);
+      }
+    }
+    return(current_plan.getEvaluation());
   };
 
   virtual bool perturbate(int no_improvement, int iteration) {
@@ -109,7 +146,8 @@ public:
 
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
                               LSType ls_type, NeighborhoodType ls_neighborhood,
-                              LSTarget ls_target) {
+                              LSTarget ls_target, PerturbationType perturbation_type,
+                              int perturbation_size) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double current_eval = current_plan.getEvaluation();
@@ -141,7 +179,7 @@ public:
        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
 
        //Perturbation
-       perturbation(current_plan);
+       perturbation(current_plan, perturbation_type, perturbation_size);
 
      }
      return(current_eval);

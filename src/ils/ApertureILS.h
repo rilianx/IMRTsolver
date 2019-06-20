@@ -48,7 +48,7 @@ public:
 
   double simpleLocalSearch(Plan& P, bool verbose=true);
   
-  double perturbation (Plan& P);
+  //double perturbation (Plan& P);
   
   bool perturbate(int no_improvement, int iteration);
   

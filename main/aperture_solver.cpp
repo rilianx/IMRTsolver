@@ -115,7 +115,8 @@ int main(int argc, char** argv){
   int bsize = 20;
 
   // Perturbation
-  int perturbation = 2;
+  PerturbationType perturbation_type = PerturbationType::p_mixed;
+  int perturbation_size = 2;
 
   // Files
   string path = ".";
@@ -204,12 +205,12 @@ int main(int argc, char** argv){
   
   // Perturbation parameters
   args::Group perargs (parser, "Heuristic options:");
-  args::Flag do_perturbate                (perargs, "do_perturbate", 
-                                          string("Perturbation is triggered  after a ") + 
-                                          "selected criterion ", {"perturbate"});
-  args::ValueFlag<int> _perturbation      (perargs, "int", 
+  args::ValueFlag<string> _perturbation_type (perargs , "string", 
+                                      "Type of perturbation to be applied (intensity|aperture|mixed)", 
+                                      {"perturbation"});
+  args::ValueFlag<int> _perturbation_size (perargs, "int", 
                                           "Perturbation size  (" + 
-                                          to_string(perturbation)+")", 
+                                          to_string(perturbation_size)+")", 
                                           {"perturbation-size"});
 
   // Intensity matrix representation ls parameters 
@@ -346,8 +347,19 @@ int main(int argc, char** argv){
     neighborhood = NeighborhoodType::sequential_p;
   }
 
+  if (_perturbation_type) {
+    string nn = _perturbation_type.Get();
+    if (nn == "intensity")
+      perturbation_type= PerturbationType::p_intensity;
+    else if (nn == "aperture")
+      perturbation_type = PerturbationType::p_aperture;
+    else 
+      perturbation_type = PerturbationType::p_mixed;
+  } 
+  if (_perturbation_size) perturbation_size = _perturbation_size.Get();
+
   if (_targeted_search) targeted_search = true;
-  if (_perturbation) perturbation=_perturbation.Get();
+  
 
   // Archivos del problem
   if (_file) file=_file.Get();
@@ -439,8 +451,15 @@ int main(int argc, char** argv){
     cout << "##   Targeted search: yes"  << endl;
   else
     cout << "##   Targeted search: no"  << endl;
+  
+  if (perturbation_type == PerturbationType::p_intensity)
+    cout << "##   Perturbation: intensity " << endl;
+  else if (perturbation_type == PerturbationType::p_aperture)
+    cout << "##   Perturbation: aperture " << endl;
+  else if (perturbation_type == PerturbationType::p_mixed)
+    cout << "##   Perturbation: mixed " << endl;
 
-  cout << "##   Perturbation size: " << perturbation << endl;
+  cout << "##   Perturbation size: " << perturbation_size << endl;
 
   cout << "##" << endl << "## Colimator configuration: "<< endl;
   cout << "##   Stations: " << collimator.getNbAngles() << endl;
@@ -473,7 +492,7 @@ int main(int argc, char** argv){
   ILS* ils;
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-    ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none);
+    ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size);
   }else if(strategy=="ibo_ls"){
 
 //    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);

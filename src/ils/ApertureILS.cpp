@@ -334,16 +334,17 @@ double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, dou
   return(aux_eval);
 }
 */
-double ApertureILS::perturbation(Plan& P) {
+/*double ApertureILS::perturbation (Plan& P, PerturbationType perturbation_type,
+                              int perturbation_size) {
   list<Station*> stations = P.get_stations();
   int beamlet, aperture;
   list<pair<int,double>> diff;
   double aux_eval=P.getEvaluation();
   
   cout << "##  Perturbation: " ;
+  
   if (perturbation_size==0) cout << "none";   
-  //else tabu.clear();
-  for (int i=0; i<perturbation_size; i++) {
+  for (int i=0; i < perturbation_size; i++) {
     list<Station*>::iterator s=stations.begin();
     std::advance(s,rand()%stations.size());
     if (((double) rand() / (RAND_MAX)) > 0.3) {
@@ -379,7 +380,7 @@ double ApertureILS::perturbation(Plan& P) {
   //aux_eval = P.eval();
   cout << ", new eval: "<< aux_eval<< endl;
   return(aux_eval);
-}
+}*/
 
 bool ApertureILS::perturbate(int no_improvement, int iteration) {
   if (!do_perturbate) return(false);
