@@ -120,10 +120,11 @@ public:
                                      LSTarget::none);
       cout << "Perturbation:" << endl; 
       for (int i=0; i < perturbation_size; i++) {
+    	  move = neighborhood[i];
        cout << "  move type " << move.type << ", s:" << 
                move.station_id << ", a:" << move.aperture_id << 
                ", b:" << move.beamlet_id << ", action:"<< move.action << endl;
-        move = neighborhood[i];
+
 				applyMove(current_plan, move);
       }
     }
@@ -270,7 +271,6 @@ public:
                                                  improvement && !sequential_flag);
       improvement = false;
       //Get the moves in the neighborhood (this is possible because the moves are not that many!)
-      //TODO: ignacio implementame!.
       neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target); 
       n_neighbor = 1;//neighbor counter
 
@@ -284,7 +284,7 @@ public:
 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
-          cout << "  Neighbor: " << n_neighbor << "; Improvement: " << 
+          cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id << "," << move.aperture_id << "," << move.action << "); Improvement: " <<
                   current_plan.getEvaluation() << endl;
           improvement = true;
           if (ls_type == LSType::first) {

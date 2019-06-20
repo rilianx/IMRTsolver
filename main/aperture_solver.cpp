@@ -128,7 +128,7 @@ int main(int argc, char** argv){
   
 
   args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********",
-                             "Example.\n./AS -s ibo_ls --maxiter=400 --maxdelta=8 --maxratio=6 --alpha=0.999 --beta=0.999 --bsize=5 --vsize=20 --max-apertures=4 --seed=0 --open-apertures=1 --initial-intensity=4 --step-intensity=1 --file-dep=data/Equidistantes/equidist00.txt --file-coord=data/Equidistantes/equidist-coord.txt");
+                             "Example.\n../AS -s ibo_ls --maxeval=4000 --ls_sequential=aperture --setup=open_min --seed=2 --ls=first  --max-intensity=20");
 
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
   args::ValueFlag<int>    _seed     (parser, "int", "Seed  (" + 
@@ -500,15 +500,9 @@ int main(int argc, char** argv){
 //    ils->iteratedLocalSearch(P, maxtime, maxeval,LSType::first,NeighborhoodType::mixed,
       //                           LSTarget::none);
 
+
 	  ils = new IntensityILS2();
 	  ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size);
-
-    cout << endl;
-  	for(int i=0;i<5;i++)
-  		P.printIntensity(i);
-  	cout << endl;
-
-
 
     //for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     //cout << P.eval() << endl  ;

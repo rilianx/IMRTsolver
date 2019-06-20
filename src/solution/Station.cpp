@@ -386,7 +386,7 @@ namespace imrt {
 
   double Station::intensityUp(int i, int j){
     if(I(i,j)==-1) return I(i,j);
-    if(getMaxIntensityRow(i) <= I(i,j) ||
+    if(getMaxIntensityRow(i) == int(I(i,j)+0.5) ||
         (j-1>=0 && I(i,j-1)>I(i,j)) || (j+1<I.nb_cols() && I(i,j+1)>I(i,j)) ){
             //next available intensity
             if(I(i,j)==0) return int2nb.begin()->first;
@@ -395,21 +395,33 @@ namespace imrt {
               if(it!=int2nb.end())
                 return it->first;
             }
-     }
+    }
+
+    if(int2nb.size() < max_apertures && getMaxIntensityRow(i) == int(I(i,j)+0.5) && I(i,j)<getMaxIntensity())
+    	return I(i,j) + 1.0; // (getMaxIntensity()-I(i,j)+1)/2; // 1.0;
+
+
+
     return I(i,j);
   }
 
   double Station::intensityDown(int i, int j){
     if(I(i,j)<=0) return I(i,j);
-    if(j==0 || j==I.nb_cols() ||
+    if(j==0 || j==I.nb_cols()-1 ||
         I(i,j-1)<I(i,j) || I(i,j+1)<I(i,j) ){
             //previous available intensity
             map< int, int >::iterator it = int2nb.find(I(i,j)+0.5);
             if(it!=int2nb.begin()){
               it--; return it->first;
             }else
-              return 0.0;
+              return (int2nb.size() < max_apertures)? int2nb.begin()->first /2 : 0.0;
      }
+
+
+//    if(int2nb.size() < max_apertures && (j==0 || j==I.nb_cols()-1))
+  //  	return I(i,j) - 1.0;
+
+
     return I(i,j);
   }
 
@@ -467,13 +479,13 @@ namespace imrt {
 		  for (int j=0; j<collimator.getYdim(); j++){
 			  if(j>0 && I(i,j)<I(i,j-1)) increasing =false;
 
-			  if(!increasing && I(i,j)==aux_int && (j==collimator.getYdim()-1 || I(i,j+1)<aux_int)){
+			  if(!increasing && I(i,j)==aux_int && I(i,j-1)>aux_int){
 				  change_intensity(i, j, intensity, &diff);
 				  continue;
 			  }
 
 			  int k=0;
-			  while(I(i,j)==aux_int && j<collimator.getYdim()){
+			  while(increasing && I(i,j)==aux_int && j<collimator.getYdim()){
 				  k++; j++;
 			  }
 

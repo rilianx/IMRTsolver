@@ -19,6 +19,11 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   int k=0;
   for(auto s:stations){
 
+	  if(s->int2nb.size() < s->getNbApertures()){
+		  NeighborMove move = {2,k,0,+1,0};
+		  moves.push_back(move);
+	  }
+
 	  for(pair <int, int> intensity : s->int2nb){
 		  if (intensity.first < s->getMaxIntensity()){
 			  NeighborMove move = {2,k,intensity.first,+1,0};
@@ -30,7 +35,7 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 	  }
 
 	  //move for generating intermediate intensities
-	  if(s->int2nb.size() < s->getNbApertures()){
+	  /*if(s->int2nb.size() < s->getNbApertures()){
 		  int intensity_prev=0;
 		  s->int2nb.insert(make_pair(s->getMaxIntensity(),0));
 		  for(pair <int, int> intensity : s->int2nb){
@@ -43,7 +48,7 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 			  intensity_prev=intensity.first;
 		  }
 		  s->int2nb.erase(s->getMaxIntensity());
-	  }
+	  }*/
 
 	  k++;
   }
@@ -102,9 +107,9 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
   vector < NeighborMove> neighborList;
 
   if (ls_neighborhood == intensity) {
-    neighborList = getShuffledIntensityNeighbors(current_plan);
-  } else if (ls_neighborhood == aperture) {
     neighborList = getShuffledBeamletNeighbors(current_plan);
+  } else if (ls_neighborhood == aperture) {
+    neighborList = getShuffledIntensityNeighbors(current_plan);
   } else {
     //mixed
     neighborList = getShuffledNeighbors(current_plan);
@@ -154,8 +159,9 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
 
   	 double delta_eval = current_plan.get_delta_eval (*s, i, j, intensity-s->I(i,j));
      if(delta_eval < 0.001){
-	   s->change_intensity(i, j, intensity);
-	   current_eval = current_plan.incremental_eval(*s, i, j, intensity-s->I(i,j));
+	   s->change_intensity(i, j, intensity, &diff);
+	   current_eval = current_plan.incremental_eval(*s, diff); // current_plan.incremental_eval(*s, i, j, intensity-s->I(i,j));
+
      }
 
   } else {
@@ -168,7 +174,7 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
 
 
     }else{
-      if(s->int2nb.find(intens+0.5) != s->int2nb.end())
+      if(s->int2nb.find(intens+0.5) != s->int2nb.end() || intens==0.0)
     	  diff = s->change_intensity(intens, +1.0);
       else
     	  diff = s->generate_intensity(intens, true);
