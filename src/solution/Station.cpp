@@ -413,6 +413,85 @@ namespace imrt {
     return I(i,j);
   }
 
+  list< pair< int, double > > Station::generate_intensity(double intensity, bool increment){
+	  list< pair< int, double > > diff;
+	  if(int2nb.size()==max_apertures) return diff;
+
+	  map< int, int >::iterator it = int2nb.upper_bound(intensity+0.5);
+	  double aux_int;
+	  if(increment){
+		  if(it == int2nb.begin()) aux_int=0.0;
+		  else{it--; aux_int=it->first;}
+	  }else
+		  aux_int=it->first;
+
+
+	  //decrement
+	  if(!increment)
+	  for (int i=0; i<collimator.getXdim();i++){
+		  bool increasing = true;
+		  cout << "decrement input: " ;
+		  for (int j=0; j<collimator.getYdim(); j++)
+			  cout << I(i,j) << " " << endl;
+		  cout << endl;
+
+		  for (int j=0; j<collimator.getYdim(); j++){
+			  if(j>0 && I(i,j)<I(i,j-1)) increasing =false;
+
+			  if(increasing && I(i,j)==aux_int && (j==0 || I(i,j-1)!=aux_int))
+				  change_intensity(i, j, intensity, &diff);
+
+			  if(!increasing && I(i,j)==aux_int && (j==collimator.getYdim()-1 || I(i,j+1)!=aux_int))
+			  	  change_intensity(i, j, intensity, &diff);
+		  }
+
+		  cout << "decrement output: " ;
+		  for (int j=0; j<collimator.getYdim(); j++)
+			  cout << I(i,j) << " " << endl;
+		  cout << endl;
+	  }
+
+	  if(increment)
+	  for (int i=0; i<collimator.getXdim();i++){
+		  bool increasing = true;
+
+		  cout << "increment input: " ;
+		  for (int j=0; j<collimator.getYdim(); j++)
+			  cout << I(i,j) << " " << endl;
+		  cout << endl;
+
+		  for (int j=0; j<collimator.getYdim(); j++){
+			  if(j>0 && I(i,j)<I(i,j-1)) increasing =false;
+
+			  if(!increasing && (j==collimator.getYdim()-1 || I(i,j+1)<aux_int)){
+				  change_intensity(i, j, intensity, &diff);
+				  continue;
+			  }
+
+			  int k=0;
+			  while(I(i,j)==aux_int && j<collimator.getYdim()){
+				  k++; j++;
+			  }
+
+			  if(k>0){
+				  if(j<collimator.getYdim() && I(i,j)>aux_int) //increasing
+					  change_intensity(i, j-1, intensity, &diff);
+
+				  if(j==collimator.getYdim() || I(i,j)<aux_int)
+					  change_intensity(i, j-(k+1)/2, intensity, &diff);
+			  }
+		  }
+
+		  cout << "increment output: " ;
+		  for (int j=0; j<collimator.getYdim(); j++)
+			  cout << I(i,j) << " " << endl;
+		  cout << endl;
+
+	  }
+
+	  return diff;
+  }
+
   list< pair< int, double > > Station::change_intensity(double intensity, double delta){
 	  list< pair< int, double > > diff;
 

@@ -205,6 +205,10 @@ public:
   //return a list with the changes to be used by the incremental evaluation
   list< pair< int, double > > change_intensity(double intensity, double delta);
 
+  //Generate a new intensity by increasing (or decreasing) the most internal (resp. external) beamlets
+  //of the just below (resp. just above) intensity.
+  list< pair< int, double > > generate_intensity(double intensity, bool increase);
+
   //undo the changes in diff
   void diff_undo(list< pair< int, double > >& diff);
 

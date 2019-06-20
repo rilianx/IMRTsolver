@@ -9,20 +9,7 @@
 
 namespace imrt {
 
-/*
-struct NeighborMove {
-  // Type
-  // 1: beamlet
-  // 2: intensity
-  int type;
-  int station_id;
-  int aperture_id; // intensity that will be changed
-  // Action
-  //+1: increase
-  //-1: decrease
-  int action;
-  int beamlet_id;
-};*/
+
 
 
 vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
@@ -41,6 +28,23 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 		  NeighborMove move = {2,k,intensity.first,-1,0};
 		  moves.push_back(move);
 	  }
+
+	  //move for generating intermediate intensities
+	  if(s->int2nb.size() < s->getNbApertures()){
+		  int intensity_prev=0;
+		  s->int2nb.insert(make_pair(s->getMaxIntensity(),0));
+		  for(pair <int, int> intensity : s->int2nb){
+			  if(intensity.first - intensity_prev > 1){
+				  NeighborMove move = {2,k, int(intensity.first - intensity_prev)/2,+1,0};
+				  moves.push_back(move);
+			      move = {2,k, int(intensity.first - intensity_prev+0.6)/2,-1,0};
+			      moves.push_back(move);
+			  }
+			  intensity_prev=intensity.first;
+		  }
+		  s->int2nb.erase(s->getMaxIntensity());
+	  }
+
 	  k++;
   }
 
@@ -108,6 +112,20 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
   return(neighborList);
 }
 
+/*
+struct NeighborMove {
+  // Type
+  // 1: beamlet
+  // 2: intensity
+  int type;
+  int station_id;
+  int aperture_id; // intensity that will be changed
+  // Action
+  //+1: increase
+  //-1: decrease
+  int action;
+  int beamlet_id;
+};*/
 
 
 double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
@@ -142,16 +160,27 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
 
   } else {
     // change intensity
-    if (action < 0)
-      diff = s->change_intensity(intens, -1.0);
-    else
-      diff = s->change_intensity(intens, +1.0);
+    if (action < 0){
+      if(s->int2nb.find(intens+0.5) != s->int2nb.end())
+    	  diff = s->change_intensity(intens, -1.0);
+      else
+    	  diff = s->generate_intensity(intens, false);
 
-    double delta_eval = current_plan.get_delta_eval (*s, diff);
-    if(delta_eval < 0.001)
-    	current_eval = current_plan.incremental_eval(*s, diff);
-    else
-    	s->diff_undo(diff);
+
+    }else{
+      if(s->int2nb.find(intens+0.5) != s->int2nb.end())
+    	  diff = s->change_intensity(intens, +1.0);
+      else
+    	  diff = s->generate_intensity(intens, true);
+    }
+
+    if(!diff.empty()){
+        double delta_eval = current_plan.get_delta_eval (*s, diff);
+        if(delta_eval < 0.001)
+        	current_eval = current_plan.incremental_eval(*s, diff);
+        else
+        	s->diff_undo(diff);
+    }
 
   }
 
