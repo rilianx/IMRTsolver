@@ -644,9 +644,9 @@ double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
   int beamlet         = move.beamlet_id;
   int action          = move.action;
 
-  cout << "  move type " << move.type << ", s:" << 
+  /*cout << "  move type " << move.type << ", s:" << 
           move.station_id << ", a:" << aperture << 
-          ", b:" << beamlet << ", e:"<< action << endl;
+          ", b:" << beamlet << ", e:"<< action << endl;*/
   if (type == 1) {
     // Intensity move
     if (action < 0) {

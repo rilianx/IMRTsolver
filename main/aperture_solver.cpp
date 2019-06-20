@@ -336,11 +336,14 @@ int main(int argc, char** argv){
       cout << "Neighborhood operator " << 
               neighborhood << "not recognized"<<endl;
   } else if (_nseq) {
-    //TODO: implement aperture first!
-    neighborhood = NeighborhoodType::sequential;
+    string nn = _nseq.Get();
+    if (nn == "intensity")
+      neighborhood = NeighborhoodType::sequential_i;
+    else if (nn == "aperture")
+      neighborhood = NeighborhoodType::sequential_a;
   } else if (_nprob) {
     prob_intensity = _nprob.Get();
-    neighborhood = NeighborhoodType::sequentialp;
+    neighborhood = NeighborhoodType::sequential_p;
   }
 
   if (_targeted_search) targeted_search = true;
@@ -423,10 +426,12 @@ int main(int argc, char** argv){
     cout << "##   Neighborhood: aperture" << endl;
   else if (neighborhood == NeighborhoodType::mixed)
     cout << "##   Neighborhood: mixed" << endl;
-  else if (neighborhood == NeighborhoodType::sequential)
-    cout << "##   Neighborhood: sequential" << endl;
-  else if (neighborhood == NeighborhoodType::sequentialp) {
-    cout << "##   Neighborhood: sequential probabilisty intensity: " << 
+  else if (neighborhood == NeighborhoodType::sequential_i)
+    cout << "##   Neighborhood: sequential intensity first" << endl;
+  else if (neighborhood == NeighborhoodType::sequential_a)
+    cout << "##   Neighborhood: sequential aperture first" << endl;
+  else if (neighborhood == NeighborhoodType::sequential_p) {
+    cout << "##   Neighborhood: sequential probabilistic: " << 
             prob_intensity << endl;
   }
 
@@ -464,7 +469,6 @@ int main(int argc, char** argv){
   for(int i=0;i<5;i++)
     P.printIntensity(i);
   cout << endl;
-  getchar();
 
   ILS* ils;
   if (strategy=="dao_ls") {

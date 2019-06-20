@@ -120,7 +120,8 @@ namespace imrt {
     if(diff.size() <1) {
       clearLast();
       return(evaluation_fx);
-    }    
+    }
+
     return(incremental_eval(*s, diff));
   };
 

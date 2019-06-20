@@ -33,8 +33,9 @@ enum NeighborhoodType {
   intensity = 1,
   aperture = 2,
   mixed = 3,
-  sequential = 4,
-  sequentialp = 5
+  sequential_i = 4,
+  sequential_a = 5,
+  sequential_p = 6
 };
 
 enum LSType {
@@ -144,38 +145,58 @@ public:
 
      }
      return(current_eval);
-  }
+  };
 
+  //Improvement indicates we should keep the neighborhood!
   NeighborhoodType selectNeighborhood (NeighborhoodType current, 
                                        NeighborhoodType user, 
-                                       bool previous_checked) {
-    
+                                       bool keep_flag) {
+     
      if (user == NeighborhoodType::intensity || 
          user == NeighborhoodType::aperture ||
          user == NeighborhoodType::mixed) 
        return (user);
 
      //TODO: add probability parameter
-     if (user == NeighborhoodType::sequentialp) {
-       if (previous_checked) {
-         if (current == NeighborhoodType::aperture)
-           return (NeighborhoodType::intensity);
-         return(NeighborhoodType::aperture); 
-       } else { 
+     if (user == NeighborhoodType::sequential_p) {
+       if (keep_flag) {
+         // If we found an improvement we choose randomly
          float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
          if (r < 0.5) return(NeighborhoodType::intensity);
          else return(NeighborhoodType::aperture);
+       } else {
+         if (current == NeighborhoodType::aperture)
+           return (NeighborhoodType::intensity);
+         return(NeighborhoodType::aperture); 
        }
      }
 
-     if (user == NeighborhoodType::sequential) {
-       if (current == NeighborhoodType::aperture)
-         return (NeighborhoodType::intensity);
-       return(NeighborhoodType::aperture);  
+     if (user == NeighborhoodType::sequential_i ||
+         user == NeighborhoodType::sequential_a) {
+       if (keep_flag) {
+         return (current);
+       } else {
+         if (current == NeighborhoodType::aperture)
+           return (NeighborhoodType::intensity);
+         return(NeighborhoodType::aperture);  
+       }
      }
 
      cout << "Error: Unknown neighborhood operator" << endl;
      return(NeighborhoodType::intensity);  
+  };
+
+  NeighborhoodType selectInitialNeighborhood (NeighborhoodType user) {
+     if (user == NeighborhoodType::sequential_i) 
+       return(NeighborhoodType::intensity);
+     else if (user == NeighborhoodType::sequential_a)
+       return(NeighborhoodType::aperture);
+     else if (user == NeighborhoodType::sequential_p){
+       float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+       if (r < 0.5) return(NeighborhoodType::intensity);
+       else return(NeighborhoodType::aperture);
+     } 
+     return(user);
   };
 
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
@@ -186,14 +207,18 @@ public:
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();    
     NeighborMove best_move = {0,0,0,0,0}; 
-    NeighborhoodType current_neighborhood = ls_neighborhood;
+    NeighborhoodType current_neighborhood;
     int n_neighbor = 1;
 
     // the sequential flag indicates that the previous neighborhood was checked
     // unsuccesfully 
     bool sequential_flag = false; 
-    bool is_sequential = (ls_neighborhood == NeighborhoodType::sequential) ||
-                         (ls_neighborhood == NeighborhoodType::sequentialp);
+    bool is_sequential = (ls_neighborhood == NeighborhoodType::sequential_i) ||
+                         (ls_neighborhood == NeighborhoodType::sequential_a) ||
+                         (ls_neighborhood == NeighborhoodType::sequential_p);
+
+    // Select initial neighborhood
+    current_neighborhood = selectInitialNeighborhood(ls_neighborhood);
 
     //Start time
     std::clock_t time_end;
@@ -201,11 +226,11 @@ public:
     cout << "Starting local search" << endl;
 
     while (improvement) {
-      improvement = false;
       //Select the neighborhood (doone for the cases in which sequenced neighborhoods are chosen)
       current_neighborhood = selectNeighborhood (current_neighborhood, 
                                                  ls_neighborhood, 
-                                                 sequential_flag);
+                                                 improvement && !sequential_flag);
+      improvement = false;
       //Get the moves in the neighborhood (this is possible because the moves are not that many!)
       //TODO: ignacio implementame!.
       neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target); 
@@ -218,11 +243,6 @@ public:
         //Generate the solution in the neighborhood
         applyMove(current_plan, move);  //TODO: ignacio implementame!.
 
-    cout << endl;
-  	for(int i=0;i<5;i++)
-  		current_plan.printIntensity(i);
-  	cout << endl;
-   // getchar();
 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
