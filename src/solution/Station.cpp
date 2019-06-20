@@ -425,45 +425,49 @@ namespace imrt {
 	  }else
 		  aux_int=it->first;
 
-
+      //cout << "aux:" << aux_int << endl;
+      //cout << "int:" << intensity << endl;
 	  //decrement
 	  if(!increment)
 	  for (int i=0; i<collimator.getXdim();i++){
 		  bool increasing = true;
-		  cout << "decrement input: " ;
+		 /* cout << "decrement input:  " ;
 		  for (int j=0; j<collimator.getYdim(); j++)
-			  cout << I(i,j) << " " << endl;
-		  cout << endl;
+			  cout << I(i,j) << " " ;
+		  cout << endl;*/
 
 		  for (int j=0; j<collimator.getYdim(); j++){
 			  if(j>0 && I(i,j)<I(i,j-1)) increasing =false;
 
-			  if(increasing && I(i,j)==aux_int && (j==0 || I(i,j-1)!=aux_int))
+			  if(increasing && I(i,j)==aux_int && (j==0 || I(i,j-1)!=aux_int || j==collimator.getYdim()-1)){
 				  change_intensity(i, j, intensity, &diff);
+			      j++; continue;
+			  }
+
 
 			  if(!increasing && I(i,j)==aux_int && (j==collimator.getYdim()-1 || I(i,j+1)!=aux_int))
 			  	  change_intensity(i, j, intensity, &diff);
 		  }
 
-		  cout << "decrement output: " ;
+		  /*cout << "decrement output: " ;
 		  for (int j=0; j<collimator.getYdim(); j++)
-			  cout << I(i,j) << " " << endl;
-		  cout << endl;
+			  cout << I(i,j) << " " ;
+		  cout << endl;*/
 	  }
 
 	  if(increment)
 	  for (int i=0; i<collimator.getXdim();i++){
 		  bool increasing = true;
 
-		  cout << "increment input: " ;
+		  /*cout << "increment input:  " ;
 		  for (int j=0; j<collimator.getYdim(); j++)
-			  cout << I(i,j) << " " << endl;
-		  cout << endl;
+			  cout << I(i,j) << " " ;
+		  cout << endl;*/
 
 		  for (int j=0; j<collimator.getYdim(); j++){
 			  if(j>0 && I(i,j)<I(i,j-1)) increasing =false;
 
-			  if(!increasing && (j==collimator.getYdim()-1 || I(i,j+1)<aux_int)){
+			  if(!increasing && I(i,j)==aux_int && (j==collimator.getYdim()-1 || I(i,j+1)<aux_int)){
 				  change_intensity(i, j, intensity, &diff);
 				  continue;
 			  }
@@ -482,10 +486,10 @@ namespace imrt {
 			  }
 		  }
 
-		  cout << "increment output: " ;
+		  /*cout << "increment output: " ;
 		  for (int j=0; j<collimator.getYdim(); j++)
-			  cout << I(i,j) << " " << endl;
-		  cout << endl;
+			  cout << I(i,j) << " " ;
+		  cout << endl;*/
 
 	  }
 

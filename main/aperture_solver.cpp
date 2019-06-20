@@ -19,6 +19,7 @@
 #include "Volume.h"
 #include "ApertureILS.h"
 #include "IntensityILS.h"
+#include "IntensityILS2.h"
 #include "args.hxx"
 
 
@@ -152,7 +153,7 @@ int main(int argc, char** argv){
                                      to_string(maxtime)+")", {"maxtime"});
   args::ValueFlag<int>    _maxeval  (budget, "int", 
                                     "Number of evaluations (" + 
-                                     to_string(maxiter)+ ")", {"maxiter"});
+                                     to_string(maxiter)+ ")", {"maxeval"});
 
   
   // Initial collimator setup (initial solution: aperture, intensity)
@@ -498,7 +499,10 @@ int main(int argc, char** argv){
 //    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
 //    ils->iteratedLocalSearch(P, maxtime, maxeval,LSType::first,NeighborhoodType::mixed,
       //                           LSTarget::none);
-    
+
+	  ils = new IntensityILS2();
+	  ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size);
+
     cout << endl;
   	for(int i=0;i<5;i++)
   		P.printIntensity(i);
@@ -506,11 +510,8 @@ int main(int argc, char** argv){
 
 
 
-    for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
-    cout << P.eval() << endl  ;
-  }else if(strategy=="intgen"){
-	  IntensityGenerator intgen;
-	  intgen.generate(P);
+    //for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
+    //cout << P.eval() << endl  ;
   }
 
 
