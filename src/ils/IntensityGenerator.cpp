@@ -81,7 +81,7 @@ void IntensityGenerator::IntensityRepair(Plan& P){
 				}
 	
 				if(gaps.empty()) break;
-				changeworst(intensities, gaps);
+				//changeworst(intensities, gaps);
 			}
 		}
 	}
