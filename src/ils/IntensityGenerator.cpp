@@ -93,7 +93,7 @@ void IntensityGenerator::IntensityRepair(Plan& P){
 void IntensityGenerator::changeworst(double* intensities,list<Gap> gaps){
 	Gap RealGap=gaps.front();
 	for(Gap gap: gaps){
-		if((intensities[RealGap.GAP] >= intensities[gap.GAP])&& !=-1){
+		if((intensities[RealGap.GAP] >= intensities[gap.GAP])&& intensities[RealGap.GAP]!=-1){
 			RealGap=gap;
 		}else {break;}
 	}
