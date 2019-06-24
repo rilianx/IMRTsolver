@@ -85,7 +85,11 @@ void IntensityGenerator::IntensityRepair(Plan& P){
 			}
 		}
 	}
-
+	for (Gap gap: gaps){
+		cout << intensities[gap.GAP] << endl;
+		cout << intensities[gap.Suplier1] << endl;
+		cout << intensities[gap.Suplier2] << endl;
+	}
 
 
 }
