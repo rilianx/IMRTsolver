@@ -61,11 +61,17 @@ void IntensityGenerator::IntensityRepair(Plan& P){
 				gap.Suplier1=j+1;
 				gap.Suplier2=j-1;
 				for (int k=j+1;k<s->I.nb_cols();k++){ //rigth of intensity row
+					/*if(intensities[gap.Suplier1]==-1){
+						break;
+					}*/
 					if(intensities[k]>intensities[gap.Suplier1]){
 						gap.Suplier1=k;
 					}
 				}
 				for(int k=j-1;k>=0;k--){ //left of intensity row
+					/* if(intensities[gap.Suplier2]==-1){
+						break;
+					}*/
 					if(intensities[k]>intensities[gap.Suplier2]){
 						gap.Suplier2=k;
 					}
@@ -87,9 +93,9 @@ void IntensityGenerator::IntensityRepair(Plan& P){
 void IntensityGenerator::changeworst(double* intensities,list<Gap> gaps){
 	Gap RealGap=gaps.front();
 	for(Gap gap: gaps){
-		if(intensities[RealGap.GAP] > intensities[gap.GAP]){
+		if((intensities[RealGap.GAP] >= intensities[gap.GAP])&& !=-1){
 			RealGap=gap;
-		}
+		}else {break;}
 	}
 	//cambiar intensidades RealGap
 	if(intensities[RealGap.Suplier1]<intensities[RealGap.Suplier2]){
