@@ -124,6 +124,7 @@ int main(int argc, char** argv){
   string file = "data/testinstance_0_70_140_210_280.txt";
   string file2 = "data/test_instance_coordinates.txt";
   char* file3 = NULL;
+  string convergence_file = "";
 
   
 
@@ -242,6 +243,10 @@ int main(int argc, char** argv){
                                  "(if it is executed from other directory)", {"path"});
   args::Flag _plot               (parser, "bool",  
                                  "Generate plot and save in file", {"plot"});
+
+  // Output file parameters
+  args::ValueFlag<string> _convergence_file (parser, "string", 
+                                 "File to output convergence", {"convergence"});
 
 	try
 	{
@@ -367,7 +372,10 @@ int main(int argc, char** argv){
   if (_file2) file2=_file2.Get();
   if (_file3) file3=strdup(_file3.Get().c_str()); //intensidades de partida
   if (_path) path=_path.Get();
+
   chdir(path.c_str());
+
+  if (_convergence_file) convergence_file=_convergence_file.Get();
 
   cout << "##**************************************************************************" 
        << endl;
@@ -473,6 +481,10 @@ int main(int argc, char** argv){
   cout << "##" << endl << "## Instance information: "<< endl;
   cout << "##   Volumes: " << volumes.size() << endl;
 
+  cout << "##" << endl << "## Output files: " << endl;
+  if (convergence_file!="") 
+    cout << "##   Convergence file: " << convergence_file << endl;
+
   cout << "##" << endl 
        << "##**************************************************************************"
        << endl;
@@ -493,7 +505,7 @@ int main(int argc, char** argv){
   ILS* ils;
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-    ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size);
+    ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
   }else if(strategy=="ibo_ls"){
 
 //    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
@@ -502,7 +514,7 @@ int main(int argc, char** argv){
 
 
 	  ils = new IntensityILS2();
-	  ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size);
+	  ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
 
     //for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     //cout << P.eval() << endl  ;

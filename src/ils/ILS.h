@@ -9,6 +9,8 @@
 #define ILS_H_
 
 #include <ctime>
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 #include "Plan.h"
 
@@ -148,7 +150,7 @@ public:
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
                               LSType ls_type, NeighborhoodType ls_neighborhood,
                               LSTarget ls_target, PerturbationType perturbation_type,
-                              int perturbation_size) {
+                              int perturbation_size, string convergence_file) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double current_eval = current_plan.getEvaluation();
@@ -159,11 +161,24 @@ public:
      std::clock_t time_end;
      time_begin = clock();
 
+     //Create log files
+     ofstream c_file;
+     ofstream t_file;
+     string trajectory_file="";
+     if (convergence_file!="") {
+       c_file.open (convergence_file, ios::in);
+       t_file.open (convergence_file + "traj", ios::in);
+       t_file << "evalutions;quality"<<endl;
+       t_file.close();
+       trajectory_file=trajectory_file+".traj";
+     }
+
      cout << "Starting iterated local search " << endl;
      while (true) {
        // Apply local search
        aux_eval = localSearch(current_plan, max_time, max_evaluations,  
-                  used_evaluations, ls_type, ls_neighborhood, ls_target);
+                  used_evaluations, ls_type, ls_neighborhood, ls_target, 
+                  trajectory_file);
         
        if (aux_eval < current_eval) {
          current_eval = aux_eval;
@@ -172,6 +187,10 @@ public:
        current_iteration++;
        cout << "  iteration: " << current_iteration << " ; eval: " << 
                aux_eval << " ; best: " << current_eval << endl;
+
+       if (c_file.is_open())
+         c_file << used_evaluations << ";" << current_iteration << 
+                   ";" << aux_eval << ";ls;" << current_eval <<endl;
 
        // Termination criterion
        time_end = clock();
@@ -182,6 +201,10 @@ public:
        //Perturbation
        perturbation(current_plan, perturbation_type, perturbation_size);
 
+     }
+
+     if (c_file.is_open()) {
+       c_file.close();
      }
      return(current_eval);
   };
@@ -241,13 +264,13 @@ public:
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
                       int& used_evaluations, LSType ls_type, 
                       NeighborhoodType ls_neighborhood, 
-                      LSTarget ls_target) {
+                      LSTarget ls_target, string trajectory_file) {
     bool improvement = true;
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();    
     NeighborMove best_move = {0,0,0,0,0}; 
     NeighborhoodType current_neighborhood;
-    int n_neighbor = 1;
+    int n_neighbor = 1; 
 
     // the sequential flag indicates that the previous neighborhood was checked
     // unsuccesfully 
@@ -258,6 +281,11 @@ public:
 
     // Select initial neighborhood
     current_neighborhood = selectInitialNeighborhood(ls_neighborhood);
+
+    //Output file
+    ofstream t_file;
+    if (trajectory_file!="")
+      t_file.open(trajectory_file, ios::app);
 
     //Start time
     std::clock_t time_end;
@@ -284,7 +312,8 @@ public:
 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
-          cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id << "," << move.aperture_id << "," << move.action << "); Improvement: " <<
+          cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id << 
+                  "," << move.aperture_id << "," << move.action << "); Improvement: " <<
                   current_plan.getEvaluation() << endl;
           improvement = true;
           if (ls_type == LSType::first) {
@@ -320,7 +349,12 @@ public:
         current_eval = current_plan.getEvaluation();
         current_plan.clearLast();
         used_evaluations++;
-      }     
+      }
+
+      if (improvement) {
+         if (t_file.is_open())
+            t_file << used_evaluations << ";" << current_eval << endl;
+      }
 
       // Check sequential neighborhood
       if (is_sequential) {
@@ -342,6 +376,10 @@ public:
       if (max_time!=0 && used_time >= max_time) break;
       if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
     }
+
+    if (trajectory_file!="")
+      t_file.close();
+
     return(current_eval);
   };
 
