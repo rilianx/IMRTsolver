@@ -57,7 +57,7 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   return(moves);
 };
 
-vector < NeighborMove > IntensityILS2::getShuffledBeamletNeighbors(Plan &P){
+vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors(Plan &P){
 
    list<Station*> stations = P.get_stations();
    vector < NeighborMove > moves;
@@ -93,7 +93,7 @@ vector < NeighborMove > IntensityILS2::getShuffledNeighbors(Plan &P) {
   vector< NeighborMove > a_list, final_list;
 
   final_list = getShuffledIntensityNeighbors(P);
-  a_list = getShuffledBeamletNeighbors(P);
+  a_list = getShuffledApertureNeighbors(P);
   final_list.insert(final_list.end(), a_list.begin(), a_list.end());
 
   std::random_shuffle(final_list.begin(), final_list.end());
@@ -107,9 +107,9 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
   vector < NeighborMove> neighborList;
 
   if (ls_neighborhood == intensity) {
-    neighborList = getShuffledBeamletNeighbors(current_plan);
-  } else if (ls_neighborhood == aperture) {
     neighborList = getShuffledIntensityNeighbors(current_plan);
+  } else if (ls_neighborhood == aperture) {
+    neighborList = getShuffledApertureNeighbors(current_plan);
   } else {
     //mixed
     neighborList = getShuffledNeighbors(current_plan);
@@ -120,7 +120,7 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
 /*
 struct NeighborMove {
   // Type
-  // 1: beamlet
+  // 1: aperture
   // 2: intensity
   int type;
   int station_id;

@@ -530,7 +530,8 @@ int main(int argc, char** argv){
   cout << "##**************************************************************************"
        << endl;
   cout << "##"<<endl;
-  cout << "## Best solution found: " <<  P.getEvaluation() << endl;
+  cout << "## Best solution found: " <<  P.eval() << endl;
+
   cout <<  P.getEvaluation() << " ";
 
   const list<Station*> stations=P.get_stations();
@@ -551,6 +552,16 @@ int main(int argc, char** argv){
   }
   cout << nb_apertures << endl;
 
+  set<int> l = get_angles(file, 5);
+  if(_plot){
+	  std::stringstream ss;
+	  ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_intensity << "_" << initial_setup << "_" << maxtime << "_" << seed <<".pdf";
+	  std::string s = ss.str();
+	  system(s.c_str());
+  }
+
+
+  return 0;
 
 	cout << endl;
 	for(int i=0;i<5;i++)
@@ -564,13 +575,9 @@ int main(int argc, char** argv){
 
   F.generate_voxel_dose_functions ();*/
 
-  set<int> l = get_angles(file, 5);
-  if(_plot){
-	  std::stringstream ss;
-	  ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_intensity << "_" << initial_setup << "_" << maxtime << "_" << seed <<".pdf";
-	  std::string s = ss.str();
-	  system(s.c_str());
-  }
+
+
+
 
 	return 0;
 

@@ -28,7 +28,7 @@ public:
                                         NeighborhoodType ls_neighborhood,
                                         LSTarget ls_target);
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
-  vector < NeighborMove > getShuffledBeamletNeighbors(Plan &P);
+  vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
   double applyMove (Plan &P, NeighborMove move);
