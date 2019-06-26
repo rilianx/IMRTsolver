@@ -244,6 +244,26 @@ namespace imrt {
       st->printAperture(s);
     }
   };
+  
+  string Plan::toStringApertures () {
+    Station *st;
+    string solution_str="";
+    for (int s=0; s < n_stations; s++) {
+      st = get_station(s);
+      solution_str = solution_str + st->toStringApertures();
+    }
+    return(solution_str);
+  };
+  
+  string Plan::toStringIntensities () {
+    Station *st;
+    string solution_str="";
+    for (int s=0; s < n_stations; s++) {
+      st = get_station(s);
+      solution_str = solution_str + st->toStringIntensities();
+    }
+    return(solution_str);
+  };
 
   void Plan::printIntensity(int n) {
     list<Station*>::iterator s= stations.begin();

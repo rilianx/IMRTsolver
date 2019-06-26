@@ -370,6 +370,27 @@ namespace imrt {
       }
     }
   }
+  
+  string Station::toStringApertures () {
+    string s = "s:" + angle + ";";
+    for (int a=0; a < max_apertures; a++) {
+      s = s + "a:" + a + ":" + intensity[a] + ";";
+      for (int i=0; i<collimator.getXdim(); i++) {
+        s = s + A[a][i].first + ":" + A[a][i].second + ";";
+      }
+    }
+    return(s);
+  };
+  
+  string Station::toStringIntensities () {
+    string s = "s:" + angle + ";";
+    for (int i=0; i<collimator.getXdim();i++) {
+      for (int j=0; j<collimator.getYdim(); j++) {
+        s = s + I(i,j) + ";";
+      }
+    }
+    return(s);
+  };
 
   void Station::printAperture(int aperture) {
     cout << "Station: "<< angle << " aperture: " << aperture << " intensity "<< intensity[aperture]<< endl;

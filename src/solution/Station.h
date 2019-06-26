@@ -168,6 +168,10 @@ public:
   void writeIntensity(ifstream& myfile);
 
   void printApertures();
+  
+  string toStringApertures();
+  
+  string toStringIntensities();
 
   void printAperture(int aperture);
 

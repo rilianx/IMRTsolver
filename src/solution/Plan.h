@@ -106,6 +106,10 @@ public:
 	void undoLast2();
 
   void printSolution ();
+  
+  string toStringApertures ();
+  
+  string toStringIntensities ();
 
   void printIntensity(int station);
 
