@@ -147,6 +147,8 @@ public:
 
   virtual double applyMove (Plan & current_plan, NeighborMove move) = 0;
 
+  virtual string planToString(Plan & current_plan) = 0;
+
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
                               LSType ls_type, NeighborhoodType ls_neighborhood,
                               LSTarget ls_target, PerturbationType perturbation_type,
@@ -166,11 +168,11 @@ public:
      ofstream t_file;
      string trajectory_file="";
      if (convergence_file!="") {
-       c_file.open (convergence_file, ios::in);
-       t_file.open (convergence_file + "traj", ios::in);
-       t_file << "evalutions;quality"<<endl;
+       c_file.open (convergence_file.c_str(), ios::out);
+       trajectory_file = convergence_file + ".traj";
+       t_file.open (trajectory_file.c_str(), ios::out);
+       t_file << "evalutions;quality" << endl;
        t_file.close();
-       trajectory_file=trajectory_file+".traj";
      }
 
      cout << "Starting iterated local search " << endl;
@@ -188,9 +190,12 @@ public:
        cout << "  iteration: " << current_iteration << " ; eval: " << 
                aux_eval << " ; best: " << current_eval << endl;
 
-       if (c_file.is_open())
+       // Print convergence information
+       if (convergence_file!="") {
          c_file << used_evaluations << ";" << current_iteration << 
-                   ";" << aux_eval << ";ls;" << current_eval <<endl;
+                   ";" << aux_eval << ";" << current_eval << 
+                    planToString(current_plan) << endl;
+       }
 
        // Termination criterion
        time_end = clock();
@@ -284,8 +289,9 @@ public:
 
     //Output file
     ofstream t_file;
-    if (trajectory_file!="")
-      t_file.open(trajectory_file, ios::app);
+    if (trajectory_file!="") {
+      t_file.open(trajectory_file.c_str(), ios::app);
+    }
 
     //Start time
     std::clock_t time_end;
@@ -353,7 +359,7 @@ public:
 
       if (improvement) {
          if (t_file.is_open())
-            t_file << used_evaluations << ";" << current_eval << endl;
+            t_file << used_evaluations << ";" << current_eval << "\n";
       }
 
       // Check sequential neighborhood

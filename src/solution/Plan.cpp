@@ -33,6 +33,7 @@ namespace imrt {
       add_station(*station);
       angle2station[collimator.getAngle(i)] = station;
     }
+    n_stations= stations.size();
     if(myfile){
     	myfile->close();
         delete myfile;
@@ -248,7 +249,7 @@ namespace imrt {
   string Plan::toStringApertures () {
     Station *st;
     string solution_str="";
-    for (int s=0; s < n_stations; s++) {
+    for (int s=0; s < stations.size(); s++) {
       st = get_station(s);
       solution_str = solution_str + st->toStringApertures();
     }
@@ -258,7 +259,7 @@ namespace imrt {
   string Plan::toStringIntensities () {
     Station *st;
     string solution_str="";
-    for (int s=0; s < n_stations; s++) {
+    for (int s=0; s < stations.size(); s++) {
       st = get_station(s);
       solution_str = solution_str + st->toStringIntensities();
     }

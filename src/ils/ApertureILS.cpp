@@ -670,6 +670,11 @@ double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
             
 };
 
+string ApertureILS::planToString(Plan &P) {
+  return(P.toStringApertures());
+};
+
+
 // This function performs a local search over all the
 // aperture intensities in a treatment plan.
 double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {

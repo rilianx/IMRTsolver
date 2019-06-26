@@ -372,21 +372,21 @@ namespace imrt {
   }
   
   string Station::toStringApertures () {
-    string s = "s:" + angle + ";";
+    string s = "s:" + to_string(angle) + ";";
     for (int a=0; a < max_apertures; a++) {
-      s = s + "a:" + a + ":" + intensity[a] + ";";
+      s = s + "a:" + to_string(a) + ":" + to_string(intensity[a]) + ";";
       for (int i=0; i<collimator.getXdim(); i++) {
-        s = s + A[a][i].first + ":" + A[a][i].second + ";";
+        s = s + to_string(A[a][i].first) + ":" + to_string(A[a][i].second) + ";";
       }
     }
     return(s);
   };
   
   string Station::toStringIntensities () {
-    string s = "s:" + angle + ";";
+    string s = "s:" + to_string(angle) + ";";
     for (int i=0; i<collimator.getXdim();i++) {
       for (int j=0; j<collimator.getYdim(); j++) {
-        s = s + I(i,j) + ";";
+        s = s + to_string(I(i,j)) + ";";
       }
     }
     return(s);

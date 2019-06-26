@@ -194,7 +194,9 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
 
 };
 
-
+string IntensityILS2::planToString(Plan &P) {
+  return(P.toStringIntensities());
+};
 
 }
 
