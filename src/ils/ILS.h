@@ -359,7 +359,8 @@ public:
 
       if (improvement) {
          if (t_file.is_open())
-            t_file << used_evaluations << ";" << current_eval << "\n";
+            t_file << used_evaluations << ";" << used_time << ";" << current_eval << "\n";
+         
       }
 
       // Check sequential neighborhood

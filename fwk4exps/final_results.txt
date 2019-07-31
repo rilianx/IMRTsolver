@@ -1,17 +1,22 @@
 solved instances in standard strategy times
 mintime:0.000100
 <0.10 [0.10,0.20] [0.20,0.50] [0.50,0.67] [0.67,0.83] [0.83,1.00] [1.00,1.20] [1.20,1.50] [1.50,2.00] [2.00,5.00] [5.00,10.00] >10.00 
-
-1.000000 
-1.200480 
-1.503759 
-2.000000 
-5.000000 
-10.000000 
+ibo_ls-default_NEIGHBOURHOOD--ls_sequential=intensity   0   0   0   0   0   0   0   0   0   0   0   0 
+ibo_ls-default_NEIGHBOURHOOD--ls_sequential=aperture   0   0   0   0   0   0   0   0   0   0   0   0 
+dao_ls-default_NEIGHBOURHOOD--ls_simple=mixed   0   0   0   0   0   0   0   0   0   0   0   0 
+dao_ls-default_NEIGHBOURHOOD--ls_sequential=intensity   0   0   0   0   0   0   0   0   0   0   0   0 
+dao_ls-default_NEIGHBOURHOOD--ls_sequential=aperture   0   0   0   0   0   0   0   0   0   0   0   0 
+ibo_ls-default_NEIGHBOURHOOD--ls_sequential=intensity ibo_ls-default_NEIGHBOURHOOD--ls_sequential=aperture dao_ls-default_NEIGHBOURHOOD--ls_simple=mixed dao_ls-default_NEIGHBOURHOOD--ls_sequential=intensity dao_ls-default_NEIGHBOURHOOD--ls_sequential=aperture 
+1.000000 0/0 0/0 0/0 0/0 0/0 
+1.200480 0/0 0/0 0/0 0/0 0/0 
+1.503759 0/0 0/0 0/0 0/0 0/0 
+2.000000 0/0 0/0 0/0 0/0 0/0 
+5.000000 0/0 0/0 0/0 0/0 0/0 
+10.000000 0/0 0/0 0/0 0/0 0/0 
 
 
 instances with significative gains (1.2)
 
 gains
-0.000100 1.000000 0 
-total time: 1.000000 
+0.000100 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 
+total time: 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 

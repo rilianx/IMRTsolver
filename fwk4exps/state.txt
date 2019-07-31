@@ -1,7 +1,7 @@
-algos:as-open-min10 
-gains (average relative times):1.000000 
-gains (total time)            :1.000000 
-compared instances:  0 
-runs    :420 
-L:  0 
-W:  0 
+algos:ibo_ls-default_NEIGHBOURHOOD--ls_simple=mixed ibo_ls-default_NEIGHBOURHOOD--ls_sequential=intensity ibo_ls-default_NEIGHBOURHOOD--ls_sequential=aperture dao_ls-default_NEIGHBOURHOOD--ls_simple=mixed dao_ls-default_NEIGHBOURHOOD--ls_sequential=intensity dao_ls-default_NEIGHBOURHOOD--ls_sequential=aperture 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0   0   0 
+runs    :420 420 420 420 420 420 
+L:  0   0   0   0   0   0 
+W:  0   0   0   0   0   0 
