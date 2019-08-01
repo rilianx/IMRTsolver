@@ -377,7 +377,7 @@ int main(int argc, char** argv){
   chdir(path.c_str());
 
   if (_convergence_file) convergence_file=_convergence_file.Get();
-  else{
+  if(convergence_file=="default"){
      string mkdir = "mkdir output";
      system(mkdir.c_str());
      convergence_file = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_" +strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)+"_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)+"_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)+"_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(seed)+".conv";
@@ -542,12 +542,28 @@ int main(int argc, char** argv){
   cout << "##"<<endl;
   cout << "## Best solution found: " <<  P.eval() << endl;
 
+
+	cout << endl;
+	for(int i=0;i<5;i++)
+		P.printIntensity(i);
+
+	cout << endl;
+
   ofstream o_file;
-  o_file.open (output_file.c_str(), ios::out);
+  if(convergence_file!="")
+    o_file.open (output_file.c_str(), ios::out);
   
 
   cout <<  P.getEvaluation() << " ";
-  o_file  <<  P.getEvaluation() << " ";
+  if(convergence_file!="") o_file  <<  P.getEvaluation() << " ";
+  
+  std::clock_t time_end = clock();
+  double used_time = double(time_end - ils->time_begin) / CLOCKS_PER_SEC;
+
+  cout <<  used_time << " ";
+  if(convergence_file!="") o_file  <<  used_time  << " ";
+  
+  if(convergence_file!="") o_file << ils->used_evaluations << " ";
 
   const list<Station*> stations=P.get_stations();
 
@@ -555,22 +571,22 @@ int main(int argc, char** argv){
   for(auto s:stations){
     int alpha=s->get_sum_alpha(strategy);
     cout << alpha << " " ;
-    o_file  << alpha << " " ;
+    //if(convergence_file!="") o_file  << alpha << " " ;
     tot_alpha+=alpha;
   }
   cout << tot_alpha << " ";
-  o_file << tot_alpha << " ";
+  if(convergence_file!="") o_file << tot_alpha << " ";
 
   int nb_apertures=0;
   for(auto s:stations){
     int ap=s->get_nb_apertures(strategy);
     cout << ap << " " ;
-    o_file << ap << " " ;
+    //if(convergence_file!="") o_file << ap << " " ;
     nb_apertures+=ap;
   }
   cout << nb_apertures << endl;
-  o_file << nb_apertures << endl;
-  o_file.close();
+  if(convergence_file!="") o_file << nb_apertures << endl;
+  if(convergence_file!="") o_file.close();
 
   set<int> l = get_angles(file, 5);
   if(_plot){
@@ -583,11 +599,6 @@ int main(int argc, char** argv){
 
   return 0;
 
-	cout << endl;
-	for(int i=0;i<5;i++)
-		P.printIntensity(i);
-
-	cout << endl;
 
 	/*cout << "********   Summary of the results    *********"<< endl;
 	best_eval = F.eval(P,w,Zmin,Zmax);

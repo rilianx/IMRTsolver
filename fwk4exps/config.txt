@@ -13,7 +13,7 @@ description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
 tuning_param = NEIGHBOURHOOD
 tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
 exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=4000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. 
+params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
 outputpos_times = 0
 outputpos_boxes = 0
 
@@ -22,6 +22,6 @@ description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
 tuning_param = NEIGHBOURHOOD
 tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=4000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. 
+params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
 outputpos_times = 0
 outputpos_boxes = 0

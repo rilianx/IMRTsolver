@@ -60,11 +60,13 @@ enum PerturbationType {
 class ILS {
 private:
   double max_no_improvement=100;
-  std::clock_t time_begin;
+
 
 public:
   int bsize;
   int vsize;
+  
+  std::clock_t time_begin;
 
   static const int ACCEPT_NONE = 0;
   static const int ACCEPT_SA = 1;
@@ -149,6 +151,8 @@ public:
 
   virtual string planToString(Plan & current_plan) = 0;
 
+  int used_evaluations;
+
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
                               LSType ls_type, NeighborhoodType ls_neighborhood,
                               LSTarget ls_target, PerturbationType perturbation_type,
@@ -157,7 +161,7 @@ public:
      double aux_eval = current_plan.getEvaluation();
      double current_eval = current_plan.getEvaluation();
      double used_time = 0;
-     int used_evaluations = 0;
+     used_evaluations = 0;
 
      //Start time
      std::clock_t time_end;
