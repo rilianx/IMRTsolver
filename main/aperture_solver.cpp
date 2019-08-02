@@ -513,9 +513,10 @@ int main(int argc, char** argv){
   
 
   ILS* ils;
+  double cost;
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-    ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
+    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
   }else if(strategy=="ibo_ls"){
 
 //    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
@@ -524,7 +525,7 @@ int main(int argc, char** argv){
 
 
 	  ils = new IntensityILS2();
-	  ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
+	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
 
     //for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     //cout << P.eval() << endl  ;
@@ -540,7 +541,7 @@ int main(int argc, char** argv){
   cout << "##**************************************************************************"
        << endl;
   cout << "##"<<endl;
-  cout << "## Best solution found: " <<  P.eval() << endl;
+  cout << "## Best solution found: " <<  cost << endl;
 
 
 	cout << endl;
@@ -554,8 +555,8 @@ int main(int argc, char** argv){
     o_file.open (output_file.c_str(), ios::out);
   
 
-  cout <<  P.getEvaluation() << " ";
-  if(convergence_file!="") o_file  <<  P.getEvaluation() << " ";
+  cout <<  cost << " ";
+  if(convergence_file!="") o_file  <<  cost << " ";
   
   std::clock_t time_end = clock();
   double used_time = double(time_end - ils->time_begin) / CLOCKS_PER_SEC;
