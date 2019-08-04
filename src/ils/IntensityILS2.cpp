@@ -133,7 +133,7 @@ struct NeighborMove {
 };*/
 
 
-double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
+double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p) {
 
   double current_eval = current_plan.getEvaluation();
 
@@ -158,7 +158,7 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
 
 
   	 double delta_eval = current_plan.get_delta_eval (*s, i, j, intensity-s->I(i,j));
-     if(delta_eval < -0.001){
+     if(p || delta_eval < -0.001){
 	   s->change_intensity(i, j, intensity, &diff);
 	   current_eval = current_plan.incremental_eval(*s, diff); // current_plan.incremental_eval(*s, i, j, intensity-s->I(i,j));
 
@@ -182,7 +182,7 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move) {
 
     if(!diff.empty()){
         double delta_eval = current_plan.get_delta_eval (*s, diff);
-        if(delta_eval < -0.001)
+        if(p || delta_eval < -0.001)
         	current_eval = current_plan.incremental_eval(*s, diff);
         else
         	s->diff_undo(diff);

@@ -31,7 +31,16 @@ public:
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
-  double applyMove (Plan &P, NeighborMove move);
+  double applyMove (Plan &P, NeighborMove move, bool p);
+
+  double applyMove (Plan &P, NeighborMove move){
+	  return applyMove(P,move,false);
+  }
+
+  double applyMoveP (Plan &P, NeighborMove move){
+	  return applyMove(P,move,true);
+  }
+
   string planToString(Plan &P);
 private:
   static int myrandom (int i) { return std::rand()%i;}

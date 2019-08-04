@@ -120,16 +120,16 @@ public:
     }
  
     if (is_move ){
-      neighborhood = getNeighborhood(current_plan, neighborhood_type, 
-                                     LSTarget::none);
       cout << "Perturbation:" << endl; 
       for (int i=0; i < perturbation_size; i++) {
+          neighborhood = getNeighborhood(current_plan, neighborhood_type,
+                                         LSTarget::none);
     	  move = neighborhood[i];
-       cout << "  move type " << move.type << ", s:" << 
+    	  cout << "  move type " << move.type << ", s:" <<
                move.station_id << ", a:" << move.aperture_id << 
                ", b:" << move.beamlet_id << ", action:"<< move.action << endl;
 
-				applyMove(current_plan, move);
+		  applyMoveP(current_plan, move);
       }
     }
     return(current_plan.getEvaluation());
@@ -146,6 +146,10 @@ public:
   virtual vector <NeighborMove> getNeighborhood(Plan & current_plan,
                                                 NeighborhoodType ls_neighborhood,
                                                 LSTarget ls_target) = 0;
+
+  virtual double applyMoveP (Plan & current_plan, NeighborMove move){
+	  return applyMove (current_plan, move);
+  }
 
   virtual double applyMove (Plan & current_plan, NeighborMove move) = 0;
 
