@@ -6,7 +6,7 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = ibo_ls-default dao_ls-default
+algo_names = dao_ls-psize3 ibo_ls-psize3 dao_ls-psize5 ibo_ls-psize5 dao_ls-psize7 ibo_ls-psize7
 
 [dao_ls-default]
 description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
@@ -23,5 +23,59 @@ tuning_param = NEIGHBOURHOOD
 tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
 exec = "../AS"
 params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+outputpos_times = 0
+outputpos_boxes = 0
+
+[dao_ls-psize3]
+description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
+tuning_param = NEIGHBOURHOOD
+tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
+exec = "../AS"
+params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=3 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_ls-psize3]
+description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
+tuning_param = NEIGHBOURHOOD
+tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=3 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+outputpos_times = 0
+outputpos_boxes = 0
+
+[dao_ls-psize5]
+description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
+tuning_param = NEIGHBOURHOOD
+tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
+exec = "../AS"
+params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_ls-psize5]
+description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
+tuning_param = NEIGHBOURHOOD
+tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+outputpos_times = 0
+outputpos_boxes = 0
+
+[dao_ls-psize7]
+description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
+tuning_param = NEIGHBOURHOOD
+tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
+exec = "../AS"
+params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=7 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_ls-psize7]
+description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
+tuning_param = NEIGHBOURHOOD
+tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=7 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
 outputpos_times = 0
 outputpos_boxes = 0
