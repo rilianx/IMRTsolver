@@ -1,0 +1,63 @@
+
+#####
+# Boxplots default
+#####
+Rscript scripts/process.boxplot.R ibo plots/default-ibo 3 M I A data/ibo_default_mixed.csv data/ibo_default_intensity.csv data/ibo_default_aperture.csv
+
+Rscript scripts/process.boxplot.R dao plots/default-dao 3 M I A data/dao_default_mixed.csv data/dao_default_intensity.csv data/dao_default_aperture.csv
+
+#####
+# Boxplots perturbation by neighborhood dao
+#####
+Rscript scripts/process.boxplot.R dao-mixed plots/perturbation-dao 4 MP0 MP3 MP5 MP7 data/dao_default_mixed.csv data/dao_p3_mixed.csv data/dao_p5_mixed.csv data/dao_p7_mixed.csv
+
+Rscript scripts/process.boxplot.R dao-intensity plots/perturbation-dao 4 IP0 IP3 IP5 IP7 data/dao_default_intensity.csv data/dao_p3_intensity.csv data/dao_p5_intensity.csv data/dao_p7_intensity.csv
+
+Rscript scripts/process.boxplot.R dao-aperture plots/perturbation-dao 4 AP0 AP3 AP5 AP7 data/dao_default_aperture.csv data/dao_p3_aperture.csv data/dao_p5_aperture.csv data/dao_p7_aperture.csv
+
+#####
+# Boxplots perturbation by neighborhood ibo
+#####
+Rscript scripts/process.boxplot.R ibo-mixed plots/perturbation-ibo 4 MP0 MP3 MP5 MP7 data/ibo_default_mixed.csv data/ibo_p3_mixed.csv data/ibo_p5_mixed.csv data/ibo_p7_mixed.csv
+
+Rscript scripts/process.boxplot.R ibo-intensity plots/perturbation-ibo 4 IP0 IP3 IP5 IP7 data/ibo_default_intensity.csv data/ibo_p3_intensity.csv data/ibo_p5_intensity.csv data/ibo_p7_intensity.csv
+
+Rscript scripts/process.boxplot.R ibo-aperture plots/perturbation-ibo 4 AP0 AP3 AP5 AP7 data/ibo_default_aperture.csv data/ibo_p3_aperture.csv data/ibo_p5_aperture.csv data/ibo_p7_aperture.csv
+
+#####
+# Boxplots neighborhood by perturbation
+#####
+Rscript scripts/process.boxplot.R ibo-P3 plots/neighborhood-ibo 3 M I A data/ibo_p3_mixed.csv data/ibo_p3_intensity.csv data/ibo_p3_aperture.csv
+
+Rscript scripts/process.boxplot.R ibo-P5 plots/neighborhood-ibo 3 M I A data/ibo_p5_mixed.csv data/ibo_p5_intensity.csv data/ibo_p5_aperture.csv
+
+Rscript scripts/process.boxplot.R ibo-P7 plots/neighborhood-ibo 3 M I A data/ibo_p7_mixed.csv data/ibo_p7_intensity.csv data/ibo_p7_aperture.csv
+
+Rscript scripts/process.boxplot.R dao-P3 plots/neighborhood-dao 3 M I A data/dao_p3_mixed.csv data/dao_p3_intensity.csv data/dao_p3_aperture.csv
+
+Rscript scripts/process.boxplot.R dao-P5 plots/neighborhood-dao 3 M I A data/dao_p5_mixed.csv data/dao_p5_intensity.csv data/dao_p5_aperture.csv
+
+Rscript scripts/process.boxplot.R dao-P7 plots/neighborhood-dao 3 M I A data/dao_p7_mixed.csv data/dao_p7_intensity.csv data/dao_p7_aperture.csv
+
+####
+# Convergence by perturbation
+####
+
+Rscript scripts/process.convergence.R ibo-P0 equidist-coord.txt_ibo_ls_0_10000_ plots/convergence-ibo 3 M I A 3_0_3_0_0_0_5_1_20_2 4_0_3_0_0_0_5_1_20_2 5_0_3_0_0_0_5_1_20_2
+
+Rscript scripts/process.convergence.R dao-P0 equidist-coord.txt_dao_ls_0_10000_ plots/convergence-dao 3 M I A 3_0_3_0_0_0_5_1_20_2 4_0_3_0_0_0_5_1_20_2 5_0_3_0_0_0_5_1_20_2
+
+Rscript scripts/process.convergence.R ibo-P3 equidist-coord.txt_ibo_ls_0_10000_ plots/convergence-ibo 3 M I A 3_0_3_3_0_0_5_1_20_2 4_0_3_3_0_0_5_1_20_2 5_0_3_3_0_0_5_1_20_2
+
+Rscript scripts/process.convergence.R dao-P3 equidist-coord.txt_dao_ls_0_10000_ plots/convergence-dao 3 M I A 3_0_3_3_0_0_5_1_20_2 4_0_3_3_0_0_5_1_20_2 5_0_3_3_0_0_5_1_20_2
+
+Rscript scripts/process.convergence.R ibo-P5 equidist-coord.txt_ibo_ls_0_10000_ plots/convergence-ibo 3 M I A 3_0_3_5_0_0_5_1_20_2 4_0_3_5_0_0_5_1_20_2 5_0_3_5_0_0_5_1_20_2
+
+Rscript scripts/process.convergence.R dao-P5 equidist-coord.txt_dao_ls_0_10000_ plots/convergence-dao 3 M I A 3_0_3_5_0_0_5_1_20_2 4_0_3_5_0_0_5_1_20_2 5_0_3_5_0_0_5_1_20_2
+
+Rscript scripts/process.convergence.R ibo-P7 equidist-coord.txt_ibo_ls_0_10000_ plots/convergence-ibo 3 M I A 3_0_3_7_0_0_5_1_20_2 4_0_3_7_0_0_5_1_20_2 5_0_3_7_0_0_5_1_20_2
+
+Rscript scripts/process.convergence.R dao-P7 equidist-coord.txt_dao_ls_0_10000_ plots/convergence-dao 3 M I A 3_0_3_7_0_0_5_1_20_2 4_0_3_7_0_0_5_1_20_2 5_0_3_7_0_0_5_1_20_2
+
+
+
