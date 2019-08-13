@@ -162,10 +162,7 @@ int main(int argc, char** argv){
   // Initial collimator setup (initial solution: aperture, intensity)
   args::Group isetup (parser, "Initial collimator setup:");
   args::ValueFlag<string> _setup (isetup, "string", 
-                                  "Initial setup  (open_max|open_min|closed_max|closed_min|random|manual|open_min_min|open_min_k)." +
-                                  string(" * open_min_k initializes intensity of open apertures ") +
-                                  "   with the value of initial-intensity " + to_string(initial_intensity), 
-                                   {'t', "setup"});
+                                  "Initial setup  (open_max|open_min|closed_max|closed_min|random|manual|open_min_min|open_min_k). * open_min_k initializes intensity of open apertures  with the value of initial-intensity " + to_string(initial_intensity), {'t', "setup"});
   args::ValueFlag<int> _max_apertures     (isetup, "int", 
                                           "Number of apertures per angle (station) (" + 
                                            to_string(max_apertures)+")", {"max-apertures"});
