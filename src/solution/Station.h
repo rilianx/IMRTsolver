@@ -33,6 +33,19 @@ using namespace maths;
 
 namespace imrt {
 
+enum StationSetup {
+  open_all_min = 1,
+  open_all_max = 2,
+  closed_all_min = 3,
+  closed_all_max = 4,
+  rand_all_rand = 5,
+  rand_int = 6,
+  manual_all_manual = 7,
+  open_min_min = 8, 
+  open_min_k = 9
+};
+
+
 /**
  * A Station consists of an angle and a set of apertures with intensities
  * The apertures+intensities are mapped to an intensity matrix (I)
@@ -80,7 +93,7 @@ public:
    // Constructs a new Station
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle,
           int max_apertures, int max_intensity=28, int initial_intensity=0,
-          int step_intensity=2, int setup=6, fstream* myfile=NULL);
+          int step_intensity=2, StationSetup setup=StationSetup::open_all_min, fstream* myfile=NULL);
 
   Station(const Station &s);
 
@@ -88,7 +101,7 @@ public:
 
   virtual ~Station(){ };
 
-  void initializeStation(int type);
+  void initializeStation(StationSetup type);
 
   void setApertureShape (int a, int row, int start, int end);
 
@@ -254,13 +267,13 @@ public:
 
   void clearHistory();
 
-  static const int OPEN_MIN_SETUP = 0;
+  /*static const int OPEN_MIN_SETUP = 0;
   static const int OPEN_MAX_SETUP = 1;
   static const int CLOSED_MIN_SETUP = 2;
   static const int CLOSED_MAX_SETUP = 3;
   static const int RAND_RAND_SETUP = 4;
   static const int RAND_INTENSITIES = 5; //only for ILS
-  static const int MANUAL_SETUP=6;
+  static const int MANUAL_SETUP=6;*/
 
 };
 }

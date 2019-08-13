@@ -61,7 +61,8 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
   string line;
 
   if (! organ_file)
-    cerr << "ERROR: unable to open instance file: " << organ_filename << ", stopping! \n";
+    cerr << "ERROR: unable to open instance file: " << 
+             organ_filename << ", stopping! \n";
 
   cout << "##Reading volume files." << endl;
   getline(organ_file, line);
@@ -98,7 +99,7 @@ int main(int argc, char** argv){
   double beta = 1.0;
 
   // Aperture and intensity configuration
-  int initial_setup;
+  StationSetup initial_setup = StationSetup::open_all_min;
   int max_apertures = 5;
   int initial_intensity = 2;
   int max_intensity = 28;
@@ -161,7 +162,10 @@ int main(int argc, char** argv){
   // Initial collimator setup (initial solution: aperture, intensity)
   args::Group isetup (parser, "Initial collimator setup:");
   args::ValueFlag<string> _setup (isetup, "string", 
-                                  "Initial setup  (open_max|open_min|closed_max|closed_min|random|manual)", 
+                                  "Initial setup  (open_max|open_min|closed_max|" + 
+                                  "closed_min|random|manual|open_min_min|open_min_k)\n "+
+                                  " * open_min_k initializes intensity of open apertures " +
+                                  "   with the value of --initial-intensity ", 
                                    {'t', "setup"});
   args::ValueFlag<int> _max_apertures     (isetup, "int", 
                                           "Number of apertures per angle (station) (" + 
@@ -296,25 +300,30 @@ int main(int argc, char** argv){
   if (_setup) {
     string setup = _setup.Get();
     if (setup == "open_max"){
-      initial_setup = Station::OPEN_MAX_SETUP;
+      initial_setup = StationSetup::open_all_max;
       initial_intensity = max_intensity;
     } else if (setup == "open_min"){
-      initial_setup = Station::OPEN_MIN_SETUP;
+      initial_setup = StationSetup::open_all_min;
       initial_intensity = 0;
     } else if (setup == "closed_max") {
-      initial_setup = Station::CLOSED_MAX_SETUP;
+      initial_setup = StationSetup::closed_all_max;
       initial_intensity = max_intensity;
     } else if (setup == "closed_min") {
-      initial_setup = Station::CLOSED_MIN_SETUP;
+      initial_setup = StationSetup::closed_all_min;
       initial_intensity = 0;
+    } else if (setup == "open_min_min") {
+      initial_setup = StationSetup::open_min_min;
+      initial_intensity = 0;
+    } else if (setup == "open_min_k") {
+      initial_setup = StationSetup::open_min_k;
     } else if (setup == "random") {
       //TODO: Why these ones are different??
       if(strategy=="dao_ls")
-        initial_setup = Station::RAND_RAND_SETUP;
+        initial_setup = StationSetup::rand_all_rand;
       else if (strategy=="ibo_ls")
-        initial_setup = Station::RAND_INTENSITIES;
+        initial_setup = StationSetup::rand_int;
     } else if (setup == "manual") {
-      initial_setup = Station::MANUAL_SETUP;
+      initial_setup = StationSetup::manual_all_manual;
     } else {
       cout << "Error: setup "<< setup << " not recognized"<< endl;
     }
@@ -380,7 +389,11 @@ int main(int argc, char** argv){
   if(convergence_file=="default"){
      string mkdir = "mkdir output";
      system(mkdir.c_str());
-     convergence_file = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_" +strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)+"_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)+"_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)+"_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(seed)+".conv";
+     convergence_file = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_" 
+                        + strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)
+                        + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
+                        + "_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)
+                        + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(seed)+".conv";
      output_file = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_" +strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)+"_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)+"_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)+"_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(seed)+".out";
   }
   
@@ -433,12 +446,24 @@ int main(int argc, char** argv){
   cout << "##   Seed: " << seed << endl;
 
   cout << "##   Open initial setup: " ;
-  if (initial_setup==Station::OPEN_MAX_SETUP) cout << "open max intensity" << endl;
-  else if (initial_setup==Station::OPEN_MIN_SETUP) cout << "open min intensity" << endl;
-  else if (initial_setup==Station::CLOSED_MAX_SETUP) cout << "closed max intensity" << endl;
-  else if (initial_setup==Station::CLOSED_MIN_SETUP) cout << "closed min intensity" << endl;
-  else if (initial_setup==Station::RAND_RAND_SETUP) cout << "random" << endl;
-  else if (initial_setup==Station::RAND_INTENSITIES) cout << "random" << endl;
+  if (initial_setup==StationSetup::open_all_max) 
+    cout << "open max intensity" << endl;
+  else if (initial_setup==StationSetup::open_all_min) 
+    cout << "open min intensity" << endl;
+  else if (initial_setup==StationSetup::closed_all_max) 
+    cout << "closed max intensity" << endl;
+  else if (initial_setup==StationSetup::closed_all_min) 
+    cout << "closed min intensity" << endl;
+  else if (initial_setup==StationSetup::rand_all_rand) 
+    cout << "random" << endl;
+  else if (initial_setup==StationSetup::rand_int) 
+    cout << "random" << endl;
+  else if (initial_setup==StationSetup::open_min_min) 
+    cout << "open min min intensity" << endl;
+  else if (initial_setup==StationSetup::open_min_k) 
+    cout << "open min k="<< initial_intensity << " intensity" << endl;
+  else if (initial_setup==StationSetup::manual_all_manual) 
+    cout << "manual intensity" << endl;
   cout << "##   Apertures: " << max_apertures << endl;
   cout << "##   Initial intensity: " << initial_intensity << endl;
   cout << "##   Max intensity: " << max_intensity << endl;

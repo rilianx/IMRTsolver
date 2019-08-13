@@ -10,11 +10,15 @@
 namespace imrt {
 
 
-  Station::Station(Collimator& collimator, vector<Volume>& volumes, int _angle, int max_apertures,
-                   int max_intensity, int initial_intensity, int step_intensity, int setup, fstream* myfile):
-		collimator(collimator), angle(_angle) , max_apertures(max_apertures), A(max_apertures),
-		intensity(max_apertures), max_intensity(max_intensity), initial_intensity(initial_intensity),
-                step_intensity(step_intensity) {
+  Station::Station(Collimator& collimator, vector<Volume>& volumes, 
+                   int _angle, int max_apertures, int max_intensity, 
+                   int initial_intensity, int step_intensity, 
+                   StationSetup setup, fstream* myfile): collimator(collimator), 
+                   angle(_angle) , max_apertures(max_apertures), 
+                   A(max_apertures), intensity(max_apertures), 
+                   max_intensity(max_intensity), 
+                   initial_intensity(initial_intensity),
+                   step_intensity(step_intensity) {
     min_intensity=1;
 
     n_volumes=volumes.size();
@@ -106,10 +110,9 @@ namespace imrt {
     return(*this);
   }
 
-  void Station::initializeStation(int type) {
+  void Station::initializeStation(StationSetup type) {
     // Generating aperture patterns
-
-    if (type==OPEN_MAX_SETUP || type==OPEN_MIN_SETUP) {
+    if (type==StationSetup::open_all_max || type==StationSetup::open_all_min) {
       for (int i=0; i<max_apertures; i++) {
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++){
@@ -117,14 +120,15 @@ namespace imrt {
         }
 	      A[i] =aux;
       }
-    } else if (type==CLOSED_MAX_SETUP || type==CLOSED_MIN_SETUP) {
+    } else if (type==StationSetup::closed_all_max || 
+               type==StationSetup::closed_all_min) {
       for (int i=0; i<max_apertures; i++){
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++)
           aux.push_back(make_pair(-1,-1));
         A[i] = aux;
       }
-    } else if (type==RAND_RAND_SETUP) {
+    } else if (type==StationSetup::rand_all_rand) {
       for (int i=0; i<max_apertures; i++) {
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++) {
@@ -143,16 +147,32 @@ namespace imrt {
         }
         A[i]=aux;
       }
-    } 
+    } else if (type==StationSetup::open_min_min 
+               || type==StationSetup::open_min_k) {
+      // First aperture is open
+      vector<pair<int,int> > aux;
+      for (int j=0; j<collimator.getXdim(); j++){
+        aux.push_back(collimator.getActiveRange(j,angle));
+      }
+	    A[0] =aux;
+      // All the other apertures are closed
+      for (int i=1; i<max_apertures; i++){
+        vector<pair<int,int> > aux;
+        for (int j=0; j<collimator.getXdim(); j++)
+          aux.push_back(make_pair(-1,-1));
+        A[i] = aux;
+      }
+    }
 
     // Generating intensity
-    if (type==OPEN_MIN_SETUP || type==CLOSED_MIN_SETUP) {
+    if (type==StationSetup::open_all_min || type==StationSetup::closed_all_min 
+        || type==StationSetup::open_min_min) {
       for (int i=0; i<max_apertures; i++)
         intensity[i] = min_intensity;
-    } else if (type==OPEN_MAX_SETUP || type==CLOSED_MAX_SETUP) {
+    } else if (type==StationSetup::open_all_max || type==StationSetup::closed_all_max) {
       for (int i=0; i<max_apertures; i++)
         intensity[i] = max_intensity;
-    } else if (type==RAND_RAND_SETUP) {
+    } else if (type==StationSetup::rand_all_rand) {
       vector<int> levels;
       for (int k=0; k<=max_intensity; k=k+step_intensity)
         levels.push_back(k);
@@ -161,16 +181,21 @@ namespace imrt {
         sel = (rand() %  levels.size());
         intensity[i] = levels[sel];
       }
+    } else if (type==StationSetup::open_min_k) {
+      intensity[0] = initial_intensity;
+      for (int i=1; i<max_apertures; i++)
+        intensity[i] = min_intensity;
     } else {
       for (int i=0; i<max_apertures; i++)
         intensity[i] = initial_intensity;
     }
 
-    if(type==RAND_INTENSITIES) {
+    if(type==StationSetup::rand_int) {
       generate_random_intensities();
     } else {
       generateIntensityMatrix();
     }
+
   }
 
   //only for ILS

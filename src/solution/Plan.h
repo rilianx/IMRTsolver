@@ -26,9 +26,10 @@ public:
 
   Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
 
-  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, Collimator& collimator, 
-       vector<Volume>& volumes, int max_apertures, int max_intensity, int initial_intensity, 
-       int step_intensity=2, int setup=6, char* file=NULL);
+  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, 
+       Collimator& collimator, vector<Volume>& volumes, int max_apertures, 
+       int max_intensity, int initial_intensity, int step_intensity=2, 
+       StationSetup setup = open_all_min, char* file=NULL);
 
   Plan(const Plan &p);
 

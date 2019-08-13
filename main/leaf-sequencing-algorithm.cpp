@@ -99,7 +99,7 @@ int main(int argc, char** argv){
   int max_intensity=28;
   int step_intensity=2;
   bool acceptance=ILS::ACCEPT_NONE;
-  int initial_setup;
+  StationSetup initial_setup;
 
   // ls params
   double prob_intensity=0.2;
@@ -221,21 +221,21 @@ int main(int argc, char** argv){
 
   //This should be at the end given that will modify values
   if(open_max) {
-    initial_setup=Station::OPEN_MAX_SETUP;
+    initial_setup=open_all_max;
     initial_intensity=max_intensity;
   } else if (open_min) {
-    initial_setup=Station::OPEN_MIN_SETUP;
+    initial_setup=open_all_min;
     initial_intensity=0;
   } else if (closed_min) {
-    initial_setup=Station::CLOSED_MIN_SETUP;
+    initial_setup=closed_all_min;
     initial_intensity=0;
   } else if (closed_max) {
-    initial_setup=Station::CLOSED_MAX_SETUP;
+    initial_setup=closed_all_max;
     initial_intensity=max_intensity;
   } else if (all_rand) {
-    initial_setup=Station::RAND_RAND_SETUP;
+    initial_setup=rand_all_rand;
  }  else {
-    initial_setup=Station::MANUAL_SETUP;
+    initial_setup=manual_all_manual;
  }
   if (_file) file=_file.Get();
   if (_file2) file2=_file2.Get();
