@@ -1,7 +1,7 @@
-algos:dao_ls-psize3_NEIGHBOURHOOD--ls_simple=mixed dao_ls-psize3_NEIGHBOURHOOD--ls_sequential=intensity dao_ls-psize3_NEIGHBOURHOOD--ls_sequential=aperture ibo_ls-psize3_NEIGHBOURHOOD--ls_simple=mixed ibo_ls-psize3_NEIGHBOURHOOD--ls_sequential=intensity ibo_ls-psize3_NEIGHBOURHOOD--ls_sequential=aperture dao_ls-psize5_NEIGHBOURHOOD--ls_simple=mixed dao_ls-psize5_NEIGHBOURHOOD--ls_sequential=intensity dao_ls-psize5_NEIGHBOURHOOD--ls_sequential=aperture ibo_ls-psize5_NEIGHBOURHOOD--ls_simple=mixed ibo_ls-psize5_NEIGHBOURHOOD--ls_sequential=intensity ibo_ls-psize5_NEIGHBOURHOOD--ls_sequential=aperture dao_ls-psize7_NEIGHBOURHOOD--ls_simple=mixed dao_ls-psize7_NEIGHBOURHOOD--ls_sequential=intensity dao_ls-psize7_NEIGHBOURHOOD--ls_sequential=aperture ibo_ls-psize7_NEIGHBOURHOOD--ls_simple=mixed ibo_ls-psize7_NEIGHBOURHOOD--ls_sequential=intensity ibo_ls-psize7_NEIGHBOURHOOD--ls_sequential=aperture 
-gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
-compared instances:  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
-runs    :420 420 420 420 420 420 420 420 420 420 420 420 420 420 420 420 420 420 
-L:  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
-W:  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
+algos:dao_ls_setup_SETUPopen_min_min dao_ls_setup_SETUPopen_min_k ibo_ls_setup_SETUPopen_max ibo_ls_setup_SETUPrandom 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0 
+runs    :420 420 420 420 
+L:  0   0   0   0 
+W:  0   0   0   0 
