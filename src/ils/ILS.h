@@ -37,7 +37,8 @@ enum NeighborhoodType {
   mixed = 3,
   sequential_i = 4,
   sequential_a = 5,
-  sequential_p = 6
+  sequential_p = 6,
+  imixed = 7,
 };
 
 enum LSType {
@@ -257,12 +258,16 @@ public:
        }
      }
 
+     if (user == NeighborhoodType::imixed)
+    	 return (current);
+
+
      cout << "Error: Unknown neighborhood operator" << endl;
      return(NeighborhoodType::intensity);  
   };
 
   NeighborhoodType selectInitialNeighborhood (NeighborhoodType user) {
-     if (user == NeighborhoodType::sequential_i) 
+     if (user == NeighborhoodType::sequential_i || user == NeighborhoodType::imixed)
        return(NeighborhoodType::intensity);
      else if (user == NeighborhoodType::sequential_a)
        return(NeighborhoodType::aperture);
@@ -307,10 +312,10 @@ public:
     cout << "Starting local search" << endl;
 
     while (improvement) {
-      //Select the neighborhood (doone for the cases in which sequenced neighborhoods are chosen)
+      //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
       current_neighborhood = selectNeighborhood (current_neighborhood, 
                                                  ls_neighborhood, 
-                                                 improvement && !sequential_flag);
+                                                 improvement && !sequential_flag); // improvement is always true?
       improvement = false;
       //Get the moves in the neighborhood (this is possible because the moves are not that many!)
       neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target); 
@@ -371,6 +376,12 @@ public:
          
       }
 
+      //Check if imixed neighborhood
+      if (!improvement && ls_neighborhood==NeighborhoodType::imixed && current_neighborhood==NeighborhoodType::intensity){
+    	  ls_neighborhood=NeighborhoodType::mixed;
+    	  improvement = true;
+      }
+
       // Check sequential neighborhood
       if (is_sequential) {
         if (!improvement & !sequential_flag) {
@@ -378,7 +389,7 @@ public:
           // improvement we allow to check also the next neighborhood
           // Note: this should be coordinated with the select neighborhood 
           // function.
-				  sequential_flag = true;
+		  sequential_flag = true;
           improvement = true;
         } else {
           sequential_flag = false;
