@@ -101,6 +101,43 @@ vector < NeighborMove > IntensityILS2::getShuffledNeighbors(Plan &P) {
   return(final_list);
 };
 
+vector < NeighborMove > IntensityILS2::getShuffledNeighbors(Plan &P, int k, bool intensity) {
+
+  vector< NeighborMove > a_list, i_list, final_list;
+
+  i_list = getShuffledIntensityNeighbors(P);
+  a_list = getShuffledApertureNeighbors(P);
+
+  int size_i= (double)i_list.size()/k + 0.5;
+  int size_a= (double)a_list.size()/k + 0.5;
+
+  int i=0, a=0;
+  while(!i_list.empty() || !a_list.empty()){
+
+	  if(intensity){
+		  if(!i_list.empty()) {
+			  final_list.push_back( i_list.back() );
+		  	  i_list.pop_back();
+		  }
+		  i++;
+	  }else{
+		  if(!a_list.empty()) {
+			  final_list.push_back( a_list.back() );
+		  	  a_list.pop_back();
+		  }
+		  a++;
+	  }
+
+	  if(i==size_i || a==size_a){
+		  i=0; a=0;
+		  intensity = !intensity;
+	  }
+
+  }
+
+  return(final_list);
+};
+
 vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
                                        NeighborhoodType ls_neighborhood,
                                        LSTarget ls_target){
@@ -110,9 +147,13 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
     neighborList = getShuffledIntensityNeighbors(current_plan);
   } else if (ls_neighborhood == aperture) {
     neighborList = getShuffledApertureNeighbors(current_plan);
-  } else {
+  } else if (ls_neighborhood == mixed) {
     //mixed
     neighborList = getShuffledNeighbors(current_plan);
+  }else if (ls_neighborhood == smixed_i) {
+	    neighborList = getShuffledNeighbors(current_plan, 2, true);
+  }else if (ls_neighborhood == smixed_a) {
+	    neighborList = getShuffledNeighbors(current_plan, 2, false);
   }
   return(neighborList);
 }

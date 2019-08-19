@@ -39,6 +39,8 @@ enum NeighborhoodType {
   sequential_a = 5,
   sequential_p = 6,
   imixed = 7,
+  smixed_i= 8,
+  smixed_a= 9,
 };
 
 enum LSType {
@@ -230,7 +232,9 @@ public:
      
      if (user == NeighborhoodType::intensity || 
          user == NeighborhoodType::aperture ||
-         user == NeighborhoodType::mixed) 
+         user == NeighborhoodType::mixed ||
+		 user == NeighborhoodType::smixed_i ||
+		 user == NeighborhoodType::smixed_a)
        return (user);
 
      //TODO: add probability parameter
@@ -335,6 +339,13 @@ public:
                   "," << move.aperture_id << "," << move.action << "); Improvement: " <<
                   current_plan.getEvaluation() << endl;
           improvement = true;
+
+          if(ls_neighborhood==NeighborhoodType::smixed_i && move.type==2)
+        	  ls_neighborhood==NeighborhoodType::smixed_a;
+          else if(ls_neighborhood==NeighborhoodType::smixed_a && move.type==1)
+        	  ls_neighborhood==NeighborhoodType::smixed_i;
+
+
           if (ls_type == LSType::first) {
             // First improvement  
             current_eval = current_plan.getEvaluation();

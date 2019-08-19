@@ -347,6 +347,8 @@ int main(int argc, char** argv){
       neighborhood = NeighborhoodType::mixed;
     else if (nn == "imixed")
         neighborhood = NeighborhoodType::imixed;
+    else if (nn == "smixed")
+            neighborhood = NeighborhoodType::smixed_i;
     else 
       cout << "Neighborhood operator " << 
           neighborhood << "not recognized"<<endl;
