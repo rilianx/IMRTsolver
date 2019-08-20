@@ -113,6 +113,7 @@ int main(int argc, char** argv){
 
   // Target beamlet heuristic
   bool targeted_search = false;
+  LSTargetType target_type = LSTargetType::target_none;
   int vsize = 50;
   int bsize = 20;
 
@@ -374,7 +375,10 @@ int main(int argc, char** argv){
   } 
   if (_perturbation_size) perturbation_size = _perturbation_size.Get();
 
-  if (_targeted_search) targeted_search = true;
+  if (_targeted_search) {
+     targeted_search = true;
+     target_type = LSTargetType::target_friends;
+  }   
   
 
   // Archivos del problem
@@ -490,7 +494,7 @@ int main(int argc, char** argv){
   }
 
   if (targeted_search)
-    cout << "##   Targeted search: yes"  << endl;
+    cout << "##   Targeted search: yes (friends)"  << endl;
   else
     cout << "##   Targeted search: no"  << endl;
   
@@ -541,7 +545,7 @@ int main(int argc, char** argv){
   double cost;
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
+    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, convergence_file);
   }else if(strategy=="ibo_ls"){
 
 //    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
@@ -550,7 +554,7 @@ int main(int argc, char** argv){
 
 
 	  ils = new IntensityILS2();
-	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, LSTarget::none, perturbation_type, perturbation_size, convergence_file);
+	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, convergence_file);
 
     //for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     //cout << P.eval() << endl  ;
