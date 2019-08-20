@@ -131,7 +131,7 @@ int main(int argc, char** argv){
   
 
   args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********",
-                             "Example.\n../AS -s ibo_ls --maxeval=4000 --ls_sequential=aperture --setup=open_min --seed=2 --ls=first  --max-intensity=20");
+                             "Example.\n../AS -s ibo_ls --maxeval=4000 --ls_sequential=intensity --setup=open_min --seed=2 --ls=first  --max-intensity=20");
 
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
   args::ValueFlag<int>    _seed     (parser, "int", "Seed  (" + 
@@ -345,9 +345,13 @@ int main(int argc, char** argv){
       neighborhood = NeighborhoodType::aperture;
     else if (nn == "mixed")
       neighborhood = NeighborhoodType::mixed;
+    else if (nn == "imixed")
+        neighborhood = NeighborhoodType::imixed;
+    else if (nn == "smixed")
+            neighborhood = NeighborhoodType::smixed_i;
     else 
       cout << "Neighborhood operator " << 
-              neighborhood << "not recognized"<<endl;
+          neighborhood << "not recognized"<<endl;
   } else if (_nseq) {
     string nn = _nseq.Get();
     if (nn == "intensity")

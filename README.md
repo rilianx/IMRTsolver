@@ -10,6 +10,8 @@ cmake .
 make
 ````
 
+Folder with experiments: (https://drive.google.com/drive/folders/1mjP8Fpkc4ngs360KGmqF2HHAEqXblhqj)
+
 Para correr:
 
     ./AS {OPTIONS}

@@ -37,7 +37,10 @@ enum NeighborhoodType {
   mixed = 3,
   sequential_i = 4,
   sequential_a = 5,
-  sequential_p = 6
+  sequential_p = 6,
+  imixed = 7,
+  smixed_i= 8,
+  smixed_a= 9,
 };
 
 enum LSType {
@@ -234,7 +237,9 @@ public:
      
      if (user == NeighborhoodType::intensity || 
          user == NeighborhoodType::aperture ||
-         user == NeighborhoodType::mixed) 
+         user == NeighborhoodType::mixed ||
+		 user == NeighborhoodType::smixed_i ||
+		 user == NeighborhoodType::smixed_a)
        return (user);
 
      //TODO: add probability parameter
@@ -262,12 +267,16 @@ public:
        }
      }
 
+     if (user == NeighborhoodType::imixed)
+    	 return (current);
+
+
      cout << "Error: Unknown neighborhood operator" << endl;
      return(NeighborhoodType::intensity);  
   };
 
   NeighborhoodType selectInitialNeighborhood (NeighborhoodType user) {
-     if (user == NeighborhoodType::sequential_i) 
+     if (user == NeighborhoodType::sequential_i || user == NeighborhoodType::imixed)
        return(NeighborhoodType::intensity);
      else if (user == NeighborhoodType::sequential_a)
        return(NeighborhoodType::aperture);
@@ -313,10 +322,10 @@ public:
     cout << "Starting local search" << endl;
 
     while (improvement) {
-      //Select the neighborhood (doone for the cases in which sequenced neighborhoods are chosen)
+      //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
       current_neighborhood = selectNeighborhood (current_neighborhood, 
                                                  ls_neighborhood, 
-                                                 improvement && !sequential_flag);
+                                                 improvement && !sequential_flag); // improvement is always true?
       improvement = false;
       //Get the moves in the neighborhood (this is possible because the moves are not that many!)
       neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target); 
@@ -336,6 +345,13 @@ public:
                   "," << move.aperture_id << "," << move.action << "); Improvement: " <<
                   current_plan.getEvaluation() << endl;
           improvement = true;
+
+          if(ls_neighborhood==NeighborhoodType::smixed_i && move.type==2)
+        	  ls_neighborhood==NeighborhoodType::smixed_a;
+          else if(ls_neighborhood==NeighborhoodType::smixed_a && move.type==1)
+        	  ls_neighborhood==NeighborhoodType::smixed_i;
+
+
           if (ls_type == LSType::first) {
             // First improvement  
             current_eval = current_plan.getEvaluation();
@@ -377,6 +393,12 @@ public:
          
       }
 
+      //Check if imixed neighborhood
+      if (!improvement && ls_neighborhood==NeighborhoodType::imixed && current_neighborhood==NeighborhoodType::intensity){
+    	  ls_neighborhood=NeighborhoodType::mixed;
+    	  improvement = true;
+      }
+
       // Check sequential neighborhood
       if (is_sequential) {
         if (!improvement & !sequential_flag) {
@@ -384,7 +406,7 @@ public:
           // improvement we allow to check also the next neighborhood
           // Note: this should be coordinated with the select neighborhood 
           // function.
-				  sequential_flag = true;
+		  sequential_flag = true;
           improvement = true;
         } else {
           sequential_flag = false;

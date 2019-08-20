@@ -31,6 +31,11 @@ public:
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
+
+
+  //return interleaved sets of neighbors: i1, a1, i2, a2,... ik, ak
+  vector < NeighborMove > getShuffledNeighbors(Plan &P, int k, bool intensity);
+
   double applyMove (Plan &P, NeighborMove move, bool p);
 
   double applyMove (Plan &P, NeighborMove move){
