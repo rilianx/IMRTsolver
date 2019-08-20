@@ -48,14 +48,14 @@ enum LSType {
   first = 2
 };
 
-struct LSTarget {
-  LSTargetType move_type;
-  NeighborMove target_move;
-}
-
 enum LSTargetType {
   target_none = 1,
   target_friends = 2  
+};
+
+struct LSTarget {
+  LSTargetType target_type;
+  NeighborMove target_move;
 };
 
 // Basically this ones will be the same as the moves
@@ -114,6 +114,7 @@ public:
     bool is_move = false;
     NeighborhoodType neighborhood_type;
     NeighborMove move;
+    LSTarget ls_target = {LSTargetType::target_none, {0,0,0,0,0}};
 
     // Move-based perturbation
     if (perturbation_type == PerturbationType::p_intensity){
@@ -131,7 +132,7 @@ public:
       cout << "Perturbation:" << endl; 
       for (int i=0; i < perturbation_size; i++) {
           neighborhood = getNeighborhood(current_plan, neighborhood_type,
-                                         LSTarget::none);
+                                         ls_target);
     	  move = neighborhood[i];
     	  cout << "  move type " << move.type << ", s:" <<
                move.station_id << ", a:" << move.aperture_id << 
@@ -195,7 +196,7 @@ public:
      while (true) {
        // Apply local search
        aux_eval = localSearch(current_plan, max_time, max_evaluations,  
-                  used_evaluations, ls_type, ls_neighborhood, ls_target, 
+                  used_evaluations, ls_type, ls_neighborhood, ls_target_type, 
                   trajectory_file);
         
        if (aux_eval < current_eval) {
@@ -297,7 +298,7 @@ public:
     double current_eval = current_plan.getEvaluation();    
     NeighborMove best_move = {0,0,0,0,0}; 
     NeighborhoodType current_neighborhood;
-    LSTarget ls_target = {ls_target_type, best_move};
+    LSTarget ls_target = {LSTargetType::target_none, best_move};
     int n_neighbor = 1; 
 
     // the sequential flag indicates that the previous neighborhood was checked
@@ -356,12 +357,16 @@ public:
             // First improvement  
             current_eval = current_plan.getEvaluation();
             current_plan.clearLast();
+            ls_target.target_type = ls_target_type;
+            ls_target.target_move = move;
             break;
           } else {
             // Best improvement
             current_eval = current_plan.getEvaluation();
             best_move = move;
             current_plan.undoLast(); //TODO: ignacio revisame!.
+            ls_target.target_type = ls_target_type;
+            ls_target.target_move = move;
           }
         } else {
           //No improvement
