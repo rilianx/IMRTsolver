@@ -1,7 +1,7 @@
-algos:dao_ls_setup_SETUPopen_min_min dao_ls_setup_SETUPopen_min_k ibo_ls_setup_SETUPopen_max ibo_ls_setup_SETUPrandom 
-gains (average relative times):1.000000 1.000000 1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 1.000000 1.000000 
-compared instances:  0   0   0   0 
-runs    :420 420 420 420 
-L:  0   0   0   0 
-W:  0   0   0   0 
+algos:ibo_ls-setup_NEIGHBOURHOOD--ls_simple=smixed 
+gains (average relative times):1.000000 
+gains (total time)            :1.000000 
+compared instances:  0 
+runs    :420 
+L:  0 
+W:  0 
