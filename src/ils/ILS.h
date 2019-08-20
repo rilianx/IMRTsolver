@@ -45,9 +45,14 @@ enum LSType {
   first = 2
 };
 
-enum LSTarget {
-  none = 1,
-  beamlet = 2  
+struct LSTarget {
+  LSTargetType move_type;
+  NeighborMove target_move;
+}
+
+enum LSTargetType {
+  target_none = 1,
+  target_friends = 2  
 };
 
 // Basically this ones will be the same as the moves
@@ -159,7 +164,7 @@ public:
 
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
                               LSType ls_type, NeighborhoodType ls_neighborhood,
-                              LSTarget ls_target, PerturbationType perturbation_type,
+                              LSTargetType ls_target_type, PerturbationType perturbation_type,
                               int perturbation_size, string convergence_file) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
@@ -277,12 +282,13 @@ public:
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
                       int& used_evaluations, LSType ls_type, 
                       NeighborhoodType ls_neighborhood, 
-                      LSTarget ls_target, string trajectory_file) {
+                      LSTargetType ls_target_type, string trajectory_file) {
     bool improvement = true;
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();    
     NeighborMove best_move = {0,0,0,0,0}; 
     NeighborhoodType current_neighborhood;
+    LSTarget ls_target = {ls_target_type, best_move};
     int n_neighbor = 1; 
 
     // the sequential flag indicates that the previous neighborhood was checked
