@@ -1,4 +1,4 @@
-algos:ibo_ls-setup_NEIGHBOURHOOD--ls_simple=smixed 
+algos:dao_ls_imixed 
 gains (average relative times):1.000000 
 gains (total time)            :1.000000 
 compared instances:  0 
