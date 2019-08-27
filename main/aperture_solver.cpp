@@ -110,6 +110,7 @@ int main(int argc, char** argv){
   LSType ls_type = LSType::first;
   NeighborhoodType neighborhood = NeighborhoodType::mixed;
   double prob_intensity = 0.2;
+  int tabu_size = 0;
 
   // Target beamlet heuristic
   bool targeted_search = false;
@@ -146,6 +147,9 @@ int main(int argc, char** argv){
   args::ValueFlag<string> _ls (strat, "string", 
                                "Local search strategy (best|first)", 
                                {'l', "ls"});
+  args::ValueFlag<int>    _tabu_size (strat, "int", 
+                                    "Tabu list size(" + 
+                                     to_string(tabu_size)+")", {"tabu-size"});
 
   // Execution parameters
   args::Group budget (parser, "Budget options:");
@@ -196,6 +200,7 @@ int main(int argc, char** argv){
                                "Probabilistic sequential neighborhood in local search [0,1]", 
                                {"ls_sequentialp"});
 
+
   // Target beamlet heuristic parameters
   args::Group heur (parser, "Heuristic options:");
   args::Flag _targeted_search (heur, "targeted_search", 
@@ -208,7 +213,7 @@ int main(int argc, char** argv){
                                      to_string(vsize)+")", {"vsize"});
   
   // Perturbation parameters
-  args::Group perargs (parser, "Heuristic options:");
+  args::Group perargs (parser, "Perturbation:");
   args::ValueFlag<string> _perturbation_type (perargs , "string", 
                                       "Type of perturbation to be applied (intensity|aperture|mixed)", 
                                       {"perturbation"});
@@ -273,20 +278,20 @@ int main(int argc, char** argv){
 		return 1;
 	}
 
-	if(_strategy) strategy=_strategy.Get();
+	if(_strategy) strategy = _strategy.Get();
 
-	if(_maxiter) maxiter=_maxiter.Get();
-	if(_maxtime) maxtime=_maxtime.Get();
-  if(_maxeval) maxeval=_maxeval.Get();
-	if(_seed) seed=_seed.Get();
+	if(_maxiter) maxiter = _maxiter.Get();
+	if(_maxtime) maxtime = _maxtime.Get();
+  if(_maxeval) maxeval = _maxeval.Get();
+	if(_seed) seed = _seed.Get();
 
-	if(_maxdelta) maxdelta=_maxdelta.Get();
-	if(_maxratio) maxratio=_maxratio.Get();
-	if(_alpha) alpha=_alpha.Get();
-	if(_beta) beta=_beta.Get();
+	if(_maxdelta) maxdelta = _maxdelta.Get();
+	if(_maxratio) maxratio = _maxratio.Get();
+	if(_alpha) alpha = _alpha.Get();
+	if(_beta) beta = _beta.Get();
 
-	if(_bsize) bsize=_bsize.Get();
-	if(_vsize) vsize=_vsize.Get();
+	if(_bsize) bsize = _bsize.Get();
+	if(_vsize) vsize = _vsize.Get();
 
   if(_max_apertures) max_apertures=_max_apertures.Get();
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
@@ -336,6 +341,8 @@ int main(int argc, char** argv){
               " not recognized."<< endl;
     }
   }
+
+  if(_tabu_size) tabu_size = _tabu_size.Get();
 
   // Neighborhood
   if (_nsimple) {
@@ -393,12 +400,14 @@ int main(int argc, char** argv){
   if(convergence_file=="default"){
      string mkdir = "mkdir output";
      system(mkdir.c_str());
-     convergence_file = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_" 
+     string base_name= string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_" 
                         + strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)
                         + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
                         + "_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)
-                        + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(seed)+".conv";
-     output_file = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_" +strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)+"_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)+"_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)+"_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(seed)+".out";
+                        + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size)
+                        +"_"+to_string(seed);
+     convergence_file = base_name + ".conv";
+     output_file = base_name+".out";
   }
   
 
@@ -477,6 +486,8 @@ int main(int argc, char** argv){
     cout << "##   Local search: first improvement"  << endl;
   if (ls_type==LSType::best)
     cout << "##   Local search: best improvement"  << endl;
+  
+  cout << "##   Tabu list size: " << tabu_size << endl;
 
   if (neighborhood == NeighborhoodType::intensity)
     cout << "##   Neighborhood: intensity" << endl;
@@ -545,7 +556,7 @@ int main(int argc, char** argv){
   double cost;
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, convergence_file);
+    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
   }else if(strategy=="ibo_ls"){
 
 //    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
@@ -554,7 +565,7 @@ int main(int argc, char** argv){
 
 
 	  ils = new IntensityILS2();
-	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, convergence_file);
+	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
 
     //for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
     //cout << P.eval() << endl  ;

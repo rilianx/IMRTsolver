@@ -27,6 +27,7 @@ struct NeighborMove {
   // 1: open (increase)
   // -1 close left (reduce intensity)
   // -2 close right
+  // -3 close from closest border
   int action;
   int beamlet_id;
 };
@@ -169,7 +170,7 @@ public:
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations, 
                               LSType ls_type, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
-                              int perturbation_size, string convergence_file) {
+                              int perturbation_size, int tabu_size, string convergence_file) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double current_eval = current_plan.getEvaluation();
@@ -197,7 +198,7 @@ public:
        // Apply local search
        aux_eval = localSearch(current_plan, max_time, max_evaluations,  
                   used_evaluations, ls_type, ls_neighborhood, ls_target_type, 
-                  trajectory_file);
+                  tabu_size, trajectory_file);
         
        if (aux_eval < current_eval) {
          current_eval = aux_eval;
@@ -289,17 +290,64 @@ public:
      return(user);
   };
 
+
+  void addTabu (vector<NeighborMove>& tabu_list, NeighborMove move, int tabu_size) {
+    NeighborMove tabu_move = move;
+    
+    if (tabu_list.size() == tabu_size)
+      tabu_list.erase(tabu_list.begin());
+
+    if (move.type == 1) {
+      //Intensity move
+      if (move.action < 0){
+        //Move reduces intensity
+        tabu_move.action = 1;
+      } else {
+        //Move increases intensity
+        tabu_move.action = -1;
+      }
+    } else if (move.type == 2) {
+      //Aperture move
+      if (move.action < 0){
+        //Move closes aperture
+        tabu_move.action = 1;
+      } else {
+        //Move open aperture
+        tabu_move.action = -3;
+      }
+    }
+    tabu_list.push_back(tabu_move);
+  };
+
+  bool isTabu (NeighborMove move, vector<NeighborMove> tabu_list) {
+    for (auto tabu_move : tabu_list) {
+      if (tabu_move.beamlet_id != move.beamlet_id) continue;
+      if (tabu_move.aperture_id != move.aperture_id) continue;
+      if (tabu_move.station_id != move.station_id) continue;
+      if (tabu_move.type != move.type) continue;
+      if (tabu_move.action ==-3 && move.action > 0) continue;
+      if (tabu_move.action > 0 && move.action < 0) continue;
+      cout << "CENSORED!" << endl;
+      return(true);
+    }
+    return(false);
+  }
+
   double localSearch (Plan& current_plan, int max_time, int max_evaluations, 
                       int& used_evaluations, LSType ls_type, 
                       NeighborhoodType ls_neighborhood, 
-                      LSTargetType ls_target_type, string trajectory_file) {
-    bool improvement = true;
+                      LSTargetType ls_target_type, int tabu_size,
+                      string trajectory_file) {
+    
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();    
     NeighborMove best_move = {0,0,0,0,0}; 
     NeighborhoodType current_neighborhood;
     LSTarget ls_target = {LSTargetType::target_none, best_move};
+    vector <NeighborMove> tabu_list;
+
     int n_neighbor = 1; 
+    bool improvement = true;
 
     // the sequential flag indicates that the previous neighborhood was checked
     // unsuccesfully 
@@ -336,10 +384,13 @@ public:
               neighborhood.size() << endl;
 
       for (NeighborMove move:neighborhood) {
+        
+        //Skip neighbor if its marked as tabu
+        if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
+  
         //Generate the solution in the neighborhood
-        applyMove(current_plan, move);  //TODO: ignacio implementame!.
-
-
+        applyMove(current_plan, move);  
+ 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
           cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id << 
@@ -359,6 +410,8 @@ public:
             current_plan.clearLast();
             ls_target.target_type = ls_target_type;
             ls_target.target_move = move;
+            if (tabu_size > 0)
+              addTabu(tabu_list, move, tabu_size);
             break;
           } else {
             // Best improvement
@@ -389,6 +442,8 @@ public:
         applyMove(current_plan, best_move);
         current_eval = current_plan.getEvaluation();
         current_plan.clearLast();
+        if (tabu_size > 0)
+          addTabu(tabu_list, best_move, tabu_size);
         used_evaluations++;
       }
 
