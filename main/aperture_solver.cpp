@@ -239,20 +239,21 @@ int main(int argc, char** argv){
                                      to_string(beta)+")", {"beta"});
 
   // Problem file parameters
-  args::ValueFlag<string> _file  (parser, "string", 
+  args::Group io_opt (parser, "Input output options:");
+  args::ValueFlag<string> _file  (io_opt, "string", 
                                  "File with the deposition matrix", {"file-dep"});
-  args::ValueFlag<string> _file2 (parser, "string", 
+  args::ValueFlag<string> _file2 (io_opt, "string", 
                                  "File with the beam coordinates", {"file-coord"});
-  args::ValueFlag<string> _file3 (parser, "string", 
+  args::ValueFlag<string> _file3 (io_opt, "string", 
                                  "File with initial intensities", {"file-sol"});
-  args::ValueFlag<string> _path  (parser, "string", 
+  args::ValueFlag<string> _path  (io_opt, "string", 
                                  string("Absolute path of the executable ") + 
                                  "(if it is executed from other directory)", {"path"});
-  args::Flag _plot               (parser, "bool",  
+  args::Flag _plot               (io_opt, "bool",  
                                  "Generate plot and save in file", {"plot"});
 
   // Output file parameters
-  args::ValueFlag<string> _convergence_file (parser, "string", 
+  args::ValueFlag<string> _convergence_file (io_opt, "string", 
                                  "File to output convergence", {"convergence"});
 
 	try

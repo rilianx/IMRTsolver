@@ -58,8 +58,11 @@ public:
                                         LSTarget ls_target);
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
-  vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
+    //vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
+  pair<vector < NeighborMove >, vector<NeighborMove>> getFriendsIntensityNeighbors(Plan &P, NeighborMove target);
+  pair <vector < NeighborMove >, vector < NeighborMove >> getFriendsApertureNeighbors (Plan &P, NeighborMove target);
+  vector < NeighborMove > getFriendsNeighbors(Plan &P, NeighborMove target);  
   double applyMove (Plan &P, NeighborMove move);
   string planToString(Plan &P); 
 

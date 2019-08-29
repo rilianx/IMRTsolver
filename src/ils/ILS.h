@@ -325,9 +325,10 @@ public:
       if (tabu_move.aperture_id != move.aperture_id) continue;
       if (tabu_move.station_id != move.station_id) continue;
       if (tabu_move.type != move.type) continue;
-      if (tabu_move.action ==-3 && move.action > 0) continue;
+      if (tabu_move.action < 0 && move.action > 0) continue;
       if (tabu_move.action > 0 && move.action < 0) continue;
-      cout << "CENSORED!" << endl;
+      //cout << "CENSORED! "<< move.station_id <<"," << move.aperture_id <<"," << move.beamlet_id << "," << move.action << endl;
+     
       return(true);
     }
     return(false);
@@ -385,6 +386,8 @@ public:
 
       for (NeighborMove move:neighborhood) {
         
+        //cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id << 
+        //          "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << ");" << endl;
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
   
