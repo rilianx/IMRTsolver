@@ -15,7 +15,7 @@ namespace imrt {
 
 class ApertureILS : public ILS {
 public:
-  
+
   /* bsize: number of beamlets to be used in the target beamlet heuristic
      vsize: number of voxels to be considered when selecting the targeted beamlets
      search_intensity: perform local search over intensity
@@ -28,33 +28,33 @@ public:
      acceptance: type of acceptnace criterion to be used
      ls_type: type of local search to be initialized
   */
-  ApertureILS(int bsize, int vsize, double _prob_intensity, 
+  ApertureILS(int bsize, int vsize, double _prob_intensity,
               int _step_intensity);
 
   ApertureILS(const ApertureILS & ils);
-  
-  virtual ~ApertureILS() {};  
+
+  virtual ~ApertureILS() {};
 
   pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
-  
+
   bool isBeamletModifiable(int beamlet, Station* station, bool open_flag) ;
-  
+
   double openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P);
-  
+
   double closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval,  Plan& P);
-    
+
   double iLocalSearch(Plan& P, double max_time, bool verbose=true);
   double aLocalSearch(Plan& P, double max_time, bool verbose=true);
 
   double simpleLocalSearch(Plan& P, bool verbose=true);
-  
+
   //double perturbation (Plan& P);
-  
+
   bool perturbate(int no_improvement, int iteration);
-  
- 
-  vector <NeighborMove> getNeighborhood(Plan& current_plan, 
-                                        NeighborhoodType ls_neighborhood, 
+
+
+  vector <NeighborMove> getNeighborhood(Plan& current_plan,
+                                        NeighborhoodType ls_neighborhood,
                                         LSTarget ls_target);
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
@@ -62,9 +62,10 @@ public:
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
   pair<vector < NeighborMove >, vector<NeighborMove>> getFriendsIntensityNeighbors(Plan &P, NeighborMove target);
   pair <vector < NeighborMove >, vector < NeighborMove >> getFriendsApertureNeighbors (Plan &P, NeighborMove target);
-  vector < NeighborMove > getFriendsNeighbors(Plan &P, NeighborMove target);  
+  vector < NeighborMove > getFriendsNeighbors(Plan &P, NeighborMove target);
+  vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   double applyMove (Plan &P, NeighborMove move);
-  string planToString(Plan &P); 
+  string planToString(Plan &P);
 
   int getStepIntensity ();
 
@@ -73,8 +74,8 @@ private:
   bool search_aperture;
   double prob_intensity;
   int step_intensity;
-  
-  int perturbation_size;  
+
+  int perturbation_size;
   bool do_perturbate;
 
 };
