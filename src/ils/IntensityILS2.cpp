@@ -164,28 +164,32 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
 }
 
 void IntensityILS2::prioritizeFriends(vector < NeighborMove >& neighborList, LSTarget ls_target, Plan& current_plan){
-  auto it=neighborList.begin();
+
   int k=0;
   for(int i=0; i<neighborList.size();i++){
     NeighborMove n = neighborList[i];
 
     if(n.type==1){ //aperture
        //if target has an intensity move the aperture moves
-       //in the same station are  priorized in the neighbourhood
+       //in the same station AND APERTURE are  priorized in the neighbourhood
        if(ls_target.target_move.type==1 &&
-         ls_target.target_move.station_id == n.station_id){
+         ls_target.target_move.station_id == n.station_id ){
+    	   Station* s=current_plan.get_station(n.station_id);
+    	   pair<int, int> p1=s->beam2pos[n.beamlet_id];
+    	   if (ls_target.target_move.aperture_id+ls_target.target_move.action == int(s->I(p1.first,p1.second)+0.5)){
              neighborList[i]=neighborList[k];
              neighborList[k]=n;
              k++;
+    	   }
        }
 
        //if target has an aperture move, friend beamlets
        //are priorized in the neighbourhood
        if(ls_target.target_move.type==2 &&
-         ls_target.target_move.station_id == it->station_id){
-            Station* s=current_plan.get_station(it->station_id);
+         ls_target.target_move.station_id == n.station_id){
+            Station* s=current_plan.get_station(n.station_id);
             pair<int, int> p1=s->beam2pos[ls_target.target_move.beamlet_id];
-            pair<int, int> p2=s->beam2pos[it->beamlet_id];
+            pair<int, int> p2=s->beam2pos[n.beamlet_id];
             if(max (abs(p1.first-p2.first), abs(p1.second-p2.second)) <=1  ){
               neighborList[i]=neighborList[k];
               neighborList[k]=n;
@@ -251,6 +255,7 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
     	  diff = s->change_intensity(intens, -1.0);
       else
     	  diff = s->generate_intensity(intens, false);
+
 
 
     }else{
