@@ -396,14 +396,15 @@ vector < NeighborMove > ApertureILS::getShuffledIntensityNeighbors(Plan &P){
   vector< NeighborMove > a_list;
   list<Station*>::iterator s;
   s = stations.begin();
+
   for (int i = 0; i < stations.size(); i++) {
     for (int j = 0; j < (*s)->getNbApertures();j++){
       //One pair -j (-aperture) for reducing intensity
       //One pair for increasing intensity (+j)
-      if ((*s)->getApertureIntensity(j) > 0)
+      if ((*s)->getApertureIntensity(j) > 0) 
         a_list.push_back({1,i,j,-1,0});
       
-      if ((*s)->getApertureIntensity(j) <= (*s)->getMaxIntensity())
+      if ((*s)->getApertureIntensity(j) <= (*s)->getMaxIntensity()) 
         a_list.push_back({1,i,j,1,0});
     }
     std::advance(s,1);
@@ -411,6 +412,53 @@ vector < NeighborMove > ApertureILS::getShuffledIntensityNeighbors(Plan &P){
   //cout << "Size neighborhood " << a_list.size()<< endl;
   std::random_shuffle(a_list.begin(), a_list.end());
   return(a_list);
+};
+
+pair<vector < NeighborMove >, vector<NeighborMove>> ApertureILS::getFriendsIntensityNeighbors(Plan &P, NeighborMove target){
+  list<Station*> stations = P.get_stations();
+  vector< NeighborMove > a_list;
+  vector< NeighborMove > b_list;
+  pair<vector <NeighborMove>, vector<NeighborMove>> all_list;
+  bool target_flag = false;
+  list<Station*>::iterator s;
+  s = stations.begin();
+
+  for (int i = 0; i < stations.size(); i++) {
+    for (int j = 0; j < (*s)->getNbApertures();j++) {
+      if (target.type == 1) {
+        if (target.station_id == i && target.aperture_id == j)
+            target_flag = true;
+        else
+            target_flag = false;
+      } else {
+        if (target.station_id ==i && target.aperture_id ==j)
+            target_flag = true;
+        else
+            target_flag = false;
+      }
+      //One pair -j (-aperture) for reducing intensity
+      //One pair for increasing intensity (+j)
+      if ((*s)->getApertureIntensity(j) > 0){
+        if (target_flag)
+          a_list.push_back({1,i,j,-1,0});
+        else
+          b_list.push_back({1,i,j,-1,0});
+      }
+      
+      if ((*s)->getApertureIntensity(j) <= (*s)->getMaxIntensity()) {
+        if (target_flag)
+          a_list.push_back({1,i,j,1,0});
+        else
+          b_list.push_back({1,i,j,1,0});
+      }
+    }
+    std::advance(s,1);
+  }
+  //cout << "Size neighborhood " << a_list.size()<< endl;
+  std::random_shuffle(a_list.begin(), a_list.end());
+  std::random_shuffle(b_list.begin(), b_list.end());
+  all_list = make_pair(a_list, b_list);
+  return(all_list);
 };
 
 vector < NeighborMove > ApertureILS::getShuffledApertureNeighbors(Plan &P){
@@ -465,7 +513,159 @@ vector < NeighborMove > ApertureILS::getShuffledApertureNeighbors(Plan &P){
   return(a_list);
 };
 
-vector < NeighborMove > ApertureILS::getOrderedApertureNeighbors(Plan &P){
+/* Order neighbors in two lists: a_list, b_list. The first 
+   list is for the preferred neighbors and the rest is in b_list
+   - If previous move was an aperture move: schedule in a_list 
+   moves with the same action (opening or closing) on the same 
+   station+aperture and only neighbors beamlets to the previous 
+   move beamlet are considered.
+   - If previous move was an intensity move: schedule in a_list
+   moves related to the same station+aperture pair.
+*/
+pair <vector < NeighborMove >, vector < NeighborMove >> 
+      ApertureILS::getFriendsApertureNeighbors (Plan &P, NeighborMove target){
+  list<Station*> stations = P.get_stations();
+  vector<NeighborMove> a_list;
+  vector<NeighborMove> b_list;
+  pair <vector<NeighborMove>, vector<NeighborMove>> all_list;
+  
+  list<Station*>::iterator st;
+  int beamlet;
+  st = stations.begin();
+
+  pair <int,int> pattern;
+  pair <int,int> active;
+
+  bool target_flag=false, staap_flag=false, beam_flag=false; 
+
+  pair <int,int> target_beamlet;
+  if (target.type == 2) 
+    target_beamlet = P.get_station(target.station_id)->getPos(target.beamlet_id);
+
+  //cout << "Target move: " << target.type << ":" << target.station_id << "," << target.aperture_id << "," << target.beamlet_id <<","  << target.action <<endl;
+  
+  for (int s = 0; s < stations.size(); s++) {
+    for (int a = 0; a < (*st)->getNbApertures(); a++){
+      // Signal a_list neighbors when intensity move is the target
+      if (s==target.station_id && a==target.aperture_id)  
+        staap_flag =true;
+      else
+        staap_flag =false;
+      
+      for (int k = 0; k< (*st)->collimator.getXdim() ; k++){
+        //One pair -k (-row) for closing aperture
+        //One pair (k) (row) for opening aperture
+        pattern = (*st)->getApertureShape(a, k);
+        active = (*st)->collimator.getActiveRange(k, (*st)->getAngle());
+
+        // this row is not active for this station
+        if (active.first == -1) continue;
+
+        if (pattern.first == -1) {
+          // all beamlets are closed in this row so we test 
+          // opening all beamlets
+          for (int i=active.first; i<=active.second; i++){
+            beamlet = (*st)->getBeamIndex(make_pair(k,i));
+            beam_flag = target_flag = true;
+            if (target.type ==2) {
+              if (staap_flag && abs(k-target_beamlet.first) <=1 
+                  && abs(i-target_beamlet.second) <=1) {
+                beam_flag = true;
+                if (target.action > 0) target_flag=true;
+                else target_flag = false;
+              } else {
+                beam_flag = false;
+              }
+            }
+            
+            if (staap_flag && beam_flag && target_flag)
+              a_list.push_back({2,s,a,1,beamlet});
+            else
+              b_list.push_back({2,s,a,1,beamlet});
+          }
+        } else {
+          // open slid, try closing or opening
+          beamlet = (*st)->getBeamIndex(make_pair(k,pattern.first));
+
+          beam_flag = target_flag = true;
+          if (target.type ==2) {
+            if (staap_flag && abs(k-target_beamlet.first) <=1 
+                && abs(pattern.first-target_beamlet.second) <=1) {
+              beam_flag = true;
+            } else {
+              beam_flag = false;
+            }
+          }
+    
+          if ((*st)->isOpenBeamlet(beamlet, a)) {
+            if (target.type ==2) {
+              if (target.action < 0) target_flag = true;
+              else target_flag = false;
+            }
+
+            if (staap_flag && beam_flag && target_flag)
+              a_list.push_back({2,s,a,-1,beamlet});
+            else
+              b_list.push_back({2,s,a,-1,beamlet});
+          } else {
+            if (target.type ==2) {
+              if (target.action > 0) target_flag = true;
+              else target_flag = false;
+            }
+
+            if (staap_flag && beam_flag && target_flag)
+              a_list.push_back({2,s,a,1,beamlet});
+            else
+              b_list.push_back({2,s,a,1,beamlet});          
+          }
+          
+          if (pattern.first != pattern.second) {
+            beamlet = (*st)->getBeamIndex(make_pair(k,pattern.second));
+            beam_flag = target_flag = true;
+            if (target.type ==2) {
+              if (staap_flag && abs(k-target_beamlet.first) <=1 
+                  && abs(pattern.second-target_beamlet.second) <=1) {
+                beam_flag = true;
+              } else {
+                beam_flag = false;
+              }
+            }
+
+            if((*st)->isOpenBeamlet(beamlet, a)) {
+              if (target.type ==2) {
+                if (target.action < 0) target_flag = true;
+                else target_flag = false;
+              }
+
+              if (staap_flag && beam_flag && target_flag)
+                a_list.push_back({2,s,a,-2,beamlet});
+              else
+                b_list.push_back({2,s,a,-2,beamlet});
+            } else {
+              if (target.type ==2) {
+                if (target.action > 0) target_flag = true;
+                else target_flag = false;
+              }
+
+              if (staap_flag && beam_flag && target_flag)
+                a_list.push_back({2,s,a,1,beamlet});
+              else
+                b_list.push_back({2,s,a,1,beamlet});
+            }
+          }
+        }
+      }
+    }
+    std::advance(st,1);
+  }
+
+  std::random_shuffle(a_list.begin(), a_list.end());
+  std::random_shuffle(b_list.begin(), b_list.end());
+  all_list = make_pair(a_list, b_list);
+  return(all_list);
+};
+
+/*vector < NeighborMove > ApertureILS::getOrderedApertureNeighbors(Plan &P){
   list<Station*> stations = P.get_stations();
   
   pair<bool, pair<Station*, int>> target_beam = getBestLSBeamlet(P);
@@ -556,7 +756,7 @@ vector < NeighborMove > ApertureILS::getOrderedApertureNeighbors(Plan &P){
   }
   
   return(final_list);
-};
+};*/
 
 vector < NeighborMove > ApertureILS::getShuffledNeighbors(Plan &P) {
 
@@ -571,18 +771,57 @@ vector < NeighborMove > ApertureILS::getShuffledNeighbors(Plan &P) {
   return(final_list);
 };
 
+vector < NeighborMove > ApertureILS::getFriendsNeighbors(Plan &P, NeighborMove target) {
+
+  pair <vector< NeighborMove >, vector<NeighborMove>> a_list, i_list;
+  vector <NeighborMove> aux_list;
+  vector <NeighborMove> final_list;
+
+  i_list = getFriendsIntensityNeighbors(P, target);
+  a_list = getFriendsApertureNeighbors(P, target);
+  final_list.insert(final_list.end(), a_list.first.begin(), a_list.first.end());
+  final_list.insert(final_list.end(), i_list.first.begin(), i_list.first.end());
+  std::random_shuffle(final_list.begin(), final_list.end());
+
+  aux_list.insert(aux_list.end(), a_list.second.begin(), a_list.second.end());
+  aux_list.insert(aux_list.end(), i_list.second.begin(), i_list.second.end());
+  std::random_shuffle(aux_list.begin(), aux_list.end());
+
+  final_list.insert(final_list.end(), aux_list.begin(), aux_list.end());
+
+  return(final_list);
+};
+
 vector < NeighborMove> ApertureILS::getNeighborhood(Plan& current_plan, 
                                        NeighborhoodType ls_neighborhood, 
                                        LSTarget ls_target){
   vector < NeighborMove> neighborList;
-
+  pair <vector<NeighborMove>, vector<NeighborMove>> aux;
+  
   if (ls_neighborhood == intensity) {
-    neighborList = getShuffledIntensityNeighbors(current_plan);
+    if (ls_target.target_type == LSTargetType::target_none )
+      neighborList = getShuffledIntensityNeighbors(current_plan);
+    else {
+      aux = getFriendsIntensityNeighbors(current_plan, ls_target.target_move);
+      neighborList.insert(neighborList.end(), aux.first.begin(), aux.first.end());
+      neighborList.insert(neighborList.end(), aux.second.begin(), aux.second.end());
+    }
   } else if (ls_neighborhood == aperture) {
-    neighborList = getShuffledApertureNeighbors(current_plan);
+    if (ls_target.target_type == LSTargetType::target_none )
+      neighborList = getShuffledApertureNeighbors(current_plan);
+    else {
+      aux = getFriendsApertureNeighbors(current_plan, ls_target.target_move);
+      neighborList.insert(neighborList.end(), aux.first.begin(), aux.first.end());
+      neighborList.insert(neighborList.end(), aux.second.begin(), aux.second.end());
+    }
   } else {
     //mixed
-    neighborList = getShuffledNeighbors(current_plan);
+    if (ls_target.target_type == LSTargetType::target_none )
+      neighborList = getShuffledNeighbors(current_plan);
+    else {
+      neighborList = getFriendsNeighbors(current_plan, ls_target.target_move);
+
+    }
   }
   return(neighborList);
 }
