@@ -36,6 +36,9 @@ public:
   //return interleaved sets of neighbors: i1, a1, i2, a2,... ik, ak
   vector < NeighborMove > getShuffledNeighbors(Plan &P, int k, bool intensity);
 
+  //recorrer el vector y deja los "friends" al comienzo
+  void prioritizeFriends(vector < NeighborMove >& neighborList, LSTarget ls_target, Plan& current_plan);
+
   double applyMove (Plan &P, NeighborMove move, bool p);
 
   double applyMove (Plan &P, NeighborMove move){

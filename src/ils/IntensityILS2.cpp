@@ -98,6 +98,7 @@ vector < NeighborMove > IntensityILS2::getShuffledNeighbors(Plan &P) {
 
   std::random_shuffle(final_list.begin(), final_list.end());
 
+
   return(final_list);
 };
 
@@ -155,7 +156,45 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
   }else if (ls_neighborhood == smixed_a) {
 	    neighborList = getShuffledNeighbors(current_plan, 2, false);
   }
-  return(neighborList);
+
+  if(ls_target.target_type == target_friends)
+     prioritizeFriends(neighborList, ls_target, current_plan);
+
+  return neighborList;
+}
+
+void IntensityILS2::prioritizeFriends(vector < NeighborMove >& neighborList, LSTarget ls_target, Plan& current_plan){
+  auto it=neighborList.begin();
+  int k=0;
+  for(int i=0; i<neighborList.size();i++){
+    NeighborMove n = neighborList[i];
+
+    if(n.type==1){ //aperture
+       //if target has an intensity move the aperture moves
+       //in the same station are  priorized in the neighbourhood
+       if(ls_target.target_move.type==1 &&
+         ls_target.target_move.station_id == n.station_id){
+             neighborList[i]=neighborList[k];
+             neighborList[k]=n;
+             k++;
+       }
+
+       //if target has an aperture move, friend beamlets
+       //are priorized in the neighbourhood
+       if(ls_target.target_move.type==2 &&
+         ls_target.target_move.station_id == it->station_id){
+            Station* s=current_plan.get_station(it->station_id);
+            pair<int, int> p1=s->beam2pos[ls_target.target_move.beamlet_id];
+            pair<int, int> p2=s->beam2pos[it->beamlet_id];
+            if(max (abs(p1.first-p2.first), abs(p1.second-p2.second)) <=1  ){
+              neighborList[i]=neighborList[k];
+              neighborList[k]=n;
+              k++;
+            }
+       }
+     }
+
+    }
 }
 
 /*
@@ -240,6 +279,3 @@ string IntensityILS2::planToString(Plan &P) {
 };
 
 }
-
-
-

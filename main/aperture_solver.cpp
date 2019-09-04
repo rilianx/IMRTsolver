@@ -192,7 +192,7 @@ int main(int argc, char** argv){
   args::Group neighborhoodsel (parser, "Neighborhood selection:",
                         args::Group::Validators::AtMostOne);
   args::ValueFlag<string> _nsimple (neighborhoodsel , "string",
-                               "Simple neighborhood in local search  (aperture|intensity|mixed)",
+                               "Simple neighborhood in local search  (aperture|intensity|mixed|imixed)",
                                {"ls_simple"});
   args::ValueFlag<string> _nseq (neighborhoodsel , "string",
                                "Sequential neighborhood in local search starting by (intensity|aperture)",
