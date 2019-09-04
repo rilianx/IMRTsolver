@@ -327,7 +327,7 @@ public:
       if (tabu_move.type != move.type) continue;
       if (tabu_move.action < 0 && move.action > 0) continue;
       if (tabu_move.action > 0 && move.action < 0) continue;
-      //cout << "CENSORED! "<< move.station_id <<"," << move.aperture_id <<"," << move.beamlet_id << "," << move.action << endl;
+      cout << "CENSORED! "<< move.station_id <<"," << move.aperture_id <<"," << move.beamlet_id << "," << move.action << endl;
      
       return(true);
     }
