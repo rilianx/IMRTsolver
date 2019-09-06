@@ -1,7 +1,7 @@
-algos:dao_targeted 
-gains (average relative times):1.000000 
-gains (total time)            :1.000000 
-compared instances:  0 
-runs    :420 
-L:  0 
-W:  0 
+algos:dao_tabu_TABU_SIZE2 dao_tabu_TABU_SIZE5 dao_tabu_TABU_SIZE10 ibo_tabu_TABU_SIZE2 ibo_tabu_TABU_SIZE5 ibo_tabu_TABU_SIZE10 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0   0   0 
+runs    :420 420 420 420 420 420 
+L:  0   0   0   0   0   0 
+W:  0   0   0   0   0   0 

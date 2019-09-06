@@ -6,7 +6,25 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = dao_targeted
+algo_names = dao_tabu ibo_tabu
+
+
+[dao_tabu]
+description = "TABU"
+exec = "../AS"
+tuning_param = TABU_SIZE
+tuning_values = 2 5 10
+params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min_k --perturbation-size=5 --seed=_SEED  --max-intensity=20 --initial-intensity=5 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --tabu-size=_TABU_SIZE
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_tabu]
+exec = "../AS"
+tuning_param = TABU_SIZE
+tuning_values = 2 5 10
+params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --tabu-size=_TABU_SIZE
+outputpos_times = 0
+outputpos_boxes = 0
 
 [dao_targeted]
 description = "TARGETED"
