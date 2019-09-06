@@ -143,7 +143,7 @@ int main(int argc, char** argv){
   // Search strategies
   args::Group strat (parser, "Strategy options:");
   args::ValueFlag<string> _strategy (strat, "string",
-                                     "Strategy  (dao_ls|ibo_ls)",
+                                     "Strategy  (dao_ls|ibo_ls|ibo+dao)",
                                      {'s', "strategy"});
   args::ValueFlag<string> _ls (strat, "string",
                                "Local search strategy (best|first)",
@@ -324,7 +324,7 @@ int main(int argc, char** argv){
       //TODO: Why these ones are different??
       if(strategy=="dao_ls")
         initial_setup = StationSetup::rand_all_rand;
-      else if (strategy=="ibo_ls")
+      else if (strategy=="ibo_ls" || strategy=="ibo+dao")
         initial_setup = StationSetup::rand_int;
     } else if (setup == "manual") {
       initial_setup = StationSetup::manual_all_manual;
@@ -396,12 +396,12 @@ int main(int argc, char** argv){
   if (_file3) file3=strdup(_file3.Get().c_str()); //intensidades de partida
   if (_path) path=_path.Get();
 
-  chdir(path.c_str());
+  int aux=chdir(path.c_str());
 
   if (_convergence_file) convergence_file=_convergence_file.Get();
   if(convergence_file=="default"){
      string mkdir = "mkdir output";
-     system(mkdir.c_str());
+     int aux=system(mkdir.c_str());
      string base_name= string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_"
                         + strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)
                         + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
@@ -423,6 +423,9 @@ int main(int argc, char** argv){
          << endl;
   } else if(strategy=="ibo_ls") {
     cout << "##******** IMRT-Solver (Intensity-based Optimization Local Search) *********"
+         << endl;
+  } else if(strategy=="ibo+dao") {
+    cout << "##******** IMRT-Solver (IBO + DAO Local Search) *********"
          << endl;
   }
   cout << "##**************************************************************************"
@@ -563,16 +566,18 @@ int main(int argc, char** argv){
     cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
   }else if(strategy=="ibo_ls"){
 
-//    ils = new IntensityILS(step_intensity, bsize, vsize, maxdelta, maxratio, alpha, beta, perturbation);
-//    ils->iteratedLocalSearch(P, maxtime, maxeval,LSType::first,NeighborhoodType::mixed,
-      //                           LSTarget::none);
-
-
 	  ils = new IntensityILS2();
 	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
 
-    //for(int i=0;i<50;i++) cout << ils->iLocalSearch(P, false) << endl;
-    //cout << P.eval() << endl  ;
+  }else if(strategy=="ibo+dao"){
+    ils = new IntensityILS2();
+	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
+	  P.generateApertures();
+
+	  ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
+    if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
+	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
+
   }
 
 
@@ -616,7 +621,8 @@ int main(int argc, char** argv){
 
   int tot_alpha=0;
   for(auto s:stations){
-    int alpha=s->get_sum_alpha(strategy);
+    string str=(strategy=="ibo+dao")? "dao_ls":strategy;
+    int alpha=s->get_sum_alpha(str);
     cout << alpha << " " ;
     //if(convergence_file!="") o_file  << alpha << " " ;
     tot_alpha+=alpha;
@@ -626,7 +632,8 @@ int main(int argc, char** argv){
 
   int nb_apertures=0;
   for(auto s:stations){
-    int ap=s->get_nb_apertures(strategy);
+    string str=(strategy=="ibo+dao")? "dao_ls":strategy;
+    int ap=s->get_nb_apertures(str);
     cout << ap << " " ;
     //if(convergence_file!="") o_file << ap << " " ;
     nb_apertures+=ap;

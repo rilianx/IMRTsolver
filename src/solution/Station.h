@@ -174,6 +174,9 @@ public:
   // defined apertures and the intensity vector
   void generateIntensityMatrix();
 
+  // Generate apertures from an ADEQUATE intensity matrix
+  void generateApertures();
+
   void setUniformIntensity(double i);
 
   void printIntensity(bool vector_form=false);

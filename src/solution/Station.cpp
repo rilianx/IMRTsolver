@@ -110,6 +110,8 @@ namespace imrt {
     return(*this);
   }
 
+
+
   void Station::initializeStation(StationSetup type) {
     // Generating aperture patterns
     if (type==StationSetup::open_all_max || type==StationSetup::open_all_min) {
@@ -268,6 +270,33 @@ namespace imrt {
        int2nb[I(i,j)+0.5]++;
   };
 
+  void Station::generateApertures(){
+	  int k=0;
+	  int intens_old=0;
+	  for(auto int_n : int2nb){
+		  int intens = int_n.first;
+		  for (int i=0; i < collimator.getXdim(); i++){
+			  bool flag=true;
+			  A[k][i] = make_pair(-1,-1);
+			  for (int j=0; j<collimator.getYdim(); j++){
+				  if(int(I(i,j)+0.5) == intens){
+					if(flag){
+						A[k][i].first=j; //left
+						flag=false;
+					}
+					A[k][i].second=j; //right
+				  }
+			  }
+		  }
+		  intensity[k]=intens-intens_old;
+		  intens_old=int_n.first;
+		  k++;
+	  }
+
+	  for(;k<max_apertures;k++)
+		  for (int i=0; i < collimator.getXdim(); i++)
+			  A[k][i] = make_pair(-1,-1);
+  }
 
   void Station::generateIntensityMatrix() {
     pair <int,int>aux;

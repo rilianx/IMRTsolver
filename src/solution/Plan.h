@@ -71,7 +71,10 @@ public:
 	// performed with eval or incrementalEval
 	double getEvaluation();
 
-	const list<Station*>& get_stations() const;
+	 // Generate apertures from the intensity matrices
+	void generateApertures();
+
+	const list<Station*>& get_stations() const ;
 
 	void write_open_beamlets();
 

@@ -202,6 +202,12 @@ namespace imrt {
     return stations;
   }
 
+  void Plan::generateApertures(){
+	  for(auto s:stations)
+		  s->generateApertures();
+
+  }
+
   void Plan::write_open_beamlets(){
     ofstream myfile;
     myfile.open ("openbeamlets.txt");
