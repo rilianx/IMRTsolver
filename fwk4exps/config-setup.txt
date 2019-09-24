@@ -6,11 +6,13 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = ibodao
+algo_names = ibodao_ev
 
-[ibodao]
+[ibodao_ev]
+tuning_param = IBO_EVALS
+tuning_values = 500 1000 2000 4000 7500
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo+dao --maxeval=5000 --ls=first --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+params = --file-dep=_INSTANCE  -s ibo+dao --ibo_evals=IBO_EVALS --maxeval=10000 --ls=first --ibo_evals= --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
 outputpos_times = 0
 outputpos_boxes = 0
 
