@@ -89,6 +89,7 @@ int main(int argc, char** argv){
 
   // Budget and execution variables
   int maxiter = 5000;
+  int ibo_evals = 2500;
   int maxtime = 0;
   int maxeval = 0;
 
@@ -151,6 +152,7 @@ int main(int argc, char** argv){
   args::ValueFlag<int>    _tabu_size (strat, "int",
                                     "Tabu list size(" +
                                      to_string(tabu_size)+")", {"tabu-size"});
+
 
   // Execution parameters
   args::Group budget (parser, "Budget options:");
@@ -239,6 +241,12 @@ int main(int argc, char** argv){
                                     "Initial temperature for ratio  (" +
                                      to_string(beta)+")", {"beta"});
 
+  // ibo+dao parameter
+  args::Group ibo_dao (parser, "IBO+DAO options:");
+  args::ValueFlag<int>    _ibo_evals  (ibo_dao, "int",
+                                    "Number of iterations ibo (" +
+                                     to_string(maxiter)+ ")", {"ibo_evals"});
+
   // Problem file parameters
   args::Group io_opt (parser, "Input output options:");
   args::ValueFlag<string> _file  (io_opt, "string",
@@ -299,6 +307,8 @@ int main(int argc, char** argv){
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
   if(_max_intensity) max_intensity=_max_intensity.Get();
   if(_step_intensity) step_intensity=_step_intensity.Get();
+
+  if(_ibo_evals) ibo_evals = _ibo_evals.Get();
 
   // Initial collimator setup
   if (_setup) {
@@ -407,7 +417,7 @@ int main(int argc, char** argv){
                         + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
                         + "_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)
                         + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size)
-                        +"_"+to_string(seed);
+						+ "_"+to_string(ibo_evals)+"_"+to_string(seed);
      convergence_file = base_name + ".conv";
      output_file = base_name+".out";
      json_file = base_name+".json";
@@ -571,12 +581,15 @@ int main(int argc, char** argv){
 
   }else if(strategy=="ibo+dao"){
     ils = new IntensityILS2();
-	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
+	  cost = ils->iteratedLocalSearch(P, maxtime, ibo_evals, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
 	  P.generateApertures();
+	  int evals=ils->used_evaluations;
+	  std::clock_t begin=ils->time_begin;
 
 	  ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
     if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
-	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
+	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type,
+			  perturbation_size, tabu_size, convergence_file, evals, begin);
 
   }
 

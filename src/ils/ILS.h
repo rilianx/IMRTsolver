@@ -170,16 +170,16 @@ public:
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations,
                               LSType ls_type, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
-                              int perturbation_size, int tabu_size, string convergence_file) {
+                              int perturbation_size, int tabu_size, string convergence_file, int evaluations=0, std::clock_t begin = clock()) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double current_eval = current_plan.getEvaluation();
      double used_time = 0;
-     used_evaluations = 0;
+     used_evaluations = evaluations;
 
      //Start time
      std::clock_t time_end;
-     time_begin = clock();
+     time_begin = begin;
 
      //Create log files
      ofstream c_file;
@@ -188,8 +188,8 @@ public:
      if (convergence_file!="") {
        c_file.open (convergence_file.c_str(), ios::out);
        trajectory_file = convergence_file + ".traj";
-       t_file.open (trajectory_file.c_str(), ios::out);
-       t_file << "evalutions;quality" << endl;
+       t_file.open (trajectory_file.c_str(), ios::app);
+       if (evaluations ==0) t_file << "evalutions;quality" << endl;
        t_file.close();
      }
 

@@ -12,7 +12,7 @@ algo_names = ibodao_ev
 tuning_param = IBO_EVALS
 tuning_values = 500 1000 2000 4000 7500
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo+dao --ibo_evals=IBO_EVALS --maxeval=10000 --ls=first --ibo_evals= --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+params = --file-dep=_INSTANCE  -s ibo+dao --ibo_evals=_IBO_EVALS --maxeval=10000 --ls=first --ibo_evals= --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
 outputpos_times = 0
 outputpos_boxes = 0
 
