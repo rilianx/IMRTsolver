@@ -448,7 +448,7 @@ int main(int argc, char** argv){
 
   vector<double> w={1,1,1};
   vector<double> Zmin={0,0,76};
-  vector<double> Zmax={65,60,0};
+  vector<double> Zmax={65,60,1000};
 
   // Create colimator object and volumes
   Collimator collimator (file2, get_angles(file, 5));
