@@ -1,7 +1,7 @@
-algos:ibodao_ev_IBO_EVALS500 ibodao_ev_IBO_EVALS1000 ibodao_ev_IBO_EVALS2000 ibodao_ev_IBO_EVALS4000 ibodao_ev_IBO_EVALS7500 
-gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 
-compared instances:  0   0   0   0   0 
-runs    :420 420 420 420 420 
-L:  0   0   0   0   0 
-W:  0   0   0   0   0 
+algos:dao_ls5 dao_ls5-imixed_SETUPopen_min_min dao_ls5-imixed_SETUPopen_min_k dao_ls5-targeted 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0 
+runs    :420 420 420 420 
+L:  0   0   0   0 
+W:  0   0   0   0 

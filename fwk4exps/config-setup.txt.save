@@ -15,10 +15,9 @@ outputpos_times = 0
 outputpos_boxes = 0
 
 [dao_ls5-imixed]
-tuning_param = SETUP
-tuning_values = open_min_min open_min_k
+
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=_SETUP --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --initial-intensity=5
+params = --file-dep=_INSTANCE  -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
 outputpos_times = 0
 outputpos_boxes = 0
 
