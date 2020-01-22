@@ -220,6 +220,7 @@ public:
        used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
        if (max_time!=0 && used_time >= max_time) break;
        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
+       if (perturbation_size == 0)  break;
 
        //Perturbation
        perturbation(current_plan, perturbation_type, perturbation_size);
