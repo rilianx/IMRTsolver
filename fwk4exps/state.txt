@@ -1,7 +1,7 @@
-algos:dao_ls5 dao_ls5-imixed_SETUPopen_min_min dao_ls5-imixed_SETUPopen_min_k dao_ls5-targeted 
-gains (average relative times):1.000000 1.000000 1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 1.000000 1.000000 
-compared instances:  0   0   0   0 
-runs    :420 420 420 420 
-L:  0   0   0   0 
-W:  0   0   0   0 
+algos:dao_neigh_NEIGH--ls_simple=mixed --convergence=DAO-LS_mixed dao_neigh_NEIGH --ls_simple=imixed --convergence=DAO-LS_imixed dao_neigh_NEIGH --ls_sequential=intensity --convergence=DAO-LS_intensity --ls_sequential=aperture --convergence=DAO-LS_aperture 
+gains (average relative times):1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 
+compared instances:  0   0   0 
+runs    :  0   0   0 
+L:  0   0   0 
+W:  0   0   0 

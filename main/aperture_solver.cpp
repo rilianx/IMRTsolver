@@ -408,20 +408,28 @@ int main(int argc, char** argv){
 
   int aux=chdir(path.c_str());
 
-  if (_convergence_file) convergence_file=_convergence_file.Get();
-  if(convergence_file=="default"){
-     string mkdir = "mkdir output";
-     int aux=system(mkdir.c_str());
-     string base_name= string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_"
-                        + strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)
-                        + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
-                        + "_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)
-                        + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size)
-						+ "_"+to_string(ibo_evals)+"_"+to_string(seed);
-     convergence_file = base_name + ".conv";
-     output_file = base_name+".out";
-     json_file = base_name+".json";
-  }
+  string base_name="";
+  if (_convergence_file) base_name=string("output/") + _convergence_file.Get();
+
+
+   string mkdir = "mkdir output";
+   system(mkdir.c_str());
+
+
+   if(base_name=="")
+       base_name = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_"
+          + strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)
+          + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
+          + "_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)
+          + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size)
+  				+ "_"+to_string(ibo_evals);
+
+   base_name = base_name + "_" + to_string(seed);
+
+   convergence_file = base_name + ".conv";
+   output_file = base_name+".out";
+   json_file = base_name+".json";
+
 
 
   cout << "##**************************************************************************"
@@ -446,9 +454,9 @@ int main(int argc, char** argv){
   // Iniciar generador de numeros aleatorios
   srand(seed);
 
-  vector<double> w={1,1,1};
+  vector<double> w={1,1,5};
   vector<double> Zmin={0,0,76};
-  vector<double> Zmax={65,60,1000};
+  vector<double> Zmax={65,65,76};
 
   // Create colimator object and volumes
   Collimator collimator (file2, get_angles(file, 5));

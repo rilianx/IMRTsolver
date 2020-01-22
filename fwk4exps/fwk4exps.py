@@ -90,7 +90,7 @@ class Config:
 		for algo_name in configParser.get('base', 'algo_names').split():
 			if configParser.has_option(algo_name, 'tuning_param'):
 				tuning_param=configParser.get(algo_name, 'tuning_param')
-				for value in configParser.get(algo_name, 'tuning_values').split():
+				for value in configParser.get(algo_name, 'tuning_values').split(','):
 					algo=Algo(configParser,algo_name)
 					self.algos.append(algo)
 					algo.params = algo.params.replace('_%s'%tuning_param, value);
