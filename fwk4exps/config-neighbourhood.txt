@@ -6,12 +6,20 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = dao_neigh
+algo_names = dao_neigh ibo_neigh
 
 [dao_neigh]
 exec = "../AS"
 tuning_param = NEIGH
 tuning_values =  --ls_simple=mixed --convergence=DAO-LS_mixed, --ls_simple=imixed --convergence=DAO-LS_imixed, --ls_sequential=intensity --convergence=DAO-LS_intensity --ls_sequential=aperture --convergence=DAO-LS_aperture
-params = --file-dep=_INSTANCE  -s dao_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+params = --file-dep=_INSTANCE  -s dao_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_neigh]
+exec = "../AS"
+tuning_param = NEIGH
+tuning_values =  --ls_simple=mixed --convergence=IBO-LS_mixed, --ls_simple=imixed --convergence=IBO-LS_imixed, --ls_sequential=intensity --convergence=IBO-LS_intensity --ls_sequential=aperture --convergence=IBO-LS_aperture
+params = --file-dep=_INSTANCE  -s ibo_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
 outputpos_times = 0
 outputpos_boxes = 0
