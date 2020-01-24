@@ -414,6 +414,8 @@ int main(int argc, char** argv){
 
    string mkdir = "mkdir output";
    system(mkdir.c_str());
+   mkdir = "mkdir " + base_name;
+   system(mkdir.c_str());
 
 
    if(base_name=="")
@@ -424,7 +426,8 @@ int main(int argc, char** argv){
           + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size)
   				+ "_"+to_string(ibo_evals);
 
-   base_name = base_name + "_" + to_string(seed);
+
+   base_name = base_name + "/" + basename(file.c_str()) + "_" + to_string(seed);
 
    convergence_file = base_name + ".conv";
    output_file = base_name+".out";

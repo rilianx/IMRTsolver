@@ -11,15 +11,15 @@ algo_names = dao_neigh ibo_neigh
 [dao_neigh]
 exec = "../AS"
 tuning_param = NEIGH
-tuning_values =  --ls_simple=mixed --convergence=DAO-LS_mixed, --ls_simple=imixed --convergence=DAO-LS_imixed, --ls_sequential=intensity --convergence=DAO-LS_intensity, --ls_sequential=aperture --convergence=DAO-LS_aperture
-params = --file-dep=_INSTANCE  -s dao_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+tuning_values =  --ls_simple=mixed --convergence=DAO-LS_mixed, --ls_simple=imixed --convergence=DAO-LS_imixed, --ls_sequential=intensity --convergence=DAO-LS_intensitySeq, --ls_sequential=aperture --convergence=DAO-LS_apertureSeq, --ls_simple=aperture --convergence=DAO-LS_aperture, --ls_simple=intensity --convergence=DAO-LS_intensity
+params = --file-dep=_INSTANCE  -s dao_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
 outputpos_times = 0
 outputpos_boxes = 0
 
 [ibo_neigh]
 exec = "../AS"
 tuning_param = NEIGH
-tuning_values =  --ls_simple=mixed --convergence=IBO-LS_mixed, --ls_simple=imixed --convergence=IBO-LS_imixed, --ls_sequential=intensity --convergence=IBO-LS_intensity, --ls_sequential=aperture --convergence=IBO-LS_aperture
-params = --file-dep=_INSTANCE  -s ibo_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+tuning_values =  --ls_simple=mixed --convergence=IBO-LS_mixed, --ls_simple=imixed --convergence=IBO-LS_imixed, --ls_sequential=intensity --convergence=IBO-LS_intensitySeq, --ls_sequential=aperture --convergence=IBO-LS_apertureSeq, --ls_simple=aperture --convergence=IBO-LS_aperture, --ls_simple=intensity --convergence=IBO-LS_intensity
+params = --file-dep=_INSTANCE  -s ibo_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
 outputpos_times = 0
 outputpos_boxes = 0
