@@ -598,7 +598,8 @@ int main(int argc, char** argv){
 	  std::clock_t begin=ils->time_begin;
 
 	  ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-    if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
+          neighborhood = NeighborhoodType::sequential_i;
+          //if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
 	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type,
 			  perturbation_size, tabu_size, convergence_file, evals, begin);
 

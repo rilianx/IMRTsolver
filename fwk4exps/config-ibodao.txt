@@ -1,0 +1,25 @@
+[base]
+test_instances = instances.txt
+mintime = 0.0001
+maxtime = 40
+factors = 1 0.833 0.665 0.5 0.2 0.1
+sig_gain = 1.2
+max_seeds = 30
+min_seeds = 30
+algo_names = ibo_dao1 ibo_dao2
+
+[ibo_dao1]
+exec = "../AS"
+tuning_param = EVALS
+tuning_values = --ibo_evals=2000 --convergence=IBOapseq_DAO-2000, --ibo_evals=5000 --convergence=IBOapseq_DAO-5000, --ibo_evals=7000 --convergence=IBOapseq_DAO-7000
+params = --setup=open_min --file-dep=_INSTANCE _EVALS --ls_sequential=aperture -s ibo+dao  --maxeval=10000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_dao2]
+exec = "../AS"
+tuning_param = EVALS
+tuning_values = --ibo_evals=2000 --convergence=IBOap_DAO-2000, --ibo_evals=5000 --convergence=IBOap_DAO-5000, --ibo_evals=7000 --convergence=IBOap_DAO-7000
+params = --setup=open_min --file-dep=_INSTANCE _EVALS --ls_simple=aperture -s ibo+dao  --maxeval=10000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
+outputpos_times = 0
+outputpos_boxes = 0

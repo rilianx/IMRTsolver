@@ -1,0 +1,25 @@
+[base]
+test_instances = instances.txt
+mintime = 0.0001
+maxtime = 40
+factors = 1 0.833 0.665 0.5 0.2 0.1
+sig_gain = 1.2
+max_seeds = 30
+min_seeds = 30
+algo_names = dao_neigh ibo_neigh2
+
+[dao_neigh]
+exec = "../AS"
+tuning_param = NEIGH
+tuning_values =  --ls_simple=mixed --convergence=DAO-LS_mixed_pert5, --ls_simple=imixed --convergence=DAO-LS_imixed_pert5, --ls_sequential=intensity --convergence=DAO-LS_intensitySeq_pert5, --ls_sequential=aperture --convergence=DAO-LS_apertureSeq_pert5, --ls_simple=aperture --convergence=DAO-LS_aperture_pert5, --ls_simple=intensity --convergence=DAO-LS_intensity_pert5
+params = --file-dep=_INSTANCE  -s dao_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_neigh2]
+exec = "../AS"
+tuning_param = NEIGH
+tuning_values =  --ls_simple=mixed --convergence=IBO-LS_mixed_pert5, --ls_simple=imixed --convergence=IBO-LS_imixed_pert5, --ls_sequential=intensity --convergence=IBO-LS_intensitySeq_pert5, --ls_sequential=aperture --convergence=IBO-LS_apertureSeq_pert5, --ls_simple=aperture --convergence=IBO-LS_aperture_pert5, --ls_simple=intensity --convergence=IBO-LS_intensity_pert5
+params = --file-dep=_INSTANCE  -s ibo_ls _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+outputpos_times = 0
+outputpos_boxes = 0

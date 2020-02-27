@@ -1,0 +1,36 @@
+[base]
+test_instances = instances.txt
+mintime = 0.0001
+maxtime = 40
+factors = 1 0.833 0.665 0.5 0.2 0.1
+sig_gain = 1.2
+max_seeds = 30
+min_seeds = 30
+algo_names = dao_setup_mixed
+
+[dao_setup_int]
+exec = "../AS"
+tuning_param = SETUP
+tuning_values =  --setup=open_min --convergence=DAO-LS_intseq-p5-openmin, --setup=open_min_min --convergence=DAO-LS_intseq-p5-openminmin, --setup=open_min_k --convergence=DAO-LS_intseq-p5-openmink, --setup=open_max --convergence=DAO-LS_intseq-p5-openmax, --setup=random --convergence=DAO-LS_intseq-p5-random
+params = --file-dep=_INSTANCE _SETUP --ls_sequential=intensity -s dao_ls  --maxeval=10000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
+outputpos_times = 0
+outputpos_boxes = 0
+
+[dao_setup_mixed]
+exec = "../AS"
+tuning_param = SETUP
+tuning_values =  --setup=open_min --convergence=DAO-LS_mixed-p5-openmin, --setup=open_min_min --convergence=DAO-LS_mixed-p5-openminmin, --setup=open_min_k --convergence=DAO-LS_mixed-p5-openmink, --setup=open_max --convergence=DAO-LS_mixed-p5-openmax, --setup=random --convergence=DAO-LS_mixed-p5-random
+params = --file-dep=_INSTANCE _SETUP --ls_simple=mixed -s dao_ls  --maxeval=10000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
+outputpos_times = 0
+outputpos_boxes = 0
+
+
+[dao_setup_imixed]
+exec = "../AS"
+tuning_param = SETUP
+tuning_values =  --setup=open_min --convergence=DAO-LS_imixed-p5-openmin, --setup=open_min_min --convergence=DAO-LS_imixed-p5-openminmin, --setup=open_min_k --convergence=DAO-LS_imixed-p5-openmink, --setup=open_max --convergence=DAO-LS_imixed-p5-openmax, --setup=random --convergence=DAO-LS_apseq-p5-random
+params = --file-dep=_INSTANCE _SETUP --ls_simple=imixed -s dao_ls  --maxeval=10000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
+outputpos_times = 0
+outputpos_boxes = 0
+
+
