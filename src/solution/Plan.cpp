@@ -11,16 +11,16 @@ namespace imrt {
 
   Plan::Plan (EvaluationFunction &ev) : ev(ev), last_changed(NULL) {};
 
-  Plan::Plan (EvaluationFunction &ev, vector<double> w, vector<double> Zmin, 
+  Plan::Plan (EvaluationFunction &ev, vector<double> w, vector<double> Zmin,
               vector<double> Zmax): ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {
     last_changed=NULL;
   }
 
-  Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, 
-             Collimator& collimator, vector<Volume>& volumes, int max_apertures, 
+  Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax,
+             Collimator& collimator, vector<Volume>& volumes, int max_apertures,
              int max_intensity, int initial_intensity,
              int step_intensity, StationSetup setup, char* file) :
-             ev(EvaluationFunction::getInstance(volumes, collimator)), 
+             ev(EvaluationFunction::getInstance(volumes, collimator)),
              w(w), Zmin(Zmin), Zmax(Zmax) {
 
     cout << "##Initilizing plan."<< endl;
@@ -29,7 +29,7 @@ namespace imrt {
     if(file) myfile=new fstream(file, std::ios_base::in);
 
     for (int i=0;i<collimator.getNbAngles();i++) {
-      Station* station = new Station(collimator, volumes, collimator.getAngle(i), 
+      Station* station = new Station(collimator, volumes, collimator.getAngle(i),
                                      max_apertures, max_intensity, initial_intensity,
                                      step_intensity, setup, myfile);
       add_station(*station);
@@ -203,8 +203,12 @@ namespace imrt {
   }
 
   void Plan::generateApertures(){
-	  for(auto s:stations)
+    cout << stations.size() << endl;
+	  for(auto s:stations){
+      cout << s << endl;
+      s->printIntensity();
 		  s->generateApertures();
+    }
 
   }
 
@@ -253,7 +257,7 @@ namespace imrt {
       st->printAperture(s);
     }
   };
-  
+
   string Plan::toStringApertures () {
     Station *st;
     string solution_str="";
@@ -263,7 +267,7 @@ namespace imrt {
     }
     return(solution_str);
   };
-  
+
   string Plan::toStringIntensities () {
     Station *st;
     string solution_str="";

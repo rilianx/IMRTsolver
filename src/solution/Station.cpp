@@ -279,23 +279,28 @@ namespace imrt {
 			  bool flag=true;
 			  A[k][i] = make_pair(-1,-1);
 			  for (int j=0; j<collimator.getYdim(); j++){
-				  if(int(I(i,j)+0.5) == intens){
-					if(flag){
-						A[k][i].first=j; //left
-						flag=false;
-					}
-					A[k][i].second=j; //right
+
+				  if( int(I(i,j)+0.5) >= intens ){
+  					if(flag){
+  						A[k][i].first=j; //left
+  						flag=false;
+  					}
+  					A[k][i].second=j; //right
 				  }
 			  }
 		  }
 		  intensity[k]=intens-intens_old;
 		  intens_old=int_n.first;
+      printAperture(k);
+      //printIntensity();
 		  k++;
 	  }
 
 	  for(;k<max_apertures;k++)
 		  for (int i=0; i < collimator.getXdim(); i++)
 			  A[k][i] = make_pair(-1,-1);
+
+    //cout << "here" << endl;
   }
 
   void Station::generateIntensityMatrix() {

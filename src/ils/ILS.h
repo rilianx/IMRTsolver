@@ -173,7 +173,7 @@ public:
                               int perturbation_size, int tabu_size, string convergence_file, int evaluations=0, std::clock_t begin = clock()) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
-     double current_eval = current_plan.getEvaluation();
+     double best_eval = current_plan.getEvaluation();
      double used_time = 0;
      used_evaluations = evaluations;
 
@@ -200,18 +200,19 @@ public:
                   used_evaluations, ls_type, ls_neighborhood, ls_target_type,
                   tabu_size, trajectory_file);
 
-       if (aux_eval < current_eval) {
-         current_eval = aux_eval;
+       if (aux_eval < best_eval) {
+         best_eval = aux_eval;
+         //best_plan?
        }
 
        current_iteration++;
        cout << "  iteration: " << current_iteration << " ; eval: " <<
-               aux_eval << " ; best: " << current_eval << endl;
+               aux_eval << " ; best: " << best_eval << endl;
 
        // Print convergence information
        if (convergence_file!="") {
          c_file << used_evaluations << ";" << current_iteration <<
-                   ";" << aux_eval << ";" << current_eval <<
+                   ";" << aux_eval << ";" << best_eval <<
                     planToString(current_plan) << endl;
        }
 
@@ -230,7 +231,7 @@ public:
      if (c_file.is_open()) {
        c_file.close();
      }
-     return(current_eval);
+     return(best_eval);
   };
 
   //Improvement indicates we should keep the neighborhood!
@@ -392,6 +393,9 @@ public:
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
 
+        Station* s=current_plan.get_station(2);
+        int nb=s->int2nb.size();
+        Matrix J(s->I);
         //Generate the solution in the neighborhood
         applyMove(current_plan, move);
 
@@ -416,6 +420,7 @@ public:
             ls_target.target_move = move;
             if (tabu_size > 0)
               addTabu(tabu_list, move, tabu_size);
+
             break;
           } else {
             // Best improvement
@@ -427,7 +432,26 @@ public:
           }
         } else {
           //No improvement
+
+          int k=0;
+          for(auto s:current_plan.get_stations()) {
+
+          if(s->int2nb.size()>5) {
+            cout << k << endl;
+            cout << "type:" << move.type << endl;
+            cout <<  "action:" << move.action << endl;
+            cout << "aperture_id:" << move.aperture_id << endl;
+            cout <<  "beamlet_id:" << move.beamlet_id << endl;
+            cout << J << endl;
+            s->printIntensity();
+            cout << "error undo " << endl;
+            exit(0);
+          }
+          k++;
+          }
+
           current_plan.undoLast();
+
         }
 
         //Counter updates

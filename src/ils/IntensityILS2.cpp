@@ -21,6 +21,8 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 
 	  if(s->int2nb.size() < s->getNbApertures()){
 		  NeighborMove move = {2,k,0,+1,0};
+      s->printIntensity();
+      //cout << s->int2nb.size() << endl;
 		  moves.push_back(move);
 	  }
 
