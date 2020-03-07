@@ -529,6 +529,19 @@ Matrix operator/(const Matrix& m, double num)
     return (temp /= num);
 }
 
+bool operator==(const Matrix& a, const Matrix& b){
+	if((a.rows_ != b.rows_) || (a.cols_)!= (b.cols_)) return false;
+    for (int i = 0; i < a.rows_; ++i)
+        for (int j = 1; j < a.cols_; ++j)
+        	if (a.p[i][j]!=b.p[i][j]) return false;
+
+    return true;
+}
+
+bool operator!=(const Matrix& a, const Matrix& b){
+	return !(a==b);
+}
+
 ostream& operator<<(ostream& os, const Matrix& m)
 {
     for (int i = 0; i < m.rows_; ++i) {

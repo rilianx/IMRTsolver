@@ -21,8 +21,6 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 
 	  if(s->int2nb.size() < s->getNbApertures()){
 		  NeighborMove move = {2,k,0,+1,0};
-      s->printIntensity();
-      //cout << s->int2nb.size() << endl;
 		  moves.push_back(move);
 	  }
 
@@ -252,6 +250,7 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
 
   } else {
     // change intensity
+	Matrix iniI(s->I);
     if (action < 0){
       if(s->int2nb.find(intens+0.5) != s->int2nb.end())
     	  diff = s->change_intensity(intens, -1.0);
@@ -261,18 +260,32 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
 
 
     }else{
+
+
       if(s->int2nb.find(intens+0.5) != s->int2nb.end() || intens==0.0)
     	  diff = s->change_intensity(intens, +1.0);
       else
     	  diff = s->generate_intensity(intens, true);
     }
 
+
     if(!diff.empty()){
         double delta_eval = current_plan.get_delta_eval (*s, diff);
-        if(p || delta_eval < -0.001)
-        	current_eval = current_plan.incremental_eval(*s, diff);
-        else
+        if(p || delta_eval < -0.001){
+        	current_eval=current_plan.incremental_eval(*s, diff);
+        }else{
         	s->diff_undo(diff);
+        	Matrix finI(s->I);
+        	if(iniI!=finI) {
+        		cout << "error0" << endl;
+        		cout << iniI << endl;
+        		cout << finI << endl;
+        		exit(0);
+        	}
+        }
+
+
+
     }
 
   }

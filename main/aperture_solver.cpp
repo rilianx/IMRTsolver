@@ -593,7 +593,12 @@ int main(int argc, char** argv){
   }else if(strategy=="ibo+dao"){
     ils = new IntensityILS2();
 	  cost = ils->iteratedLocalSearch(P, maxtime, ibo_evals, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
-	  P.generateApertures();
+    cout << "eval:" << P.eval() << endl;
+    P.generateApertures();
+    for(auto s:P.get_stations()) s->generateIntensityMatrix();
+
+    cout << "eval2:" << P.eval() << endl;
+
 	  int evals=ils->used_evaluations;
 	  std::clock_t begin=ils->time_begin;
 

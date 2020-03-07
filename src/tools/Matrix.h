@@ -38,6 +38,8 @@ class Matrix {
 
         friend std::ostream& operator<<(std::ostream&, const Matrix&);
         friend std::istream& operator>>(std::istream&, Matrix&);
+        friend bool operator==(const Matrix&, const Matrix&);
+        friend bool operator!=(const Matrix&, const Matrix&);
 
         void swapRows(int, int);
         Matrix transpose();

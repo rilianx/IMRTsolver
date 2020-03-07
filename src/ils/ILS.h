@@ -176,6 +176,7 @@ public:
      double best_eval = current_plan.getEvaluation();
      double used_time = 0;
      used_evaluations = evaluations;
+     Plan* best_plan=new Plan(current_plan);
 
      //Start time
      std::clock_t time_end;
@@ -202,7 +203,12 @@ public:
 
        if (aux_eval < best_eval) {
          best_eval = aux_eval;
-         //best_plan?
+         delete best_plan;
+
+         best_plan = new Plan(current_plan);
+
+         cout << current_plan.eval()  << endl;
+         cout << best_plan->eval()  << endl;
        }
 
        current_iteration++;
@@ -231,6 +237,8 @@ public:
      if (c_file.is_open()) {
        c_file.close();
      }
+     current_plan.newCopy(*best_plan);
+     delete best_plan;
      return(best_eval);
   };
 
@@ -393,9 +401,10 @@ public:
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
 
-        Station* s=current_plan.get_station(2);
-        int nb=s->int2nb.size();
-        Matrix J(s->I);
+        Matrix iniI[5]; int k=0;
+        for(auto s:current_plan.get_stations()){
+        	iniI[k]= s->I; k++;
+        }
         //Generate the solution in the neighborhood
         applyMove(current_plan, move);
 
@@ -431,26 +440,30 @@ public:
             ls_target.target_move = move;
           }
         } else {
+
+            Matrix II[5]; int k=0;
+            for(auto s:current_plan.get_stations()){
+            	II[k]= s->I; k++;
+            }
+
+
           //No improvement
-
-          int k=0;
-          for(auto s:current_plan.get_stations()) {
-
-          if(s->int2nb.size()>5) {
-            cout << k << endl;
-            cout << "type:" << move.type << endl;
-            cout <<  "action:" << move.action << endl;
-            cout << "aperture_id:" << move.aperture_id << endl;
-            cout <<  "beamlet_id:" << move.beamlet_id << endl;
-            cout << J << endl;
-            s->printIntensity();
-            cout << "error undo " << endl;
-            exit(0);
-          }
-          k++;
-          }
-
           current_plan.undoLast();
+          k=0;
+          for(auto s:current_plan.get_stations()){
+        	  Matrix finI(s->I);
+    		  if(iniI[k]!=finI) {
+    			cout << "error" << endl;
+    			cout << current_plan.getEvaluation() << "," << current_eval << endl;
+    	        cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id <<
+    	                  "," << move.aperture_id << "," << move.action << ")" << endl;
+    			cout << iniI[k] << endl;
+    			cout << finI << endl;
+    			cout << II[k] << endl;
+    			exit(0);
+    		  }
+    		  k++;
+          }
 
         }
 

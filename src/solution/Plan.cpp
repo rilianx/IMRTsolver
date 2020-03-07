@@ -51,6 +51,7 @@ namespace imrt {
   Plan::Plan(const Plan &p): ev(p.ev), w(p.w), Zmin(p.Zmin), Zmax(p.Zmax), last_changed(NULL) {
     //EvaluationFunction aux_ev(p.ev);
     //ev=aux_ev;
+
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
       Station* aux = new Station(**it);
       if (p.last_changed && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
@@ -58,6 +59,7 @@ namespace imrt {
       angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
     }
+    n_stations= stations.size();
     evaluation_fx=p.evaluation_fx;
   }
 
@@ -77,6 +79,7 @@ namespace imrt {
       angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
     }
+    n_stations= stations.size();
     evaluation_fx=p.evaluation_fx;
   }
 
@@ -203,10 +206,7 @@ namespace imrt {
   }
 
   void Plan::generateApertures(){
-    cout << stations.size() << endl;
 	  for(auto s:stations){
-      cout << s << endl;
-      s->printIntensity();
 		  s->generateApertures();
     }
 

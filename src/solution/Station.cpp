@@ -268,6 +268,7 @@ namespace imrt {
      I(i,j)=intensity;
      if(I(i,j)>0.0)
        int2nb[I(i,j)+0.5]++;
+
   };
 
   void Station::generateApertures(){
@@ -291,7 +292,6 @@ namespace imrt {
 		  }
 		  intensity[k]=intens-intens_old;
 		  intens_old=int_n.first;
-      printAperture(k);
       //printIntensity();
 		  k++;
 	  }
