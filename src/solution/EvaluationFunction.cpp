@@ -394,14 +394,15 @@ EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
 	for(auto s:p.get_stations()){
 		for(int b=0; b<s->getNbBeamlets(); b++){
 			double ev=0; int i=0;
-			for(auto voxel:voxels){
 
-				int o=voxel.second.first;
-				int k=voxel.second.second;
-				const Matrix&  Dep = s->getDepositionMatrix(o);
-				ev += D[o][k] * Dep(k,b);
-				i++; if(i==nv) break;
-			}
+			 for(int o=0; o<nb_organs; o++){
+				for(int k=0; k<nb_voxels[o]; k++){
+					const Matrix&  Dep = s->getDepositionMatrix(o);
+					ev += D[o][k] * Dep(k,b);
+					i++; if(i==nv) break;
+				}
+			 }
+
 			if(mode==1 && ev<=0) continue;
 			else if(mode==-1 && ev>=0) continue;
 			else if(ev==0) continue;

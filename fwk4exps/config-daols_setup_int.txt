@@ -6,7 +6,7 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = dao_setup_mixed
+algo_names = dao_tabu
 
 [dao_setup_int]
 exec = "../AS"
@@ -30,6 +30,14 @@ exec = "../AS"
 tuning_param = SETUP
 tuning_values =  --setup=open_min --convergence=DAO-LS_imixed-p5-openmin, --setup=open_min_min --convergence=DAO-LS_imixed-p5-openminmin, --setup=open_min_k --convergence=DAO-LS_imixed-p5-openmink, --setup=open_max --convergence=DAO-LS_imixed-p5-openmax, --setup=random --convergence=DAO-LS_apseq-p5-random
 params = --file-dep=_INSTANCE _SETUP --ls_simple=imixed -s dao_ls  --maxeval=10000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
+outputpos_times = 0
+outputpos_boxes = 0
+
+[dao_tabu]
+exec = "../AS"
+tuning_param = TS
+tuning_values = --tabu-size=10 --convergence=DAO-LS_TS10, --tabu-size=20 --convergence=DAO-LS_TS20, --tabu-size=50 --convergence=DAO-LS_TS50, --tabu-size=100 --convergence=DAO-LS_TS100
+params = --file-dep=_INSTANCE --ls_simple=imixed -s dao_ls  --maxeval=10000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5 --setup=open_min_k _TS
 outputpos_times = 0
 outputpos_boxes = 0
 

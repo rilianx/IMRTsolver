@@ -1,22 +1,20 @@
 solved instances in standard strategy times
 mintime:0.000100
 <0.10 [0.10,0.20] [0.20,0.50] [0.50,0.67] [0.67,0.83] [0.83,1.00] [1.00,1.20] [1.20,1.50] [1.50,2.00] [2.00,5.00] [5.00,10.00] >10.00 
-ibo_dao1_EVALS --ibo_evals=5000 --convergence=IBOapseq_DAO-5000   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_dao1_EVALS --ibo_evals=7000 --convergence=IBOapseq_DAO-7000   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_dao2_EVALS--ibo_evals=2000 --convergence=IBOap_DAO-2000   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_dao2_EVALS --ibo_evals=5000 --convergence=IBOap_DAO-5000   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_dao2_EVALS --ibo_evals=7000 --convergence=IBOap_DAO-7000   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_dao1_EVALS --ibo_evals=5000 --convergence=IBOapseq_DAO-5000 ibo_dao1_EVALS --ibo_evals=7000 --convergence=IBOapseq_DAO-7000 ibo_dao2_EVALS--ibo_evals=2000 --convergence=IBOap_DAO-2000 ibo_dao2_EVALS --ibo_evals=5000 --convergence=IBOap_DAO-5000 ibo_dao2_EVALS --ibo_evals=7000 --convergence=IBOap_DAO-7000 
-1.000000 0/0 0/0 0/0 0/0 0/0 
-1.200480 0/0 0/0 0/0 0/0 0/0 
-1.503759 0/0 0/0 0/0 0/0 0/0 
-2.000000 0/0 0/0 0/0 0/0 0/0 
-5.000000 0/0 0/0 0/0 0/0 0/0 
-10.000000 0/0 0/0 0/0 0/0 0/0 
+dao_tabu_TS --tabu-size=20 --convergence=DAO-LS_TS20   0   0   0   0   0   0   0   0   0   0   0   0 
+dao_tabu_TS --tabu-size=50 --convergence=DAO-LS_TS50   0   0   0   0   0   0   0   0   0   0   0   0 
+dao_tabu_TS --tabu-size=100 --convergence=DAO-LS_TS100   0   0   0   0   0   0   0   0   0   0   0   0 
+dao_tabu_TS --tabu-size=20 --convergence=DAO-LS_TS20 dao_tabu_TS --tabu-size=50 --convergence=DAO-LS_TS50 dao_tabu_TS --tabu-size=100 --convergence=DAO-LS_TS100 
+1.000000 0/0 0/0 0/0 
+1.200480 0/0 0/0 0/0 
+1.503759 0/0 0/0 0/0 
+2.000000 0/0 0/0 0/0 
+5.000000 0/0 0/0 0/0 
+10.000000 0/0 0/0 0/0 
 
 
 instances with significative gains (1.2)
 
 gains
-0.000100 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 
-total time: 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+0.000100 1.000000 0 1.000000 0 1.000000 0 1.000000 0 
+total time: 1.000000 1.000000 1.000000 1.000000 
