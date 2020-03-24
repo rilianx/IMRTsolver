@@ -18,8 +18,8 @@
 #include "Collimator.h"
 #include "Volume.h"
 #include "ApertureILS.h"
-#include "IntensityILS.h"
 #include "IntensityILS2.h"
+#include "MixedILS.h"
 #include "args.hxx"
 
 
@@ -582,14 +582,17 @@ int main(int argc, char** argv){
 
   ILS* ils;
   double cost;
+  double used_evaluations = 0;
+   std::clock_t begin_time = clock();
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
     cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
+    used_evaluations =  ils->used_evaluations;
   }else if(strategy=="ibo_ls"){
 
 	  ils = new IntensityILS2();
 	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
-
+    used_evaluations =  ils->used_evaluations;
   }else if(strategy=="ibo+dao"){
     ils = new IntensityILS2();
 	  cost = ils->iteratedLocalSearch(P, maxtime, ibo_evals, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
@@ -607,8 +610,17 @@ int main(int argc, char** argv){
           //if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
 	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type,
 			  perturbation_size, tabu_size, convergence_file, evals, begin);
-
+    used_evaluations =  ils->used_evaluations;
+  }else if(strategy=="mixedILS"){
+    MixedILS mixed_ils(bsize, vsize, prob_intensity, step_intensity);
+    NeighborhoodType neighborhood_DAO =NeighborhoodType::mixed;
+    cost = mixed_ils.iteratedLocalSearch(P,maxtime, maxeval, ls_type, ls_type,
+                neighborhood, neighborhood_DAO, target_type, target_type,
+                perturbation_type, perturbation_size, tabu_size, convergence_file);
+    used_evaluations = mixed_ils.total_evals;
   }
+
+
 
 
 
@@ -620,7 +632,7 @@ int main(int argc, char** argv){
   cout << "##**************************************************************************"
        << endl;
   cout << "##"<<endl;
-  cout << "## Best solution found: " <<  cost << endl;
+  cout << "## Best solution found: " <<  cost << " "<< P.eval() << endl;
 
 
 	cout << endl;
@@ -640,18 +652,18 @@ int main(int argc, char** argv){
   if(convergence_file!="") o_file  <<  cost << " ";
 
   std::clock_t time_end = clock();
-  double used_time = double(time_end - ils->time_begin) / CLOCKS_PER_SEC;
+  double used_time = double(time_end - begin_time) / CLOCKS_PER_SEC;
 
-  cout <<  used_time << " ";
+  cout <<  used_time << " " << used_evaluations << " ";
   if(convergence_file!="") o_file  <<  used_time  << " ";
 
-  if(convergence_file!="") o_file << ils->used_evaluations << " ";
+  if(convergence_file!="") o_file << used_evaluations << " ";
 
   const list<Station*> stations=P.get_stations();
 
   int tot_alpha=0;
   for(auto s:stations){
-    string str=(strategy=="ibo+dao")? "dao_ls":strategy;
+    string str=(strategy=="ibo+dao" || strategy=="mixedILS")? "dao_ls":strategy;
     int alpha=s->get_sum_alpha(str);
     cout << alpha << " " ;
     //if(convergence_file!="") o_file  << alpha << " " ;
@@ -662,7 +674,7 @@ int main(int argc, char** argv){
 
   int nb_apertures=0;
   for(auto s:stations){
-    string str=(strategy=="ibo+dao")? "dao_ls":strategy;
+    string str=(strategy=="ibo+dao" || strategy=="mixedILS")? "dao_ls":strategy;
     int ap=s->get_nb_apertures(str);
     cout << ap << " " ;
     //if(convergence_file!="") o_file << ap << " " ;

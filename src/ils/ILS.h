@@ -401,11 +401,14 @@ public:
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
 
-        Matrix iniI[5]; int k=0;
-        for(auto s:current_plan.get_stations()){
-        	iniI[k]= s->I; k++;
-        }
         //Generate the solution in the neighborhood
+
+        /*CHANGE: first compute delta_eval related to the move, then
+        if there is an improvement apply the move.
+
+        We should implement get_delta_eval(currente_plan, move)
+        for each representation */
+
         applyMove(current_plan, move);
 
         // Check if there is an improvement
@@ -441,30 +444,8 @@ public:
           }
         } else {
 
-            Matrix II[5]; int k=0;
-            for(auto s:current_plan.get_stations()){
-            	II[k]= s->I; k++;
-            }
-
-
           //No improvement
           current_plan.undoLast();
-          k=0;
-          for(auto s:current_plan.get_stations()){
-        	  Matrix finI(s->I);
-    		  if(iniI[k]!=finI) {
-    			cout << "error" << endl;
-    			cout << current_plan.getEvaluation() << "," << current_eval << endl;
-    	        cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id <<
-    	                  "," << move.aperture_id << "," << move.action << ")" << endl;
-    			cout << iniI[k] << endl;
-    			cout << finI << endl;
-    			cout << II[k] << endl;
-    			exit(0);
-    		  }
-    		  k++;
-          }
-
         }
 
         //Counter updates

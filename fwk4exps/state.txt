@@ -1,7 +1,7 @@
-algos:dao_tabu_TS--tabu-size=10 --convergence=DAO-LS_TS10 dao_tabu_TS --tabu-size=20 --convergence=DAO-LS_TS20 dao_tabu_TS --tabu-size=50 --convergence=DAO-LS_TS50 dao_tabu_TS --tabu-size=100 --convergence=DAO-LS_TS100 
-gains (average relative times):1.000000 1.000000 1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 1.000000 1.000000 
-compared instances:  0   0   0   0 
-runs    :420 420 420 420 
-L:  0   0   0   0 
-W:  0   0   0   0 
+algos:mixedILS_NEIGH--ls_simple=imixed --convergence=mixedILS_imixed mixedILS_NEIGH --ls_sequential=aperture --convergence=mixedILS_apSeq 
+gains (average relative times):1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 
+compared instances:  0   0 
+runs    :420 420 
+L:  0   0 
+W:  0   0 

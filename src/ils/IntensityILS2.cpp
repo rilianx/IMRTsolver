@@ -240,7 +240,6 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
      else // Increase intensity
       intensity=s->intensityUp(i,j);
 
-
   	 double delta_eval = current_plan.get_delta_eval (*s, i, j, intensity-s->I(i,j));
      if(p || delta_eval < -0.001){
 	   s->change_intensity(i, j, intensity, &diff);
@@ -250,7 +249,6 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
 
   } else {
     // change intensity
-	Matrix iniI(s->I);
     if (action < 0){
       if(s->int2nb.find(intens+0.5) != s->int2nb.end())
     	  diff = s->change_intensity(intens, -1.0);
@@ -273,19 +271,8 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
         double delta_eval = current_plan.get_delta_eval (*s, diff);
         if(p || delta_eval < -0.001){
         	current_eval=current_plan.incremental_eval(*s, diff);
-        }else{
+        }else
         	s->diff_undo(diff);
-        	Matrix finI(s->I);
-        	if(iniI!=finI) {
-        		cout << "error0" << endl;
-        		cout << iniI << endl;
-        		cout << finI << endl;
-        		exit(0);
-        	}
-        }
-
-
-
     }
 
   }
