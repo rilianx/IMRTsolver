@@ -1,0 +1,18 @@
+[base]
+test_instances = instances.txt
+mintime = 0.0001
+maxtime = 40
+factors = 1 0.833 0.665 0.5 0.2 0.1
+sig_gain = 1.2
+max_seeds = 30
+min_seeds = 30
+algo_names = mixedILS
+
+
+[mixedILS]
+exec = "../AS"
+tuning_param = NEIGH
+tuning_values =  --ls_simple=aperture --convergence=mixedILS_aperture
+params = --file-dep=_INSTANCE  -s mixedILS _NEIGH --maxeval=10000 --ls=first --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+outputpos_times = 0
+outputpos_boxes = 0

@@ -278,10 +278,10 @@ namespace imrt {
     return(solution_str);
   };
 
-  void Plan::printIntensity(int n) {
+  void Plan::printIntensity(int n, bool vector_form) {
     list<Station*>::iterator s= stations.begin();
     advance(s,n);
-    (*s)->printIntensity(false);
+    (*s)->printIntensity(vector_form);
   }
 
   void Plan::writeIntensities(string file, int n) {

@@ -1,7 +1,7 @@
-algos:mixedILS_NEIGH--ls_simple=imixed --convergence=mixedILS_imixed mixedILS_NEIGH --ls_sequential=aperture --convergence=mixedILS_apSeq 
-gains (average relative times):1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 
-compared instances:  0   0 
-runs    :420 420 
-L:  0   0 
-W:  0   0 
+algos:mixedILS_NEIGH--ls_simple=aperture --convergence=mixedILS_aperture 
+gains (average relative times):1.000000 
+gains (total time)            :1.000000 
+compared instances:  0 
+runs    :420 
+L:  0 
+W:  0 

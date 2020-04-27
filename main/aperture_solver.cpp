@@ -637,7 +637,7 @@ int main(int argc, char** argv){
 
 	cout << endl;
 	for(int i=0;i<5;i++)
-		P.printIntensity(i);
+		P.printIntensity(i, true);
 
 	cout << endl;
 

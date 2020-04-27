@@ -26,9 +26,9 @@ public:
 
   Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
 
-  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax, 
-       Collimator& collimator, vector<Volume>& volumes, int max_apertures, 
-       int max_intensity, int initial_intensity, int step_intensity=2, 
+  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax,
+       Collimator& collimator, vector<Volume>& volumes, int max_apertures,
+       int max_intensity, int initial_intensity, int step_intensity=2,
        StationSetup setup = open_all_min, char* file=NULL);
 
   Plan(const Plan &p);
@@ -58,11 +58,11 @@ public:
     return ev.get_delta_eval(s.getAngle(),
     s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
   }
-	
+
 	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999){
 	  return ev.get_delta_eval(s.getAngle(), b, intensity, w, Zmin, Zmax, n_voxels);
 	}
-	
+
 	double get_delta_eval (Station& s, list< pair< int, double > >& diff, int n_voxels=999999){
 	  return ev.get_delta_eval(diff, s.getAngle(), w, Zmin, Zmax, n_voxels);
 	};
@@ -110,12 +110,12 @@ public:
 	void undoLast2();
 
   void printSolution ();
-  
+
   string toStringApertures ();
-  
+
   string toStringIntensities ();
 
-  void printIntensity(int station);
+  void printIntensity(int station, bool vector_form=false);
 
 	void writeIntensities(string file, int n);
 
