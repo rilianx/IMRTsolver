@@ -6,79 +6,36 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = dao_ls5 dao_ls5-imixed dao_ls5-targeted
+algo_names = ibo_setup_mixed dao_setup_mixed
 
-[dao_ls5]
+[ibo_setup_mixed]
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s dao_ls --maxeval=10000 --ls=first --ls_simple=mixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
-outputpos_times = 0
-outputpos_boxes = 0
-
-[dao_ls5-imixed]
 tuning_param = SETUP
-tuning_values = open_min_min open_min_k
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=_SETUP --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --initial-intensity=5
+tuning_values =  --setup=open_min --convergence=IBO_mixed-openmin, --setup=open_max --convergence=IBO_mixed-openmax, --setup=random --convergence=IBO_mixed-random, --setup=closed_min --convergence=IBO_mixed-closedmin
+params = --file-dep=_INSTANCE _SETUP --ls_simple=mixed -s ibo_ls  --maxeval=10000 --ls=first --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
 outputpos_times = 0
 outputpos_boxes = 0
 
-[dao_ls5-targeted]
+[ibo_setup_bi-li]
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --targeted
-outputpos_times = 0
-outputpos_boxes = 0
-
-[ibodao_ev]
-tuning_param = IBO_EVALS
-tuning_values = 500 1000 2000 4000 7500
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo+dao --ibo_evals=_IBO_EVALS --maxeval=10000 --ls=first --ibo_evals= --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
-outputpos_times = 0
-outputpos_boxes = 0
-
-
-[dao_tabu]
-description = "TABU"
-exec = "../AS"
-tuning_param = TABU_SIZE
-tuning_values = 2 5 10
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min_k --perturbation-size=5 --seed=_SEED  --max-intensity=20 --initial-intensity=5 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --tabu-size=_TABU_SIZE
-outputpos_times = 0
-outputpos_boxes = 0
-
-[ibo_tabu]
-exec = "../AS"
-tuning_param = TABU_SIZE
-tuning_values = 2 5 10
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --tabu-size=_TABU_SIZE
-outputpos_times = 0
-outputpos_boxes = 0
-
-[dao_targeted]
-description = "TARGETED"
-exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min_k --perturbation-size=5 --seed=_SEED  --max-intensity=20 --initial-intensity=5 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --targeted
-outputpos_times = 0
-outputpos_boxes = 0
-
-[dao_ls_imixed]
-description = "IMIXED"
-exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min_k --perturbation-size=5 --seed=_SEED  --max-intensity=20 --initial-intensity=5 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
-outputpos_times = 0
-outputpos_boxes = 0
-
-[dao_ls_setup]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbaci�n mixta"
 tuning_param = SETUP
-tuning_values = open_min_min open_min_k
-exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first --ls_simple=mixed --setup=_SETUP --perturbation-size=5 --seed=_SEED  --max-intensity=20 --initial-intensity=5 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+tuning_values =  --setup=open_min --convergence=IBO_bili-openmin, --setup=open_max --convergence=IBO_bili-openmax, --setup=random --convergence=IBO_bili-random, --setup=closed_min --convergence=IBO_bili-closedmin
+params = --file-dep=_INSTANCE _SETUP --ls_sequential=aperture -s ibo_ls  --maxeval=10000 --ls=first --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
 outputpos_times = 0
 outputpos_boxes = 0
 
-[ibo_targeted]
+[dao_setup_in-ap]
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first --ls_simple=imixed --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default --targeted
+tuning_param = SETUP
+tuning_values =  --setup=open_min --convergence=DAO_inap-openmin, --setup=open_max --convergence=DAO_inap-openmax, --setup=random --convergence=DAO_inap-random, --setup=closed_min --convergence=DAO_inap-closedmin
+params = --file-dep=_INSTANCE _SETUP --ls_sequential=intensity -s dao_ls  --maxeval=10000 --ls=first --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
+outputpos_times = 0
+outputpos_boxes = 0
+
+[dao_setup_mixed]
+exec = "../AS"
+tuning_param = SETUP
+tuning_values =  --setup=open_min --convergence=DAO_mixed-openmin, --setup=open_max --convergence=DAO_mixed-openmax, --setup=random --convergence=DAO_mixed-random, --setup=closed_min --convergence=DAO_mixed-closedmin
+params = --file-dep=_INSTANCE _SETUP --ls_simple=mixed -s dao_ls  --maxeval=10000 --ls=first --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5
 outputpos_times = 0
 outputpos_boxes = 0

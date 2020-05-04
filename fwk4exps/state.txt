@@ -1,7 +1,7 @@
-algos:mixedILS_NEIGH--ls_simple=aperture --convergence=mixedILS_aperture 
-gains (average relative times):1.000000 
-gains (total time)            :1.000000 
-compared instances:  0 
-runs    :420 
-L:  0 
-W:  0 
+algos:ibo_setup_mixed_SETUP--setup=open_min --convergence=IBO_mixed-openmin ibo_setup_mixed_SETUP --setup=open_max --convergence=IBO_mixed-openmax ibo_setup_mixed_SETUP --setup=random --convergence=IBO_mixed-random ibo_setup_mixed_SETUP --setup=closed_min --convergence=IBO_mixed-closedmin dao_setup_mixed_SETUP--setup=open_min --convergence=DAO_mixed-openmin dao_setup_mixed_SETUP --setup=open_max --convergence=DAO_mixed-openmax dao_setup_mixed_SETUP --setup=random --convergence=DAO_mixed-random dao_setup_mixed_SETUP --setup=closed_min --convergence=DAO_mixed-closedmin 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0   0   0   0   0 
+runs    :420 420 420 420 420 420 420 420 
+L:  0   0   0   0   0   0   0   0 
+W:  0   0   0   0   0   0   0   0 
