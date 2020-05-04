@@ -1,0 +1,17 @@
+[base]
+test_instances = instances.txt
+mintime = 0.0001
+maxtime = 40
+factors = 1 0.833 0.665 0.5 0.2 0.1
+sig_gain = 1.2
+max_seeds = 30
+min_seeds = 30
+algo_names = ibo_dao4
+
+[ibo_dao4]
+exec = "../AS"
+tuning_param = PERTSIZE
+tuning_values = --perturbation-size=2 --convergence=DAO-LS_in-ap_pert2, --perturbation-size=3 --convergence=DAO-LS_in-ap_pert3, --perturbation-size=5 --convergence=DAO-LS_in-ap_pert5, --perturbation-size=7 --convergence=DAO-LS_in-ap_pert7
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=intensity --maxeval=50000 --ls=first --setup=random _PERTSIZE --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+outputpos_times = 0
+outputpos_boxes = 0
