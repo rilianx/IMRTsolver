@@ -334,7 +334,7 @@ int main(int argc, char** argv){
       //TODO: Why these ones are different??
       if(strategy=="dao_ls")
         initial_setup = StationSetup::rand_all_rand;
-      else if (strategy=="ibo_ls" || strategy=="ibo+dao")
+      else if (strategy=="ibo_ls" || strategy=="ibo+dao" || strategy == "mixedILS")
         initial_setup = StationSetup::rand_int;
     } else if (setup == "manual") {
       initial_setup = StationSetup::manual_all_manual;
