@@ -190,7 +190,10 @@ public:
        c_file.open (convergence_file.c_str(), ios::out);
        trajectory_file = convergence_file + ".traj";
        t_file.open (trajectory_file.c_str(), ios::app);
-       if (evaluations ==0) t_file << "evalutions;quality" << endl;
+       if (evaluations == 0) {
+         t_file << "evalutions;time;quality" << endl;
+         t_file << "0;0"  << ";" << best_eval << "\n";
+       }
        t_file.close();
      }
 
@@ -389,7 +392,7 @@ public:
       improvement = false;
       //Get the moves in the neighborhood (this is possible because the moves are not that many!)
       neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target);
-      n_neighbor = 1;//neighbor counter
+      n_neighbor = 0;//neighbor counter
 
       cout << " Neighborhood: " << current_neighborhood << "; size: " <<
               neighborhood.size() << endl;
@@ -410,6 +413,10 @@ public:
         for each representation */
 
         applyMove(current_plan, move);
+        
+        //Counter updates
+        used_evaluations++;
+        n_neighbor++;
 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
@@ -443,14 +450,9 @@ public:
             ls_target.target_move = move;
           }
         } else {
-
           //No improvement
           current_plan.undoLast();
         }
-
-        //Counter updates
-        used_evaluations++;
-        n_neighbor++;
 
         // Termination criterion
         time_end = clock();
@@ -466,7 +468,9 @@ public:
         current_plan.clearLast();
         if (tabu_size > 0)
           addTabu(tabu_list, best_move, tabu_size);
-        used_evaluations++;
+        //No se agregan evaluaciones en este caso por que
+        //no es una solucion nueva...
+        //used_evaluations++;
       }
 
       if (improvement) {
