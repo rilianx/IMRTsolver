@@ -413,7 +413,7 @@ public:
         for each representation */
 
         applyMove(current_plan, move);
-        
+
         //Counter updates
         used_evaluations++;
         n_neighbor++;

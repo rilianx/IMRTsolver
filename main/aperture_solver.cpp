@@ -613,6 +613,8 @@ int main(int argc, char** argv){
     used_evaluations =  ils->used_evaluations;
   }else if(strategy=="mixedILS"){
     MixedILS mixed_ils(bsize, vsize, prob_intensity, step_intensity);
+
+
     NeighborhoodType neighborhood_DAO =NeighborhoodType::mixed;
     cost = mixed_ils.iteratedLocalSearch(P,maxtime, maxeval, ls_type, ls_type,
                 neighborhood, neighborhood_DAO, target_type, target_type,

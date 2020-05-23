@@ -1,7 +1,7 @@
-algos:ibo_setup_mixed_SETUP--setup=open_min --convergence=IBO_mixed-openmin ibo_setup_mixed_SETUP --setup=open_max --convergence=IBO_mixed-openmax ibo_setup_mixed_SETUP --setup=random --convergence=IBO_mixed-random ibo_setup_mixed_SETUP --setup=closed_min --convergence=IBO_mixed-closedmin dao_setup_mixed_SETUP--setup=open_min --convergence=DAO_mixed-openmin dao_setup_mixed_SETUP --setup=open_max --convergence=DAO_mixed-openmax dao_setup_mixed_SETUP --setup=random --convergence=DAO_mixed-random dao_setup_mixed_SETUP --setup=closed_min --convergence=DAO_mixed-closedmin 
-gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
-compared instances:  0   0   0   0   0   0   0   0 
-runs    :420 420 420 420 420 420 420 420 
-L:  0   0   0   0   0   0   0   0 
-W:  0   0   0   0   0   0   0   0 
+algos:dao_neigh_NEIGH--ls_simple=mixed --convergence=DAO_mixed dao_neigh_NEIGH --ls_simple=imixed --convergence=DAO_imixed dao_neigh_NEIGH --ls_sequential=intensity --convergence=DAO_intensitySeq dao_neigh_NEIGH --ls_sequential=aperture --convergence=DAO_apertureSeq dao_neigh_NEIGH --ls_simple=aperture --convergence=DAO_aperture dao_neigh_NEIGH --ls_simple=intensity --convergence=DAO_intensity ibo_neigh_NEIGH--ls_simple=mixed --convergence=IBO_mixed ibo_neigh_NEIGH --ls_simple=imixed --convergence=IBO_imixed ibo_neigh_NEIGH --ls_sequential=intensity --convergence=IBO_intensitySeq ibo_neigh_NEIGH --ls_sequential=aperture --convergence=IBO_apertureSeq ibo_neigh_NEIGH --ls_simple=aperture --convergence=IBO_aperture ibo_neigh_NEIGH --ls_simple=intensity --convergence=IBO_intensity ibo_setup_bi-li_SETUP--setup=open_min --convergence=IBO_bili-openmin ibo_setup_bi-li_SETUP --setup=open_max --convergence=IBO_bili-openmax ibo_setup_bi-li_SETUP --setup=random --convergence=IBO_bili-random ibo_setup_bi-li_SETUP --setup=closed_min --convergence=IBO_bili-closedmin 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
+runs    :  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
+L:  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 
+W:  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0 

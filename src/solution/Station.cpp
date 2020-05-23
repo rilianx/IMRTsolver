@@ -130,7 +130,7 @@ namespace imrt {
           aux.push_back(make_pair(-1,-1));
         A[i] = aux;
       }
-    } else if (type==StationSetup::rand_all_rand) {
+    } else if (type==StationSetup::rand_all_rand || type==StationSetup::rand_int) {
       for (int i=0; i<max_apertures; i++) {
         vector<pair<int,int> > aux;
         for (int j=0; j<collimator.getXdim(); j++) {

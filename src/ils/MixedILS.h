@@ -57,6 +57,9 @@ public:
           Plan P_pert(P);
           //cout << "Ppert:" << P_pert.eval() << endl;
 
+          for(int i=0;i<5;i++)
+            P.printIntensity(i);
+
           P.generateApertures();
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
 
