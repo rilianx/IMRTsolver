@@ -615,7 +615,7 @@ int main(int argc, char** argv){
     MixedILS mixed_ils(bsize, vsize, prob_intensity, step_intensity);
 
 
-    NeighborhoodType neighborhood_DAO =NeighborhoodType::mixed;
+    NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;
     cost = mixed_ils.iteratedLocalSearch(P,maxtime, maxeval, ls_type, ls_type,
                 neighborhood, neighborhood_DAO, target_type, target_type,
                 perturbation_type, perturbation_size, tabu_size, convergence_file);
