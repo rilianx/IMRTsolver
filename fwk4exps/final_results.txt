@@ -1,32 +1,20 @@
 solved instances in standard strategy times
 mintime:0.000100
 <0.10 [0.10,0.20] [0.20,0.50] [0.50,0.67] [0.67,0.83] [0.83,1.00] [1.00,1.20] [1.20,1.50] [1.50,2.00] [2.00,5.00] [5.00,10.00] >10.00 
-dao_neigh_NEIGH --ls_simple=imixed --convergence=DAO_imixed   0   0   0   0   0   0   0   0   0   0   0   0 
-dao_neigh_NEIGH --ls_sequential=intensity --convergence=DAO_intensitySeq   0   0   0   0   0   0   0   0   0   0   0   0 
-dao_neigh_NEIGH --ls_sequential=aperture --convergence=DAO_apertureSeq   0   0   0   0   0   0   0   0   0   0   0   0 
-dao_neigh_NEIGH --ls_simple=aperture --convergence=DAO_aperture   0   0   0   0   0   0   0   0   0   0   0   0 
-dao_neigh_NEIGH --ls_simple=intensity --convergence=DAO_intensity   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_neigh_NEIGH--ls_simple=mixed --convergence=IBO_mixed   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_neigh_NEIGH --ls_simple=imixed --convergence=IBO_imixed   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_neigh_NEIGH --ls_sequential=intensity --convergence=IBO_intensitySeq   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_neigh_NEIGH --ls_sequential=aperture --convergence=IBO_apertureSeq   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_neigh_NEIGH --ls_simple=aperture --convergence=IBO_aperture   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_neigh_NEIGH --ls_simple=intensity --convergence=IBO_intensity   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_setup_bi-li_SETUP--setup=open_min --convergence=IBO_bili-openmin   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_setup_bi-li_SETUP --setup=open_max --convergence=IBO_bili-openmax   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_setup_bi-li_SETUP --setup=random --convergence=IBO_bili-random   0   0   0   0   0   0   0   0   0   0   0   0 
-ibo_setup_bi-li_SETUP --setup=closed_min --convergence=IBO_bili-closedmin   0   0   0   0   0   0   0   0   0   0   0   0 
-dao_neigh_NEIGH --ls_simple=imixed --convergence=DAO_imixed dao_neigh_NEIGH --ls_sequential=intensity --convergence=DAO_intensitySeq dao_neigh_NEIGH --ls_sequential=aperture --convergence=DAO_apertureSeq dao_neigh_NEIGH --ls_simple=aperture --convergence=DAO_aperture dao_neigh_NEIGH --ls_simple=intensity --convergence=DAO_intensity ibo_neigh_NEIGH--ls_simple=mixed --convergence=IBO_mixed ibo_neigh_NEIGH --ls_simple=imixed --convergence=IBO_imixed ibo_neigh_NEIGH --ls_sequential=intensity --convergence=IBO_intensitySeq ibo_neigh_NEIGH --ls_sequential=aperture --convergence=IBO_apertureSeq ibo_neigh_NEIGH --ls_simple=aperture --convergence=IBO_aperture ibo_neigh_NEIGH --ls_simple=intensity --convergence=IBO_intensity ibo_setup_bi-li_SETUP--setup=open_min --convergence=IBO_bili-openmin ibo_setup_bi-li_SETUP --setup=open_max --convergence=IBO_bili-openmax ibo_setup_bi-li_SETUP --setup=random --convergence=IBO_bili-random ibo_setup_bi-li_SETUP --setup=closed_min --convergence=IBO_bili-closedmin 
-1.000000 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 
-1.200480 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 
-1.503759 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 
-2.000000 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 
-5.000000 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 
-10.000000 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 
+ibo_dao_random_PERTSIZE --perturbation-size=3 --convergence=IBODAO_pert3_30000   0   0   0   0   0   0   0   0   0   0   0   0 
+ibo_dao_random_PERTSIZE --perturbation-size=5 --convergence=IBODAO_pert5_30000   0   0   0   0   0   0   0   0   0   0   0   0 
+ibo_dao_random_PERTSIZE --perturbation-size=7 --convergence=IBODAO_pert7_30000   0   0   0   0   0   0   0   0   0   0   0   0 
+ibo_dao_random_PERTSIZE --perturbation-size=3 --convergence=IBODAO_pert3_30000 ibo_dao_random_PERTSIZE --perturbation-size=5 --convergence=IBODAO_pert5_30000 ibo_dao_random_PERTSIZE --perturbation-size=7 --convergence=IBODAO_pert7_30000 
+1.000000 0/0 0/0 0/0 
+1.200480 0/0 0/0 0/0 
+1.503759 0/0 0/0 0/0 
+2.000000 0/0 0/0 0/0 
+5.000000 0/0 0/0 0/0 
+10.000000 0/0 0/0 0/0 
 
 
 instances with significative gains (1.2)
 
 gains
-0.000100 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 1.000000 0 
-total time: 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+0.000100 1.000000 0 1.000000 0 1.000000 0 1.000000 0 
+total time: 1.000000 1.000000 1.000000 1.000000 
