@@ -6,7 +6,8 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = ibo_dao_random
+algo_names = ibodao_neigh_loop 
+#ibo_dao_random
 #ibo_dao_conv
 #dao_neigh ibo_neigh ibo_setup_bi-li
 
@@ -42,6 +43,12 @@ exec = "../AS"
 tuning_param = SETUP
 tuning_values =  --setup=open_min --convergence=IBODAO-openmin, --setup=random --convergence=IBODAO-random
 params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=0 --ls=first _SETUP --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibodao_neigh_loop]
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture_loop --maxeval=0 --ls=first --setup=random --convergence=IBODAO-neigh_loop --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
 outputpos_times = 0
 outputpos_boxes = 0
 
