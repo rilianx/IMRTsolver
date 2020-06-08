@@ -104,6 +104,7 @@ public:
     return 0.0;
   };
 
+/*
   virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
 	  return P.getLSBeamlet(bsize, vsize);
   };
@@ -111,7 +112,7 @@ public:
   virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(Plan& P){
     return P.getBestLSBeamlet(bsize, vsize);
   };
-
+*/
   double perturbation(Plan& current_plan, PerturbationType perturbation_type,
                               int perturbation_size) {
     vector <NeighborMove> neighborhood;

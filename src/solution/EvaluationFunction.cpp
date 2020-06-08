@@ -143,14 +143,12 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, int o, int k){
 		voxels.erase(make_pair(D[o][k],make_pair(o,k)));
+    D[o][k] = 0.0;
 
-		if(Zmin[o]>0){
-			 if(Z[o][k] < Zmin[o])  D[o][k]=w[o]*(Z[o][k]-Zmin[o])/nb_voxels[o];
-			 else D[o][k]=0.0;
-		}else{
-			if(Z[o][k] > Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o])/nb_voxels[o];
-			else D[o][k]=0.0;
-		}
+		if(Zmin[o]>0 && Z[o][k] < Zmin[o]) D[o][k]=-w[o]*(Z[o][k]-Zmin[o])/nb_voxels[o];
+
+		else if(Z[o][k] > Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o])/nb_voxels[o];
+
 		if(D[o][k]!=0.0)
 			voxels.insert(make_pair(D[o][k],make_pair(o,k)));
 }
@@ -384,38 +382,32 @@ void EvaluationFunction::undo_last_eval(vector<double>& w,
 
 
 
-	set < pair< pair<double,bool>, pair<Station*, int> >,
-	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
-EvaluationFunction::best_beamlets(Plan& p, int n, int nv, int mode){
-  set < pair< pair<double,bool>, pair<Station*, int> >,
-	std::greater < pair< pair<double,bool>, pair<Station*, int> > > >  bestb;
+multimap < double, pair<int, int>, MagnitudeCompare >
+EvaluationFunction::best_beamlets(Plan& p, int nv){
+	multimap < double, pair<int, int>, MagnitudeCompare > bestb;
 
 	double max_ev=0.0;
+	int k=0;
 	for(auto s:p.get_stations()){
 		for(int b=0; b<s->getNbBeamlets(); b++){
 			double ev=0; int i=0;
 
-			 for(int o=0; o<nb_organs; o++){
-				for(int k=0; k<nb_voxels[o]; k++){
+      for (auto voxel : voxels){
+				  double d = voxel.first;
+					int o = voxel.second.first;
+					int k= voxel.second.second;
+
 					const Matrix&  Dep = s->getDepositionMatrix(o);
-					ev += D[o][k] * Dep(k,b);
+					ev += d * Dep(k,b);
 					i++; if(i==nv) break;
-				}
 			 }
 
-			if(mode==1 && ev<=0) continue;
-			else if(mode==-1 && ev>=0) continue;
-			else if(ev==0) continue;
+				bestb.insert(make_pair( ev, make_pair(k,b)));
 
-			if( bestb.size() < n || abs(ev) > abs(bestb.rbegin()->first.first)){
-				bestb.insert(make_pair( make_pair(abs(ev), (ev>0)), make_pair(s,b)));
-				if(bestb.size() > n){
-					auto it = bestb.end();  --it;
-					bestb.erase(it);
-				}
 			}
-		}
+		k++;
 	}
+
 	return bestb;
 }
 

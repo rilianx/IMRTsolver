@@ -35,7 +35,7 @@ public:
 
   virtual ~ApertureILS() {};
 
-  pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
+  //pair <bool, pair<Station*, int> > getLSBeamlet(Plan& P);
 
   bool isBeamletModifiable(int beamlet, Station* station, bool open_flag) ;
 

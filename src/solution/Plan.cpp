@@ -242,14 +242,14 @@ namespace imrt {
     myfile.close();
 
   }
-
+/*
   set < pair< pair<double,bool>, pair<Station*, int> >,
         std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
     Plan::best_beamlets(int n, int nv, int mode) {
 
     return(ev.best_beamlets(*this, n, nv));
   }
-
+*/
   void Plan::printSolution () {
     Station *st;
     for (int s=0; s < n_stations; s++) {

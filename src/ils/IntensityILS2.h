@@ -30,6 +30,7 @@ public:
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors_all(Plan &P);
+  vector < NeighborMove > getShuffledApertureNeighbors_target(Plan &P, int nv=5);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
 

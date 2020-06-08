@@ -78,24 +78,29 @@ public:
 
 	void write_open_beamlets();
 
+/*
 	set < pair< pair<double,bool>, pair<Station*, int> >,
        std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
 	  best_beamlets(int n, int nv, int mode=0);
+*/
 
+  /*
 	virtual pair<bool, pair<Station*, int>> getLSBeamlet(int bsize, int vsize){
 		  auto sb=ev.best_beamlets(*this, bsize, vsize);
 		  auto it=sb.begin();
 		  std::advance(it,rand()%sb.size());
 		  return make_pair(it->first.second, it->second);
 	}
+	*/
 
+  /*
 	virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(int bsize, int vsize){
 	  auto sb=ev.best_beamlets(*this, bsize, vsize);
 	  auto it=sb.begin();
 	  //std::advance(it,rand()%sb.size());
 	  return make_pair(it->first.second, it->second);
 	}
-
+  */
   double openBeamlet(int station, int aperture, int beamlet);
 
   double closeBeamlet(int station, int aperture, int beamlet, int side);
