@@ -363,6 +363,9 @@ int main(int argc, char** argv){
       neighborhood = NeighborhoodType::intensity;
     else if (nn == "aperture")
       neighborhood = NeighborhoodType::aperture;
+    else if (nn == "aperture_loop")
+      neighborhood = NeighborhoodType::aperture_loop;
+
     else if (nn == "mixed")
       neighborhood = NeighborhoodType::mixed;
     else if (nn == "imixed")
@@ -378,6 +381,8 @@ int main(int argc, char** argv){
       neighborhood = NeighborhoodType::sequential_i;
     else if (nn == "aperture")
       neighborhood = NeighborhoodType::sequential_a;
+    else if (nn == "aperture_loop")
+      neighborhood = NeighborhoodType::sequential_a_loop;
   } else if (_nprob) {
     prob_intensity = _nprob.Get();
     neighborhood = NeighborhoodType::sequential_p;

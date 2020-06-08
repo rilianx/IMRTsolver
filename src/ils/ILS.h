@@ -42,6 +42,9 @@ enum NeighborhoodType {
   imixed = 7,
   smixed_i= 8,
   smixed_a= 9,
+  aperture_loop = 10,
+  sequential_a_loop= 11
+
 };
 
 enum LSType {
@@ -272,7 +275,8 @@ public:
      }
 
      if (user == NeighborhoodType::sequential_i ||
-         user == NeighborhoodType::sequential_a) {
+         user == NeighborhoodType::sequential_a ||
+         user == NeighborhoodType::sequential_a_loop ) {
        if (keep_flag) {
          return (current);
        } else {
@@ -295,6 +299,8 @@ public:
        return(NeighborhoodType::intensity);
      else if (user == NeighborhoodType::sequential_a)
        return(NeighborhoodType::aperture);
+     else if (user == NeighborhoodType::sequential_a_loop)
+         return(NeighborhoodType::aperture_loop);
      else if (user == NeighborhoodType::sequential_p){
        float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
        if (r < 0.5) return(NeighborhoodType::intensity);
@@ -368,6 +374,7 @@ public:
     bool sequential_flag = false;
     bool is_sequential = (ls_neighborhood == NeighborhoodType::sequential_i) ||
                          (ls_neighborhood == NeighborhoodType::sequential_a) ||
+                         (ls_neighborhood == NeighborhoodType::sequential_a_loop) ||
                          (ls_neighborhood == NeighborhoodType::sequential_p);
 
     // Select initial neighborhood
@@ -395,7 +402,7 @@ public:
       n_neighbor = 0;//neighbor counter
 
       cout << " Neighborhood: " << current_neighborhood << "; size: " <<
-              neighborhood.size() << endl;
+              neighborhood.size() << " ";
 
       for (NeighborMove move:neighborhood) {
 
@@ -412,7 +419,8 @@ public:
         We should implement get_delta_eval(currente_plan, move)
         for each representation */
 
-        applyMove(current_plan, move);
+        //-1.0 means that the move is not a valid move
+        if(applyMove(current_plan, move) == -1.0)  continue;
 
         //Counter updates
         used_evaluations++;

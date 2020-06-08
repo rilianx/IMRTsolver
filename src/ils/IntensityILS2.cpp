@@ -57,6 +57,33 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   return(moves);
 };
 
+vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_all(Plan &P){
+   if(ShuffledApertureNeighbors.size()==0){
+     vector < NeighborMove > moves;
+     list<Station*> stations = P.get_stations();
+     int k=0;
+     for(auto s:stations){
+   	   for (int i=0; i<s->I.nb_rows();i++)
+  			 for (int j=0; j<s->I.nb_cols(); j++)
+  				 if(s->I(i,j)!=-1){
+  						 NeighborMove move = {1,k,0,+1,s->pos2beam[make_pair(i,j)]};
+  						 moves.push_back(move);
+
+  						 move = {1,k,0,-1,s->pos2beam[make_pair(i,j)]};
+  						 moves.push_back(move);
+  				 }
+   	  k++;
+     }
+
+     std::random_shuffle ( moves.begin(), moves.end(), myrandom);
+
+     ShuffledApertureNeighbors=moves;
+     last_move=-1;
+   }
+   return ShuffledApertureNeighbors;
+
+ }
+
 vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors(Plan &P){
 
    list<Station*> stations = P.get_stations();
@@ -148,6 +175,8 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
     neighborList = getShuffledIntensityNeighbors(current_plan);
   } else if (ls_neighborhood == aperture) {
     neighborList = getShuffledApertureNeighbors(current_plan);
+  } else if (ls_neighborhood == aperture_loop) {
+    neighborList = getShuffledApertureNeighbors_all(current_plan);
   } else if (ls_neighborhood == mixed) {
     //mixed
     neighborList = getShuffledNeighbors(current_plan);
@@ -221,6 +250,11 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
 
   double current_eval = current_plan.getEvaluation();
 
+  if(move.type==1 && ShuffledApertureNeighbors.size()>0) {
+    last_move = (last_move+1)%ShuffledApertureNeighbors.size();
+    move=ShuffledApertureNeighbors[last_move];
+  }
+
   list<pair<int, double> > diff;
   int type            = move.type;
   Station * s         = current_plan.get_station(move.station_id);
@@ -232,6 +266,8 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
   int j = s->beam2pos[beamlet].second;
 
   if (type == 1) {
+
+
     // single beam
     double intensity;
 
@@ -239,6 +275,8 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
       intensity=s->intensityDown(i,j);
      else // Increase intensity
       intensity=s->intensityUp(i,j);
+
+     if(intensity == s->I(i,j)) return -1.0; //the move is not valid
 
   	 double delta_eval = current_plan.get_delta_eval (*s, i, j, intensity-s->I(i,j));
      if(p || delta_eval < -0.001){

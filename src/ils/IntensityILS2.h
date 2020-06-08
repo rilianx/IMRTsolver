@@ -29,6 +29,7 @@ public:
                                         LSTarget ls_target);
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
+  vector < NeighborMove > getShuffledApertureNeighbors_all(Plan &P);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
 
@@ -52,6 +53,9 @@ public:
   string planToString(Plan &P);
 private:
   static int myrandom (int i) { return std::rand()%i;}
+
+  vector < NeighborMove > ShuffledApertureNeighbors;
+  int last_move;
 
 
 };
