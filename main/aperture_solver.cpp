@@ -109,6 +109,7 @@ int main(int argc, char** argv){
   // Type of local search
   string strategy = "dao_ls";
   LSType ls_type = LSType::first;
+  bool continuous = true;
   NeighborhoodType neighborhood = NeighborhoodType::mixed;
   double prob_intensity = 0.2;
   int tabu_size = 0;
@@ -149,6 +150,8 @@ int main(int argc, char** argv){
   args::ValueFlag<string> _ls (strat, "string",
                                "Local search strategy (best|first)",
                                {'l', "ls"});
+  args::Flag _continuous (strat, "bool",
+                                "Do not regenerate neighborhood each localsearch step", {"continuous"});
   args::ValueFlag<int>    _tabu_size (strat, "int",
                                     "Tabu list size(" +
                                      to_string(tabu_size)+")", {"tabu-size"});
@@ -354,6 +357,9 @@ int main(int argc, char** argv){
     }
   }
 
+  if (_continuous) continuous = true;
+  else continuous = false;
+
   if(_tabu_size) tabu_size = _tabu_size.Get();
 
   // Neighborhood
@@ -514,8 +520,11 @@ int main(int argc, char** argv){
   cout << "##   Max intensity: " << max_intensity << endl;
   cout << "##   Step intensity: " << step_intensity << endl;
 
-  if (ls_type == LSType::first)
+  if (ls_type == LSType::first) {
     cout << "##   Local search: first improvement"  << endl;
+    if (continuous)
+      cout << "##                 continuous neighborhood" << endl;
+  }
   if (ls_type==LSType::best)
     cout << "##   Local search: best improvement"  << endl;
 
@@ -591,39 +600,45 @@ int main(int argc, char** argv){
    std::clock_t begin_time = clock();
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
+    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, continuous, neighborhood,
+				    target_type, perturbation_type, perturbation_size,
+				    tabu_size, convergence_file);
     used_evaluations =  ils->used_evaluations;
-  }else if(strategy=="ibo_ls"){
-
-	  ils = new IntensityILS2();
-	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
-    used_evaluations =  ils->used_evaluations;
-  }else if(strategy=="ibo+dao"){
+  } else if(strategy=="ibo_ls") {
     ils = new IntensityILS2();
-	  cost = ils->iteratedLocalSearch(P, maxtime, ibo_evals, ls_type, neighborhood, target_type, perturbation_type, perturbation_size, tabu_size, convergence_file);
+    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, continuous, neighborhood,
+				    target_type, perturbation_type, perturbation_size,
+				    tabu_size, convergence_file);
+    used_evaluations =  ils->used_evaluations;
+  } else if(strategy=="ibo+dao") {
+    ils = new IntensityILS2();
+    cost = ils->iteratedLocalSearch(P, maxtime, ibo_evals, ls_type, continuous, neighborhood,
+				    target_type, perturbation_type, perturbation_size,
+				    tabu_size, convergence_file);
     cout << "eval:" << P.eval() << endl;
     P.generateApertures();
+    
     for(auto s:P.get_stations()) s->generateIntensityMatrix();
 
     cout << "eval2:" << P.eval() << endl;
 
-	  int evals=ils->used_evaluations;
-	  std::clock_t begin=ils->time_begin;
+    int evals=ils->used_evaluations;
+    std::clock_t begin=ils->time_begin;
 
-	  ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
-          neighborhood = NeighborhoodType::sequential_i;
-          //if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
-	  cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, neighborhood, target_type, perturbation_type,
-			  perturbation_size, tabu_size, convergence_file, evals, begin);
+    ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
+    neighborhood = NeighborhoodType::sequential_i;
+    //if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
+    cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, continuous, neighborhood,
+				    target_type, perturbation_type, perturbation_size,
+				    tabu_size, convergence_file, evals, begin);
     used_evaluations =  ils->used_evaluations;
-  }else if(strategy=="mixedILS"){
+  } else if(strategy=="mixedILS") {
     MixedILS mixed_ils(bsize, vsize, prob_intensity, step_intensity);
-
-
     NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;
-    cost = mixed_ils.iteratedLocalSearch(P,maxtime, maxeval, ls_type, ls_type,
-                neighborhood, neighborhood_DAO, target_type, target_type,
-                perturbation_type, perturbation_size, tabu_size, convergence_file);
+    cost = mixed_ils.iteratedLocalSearch(P, maxtime, maxeval, ls_type, ls_type, continuous,
+					 neighborhood, neighborhood_DAO, target_type,
+					 target_type, perturbation_type, perturbation_size,
+					 tabu_size, convergence_file);
     used_evaluations = mixed_ils.total_evals;
   }
 

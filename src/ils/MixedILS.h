@@ -25,6 +25,7 @@ public:
 
     double iteratedLocalSearch (Plan& P, int max_time, int max_evaluations,
                                 LSType ls_type_IBO, LSType ls_type_DAO,
+				bool continuous,
                                 NeighborhoodType ls_neighborhood_IBO,
                                 NeighborhoodType ls_neighborhood_DAO,
                                 LSTargetType ls_target_type_IBO,
@@ -47,7 +48,7 @@ public:
         //total_evals=ibo.used_evaluations;
 
         while(true){
-          F = ibo.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_IBO,
+          F = ibo.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_IBO, continuous,
             ls_neighborhood_IBO, ls_target_type_IBO, perturbation_type,
             0, 0 /*tabu size*/, convergence_file, total_evals, begin_time);
           total_evals=ibo.used_evaluations;
@@ -63,7 +64,7 @@ public:
           P.generateApertures();
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
 
-          F = dao.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_DAO,
+          F = dao.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_DAO, continuous,
             ls_neighborhood_DAO, ls_target_type_DAO, perturbation_type,
       			  0, tabu_size, convergence_file, total_evals, begin_time);
 

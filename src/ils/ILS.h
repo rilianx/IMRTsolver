@@ -134,12 +134,12 @@ public:
     }
 
     if (is_move ){
-      cout << "Perturbation:" << endl;
+      cout << "ILS perturbation:" << endl;
       for (int i=0; i < perturbation_size; i++) {
           neighborhood = getNeighborhood(current_plan, neighborhood_type,
                                          ls_target);
     	  move = neighborhood[i];
-    	  cout << "  move type " << move.type << ", s:" <<
+    	  cout << " -move type " << move.type << ", s:" <<
                move.station_id << ", a:" << move.aperture_id <<
                ", b:" << move.beamlet_id << ", action:"<< move.action << endl;
 
@@ -172,9 +172,10 @@ public:
   int used_evaluations;
 
   double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations,
-                              LSType ls_type, NeighborhoodType ls_neighborhood,
+                              LSType ls_type, bool continuous, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
-                              int perturbation_size, int tabu_size, string convergence_file, int evaluations=0, std::clock_t begin = clock()) {
+                              int perturbation_size, int tabu_size, string convergence_file,
+			      int evaluations=0, std::clock_t begin = clock()) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double best_eval = current_plan.getEvaluation();
@@ -204,10 +205,16 @@ public:
      cout << "Starting iterated local search " << endl;
      while (true) {
        // Apply local search
-       aux_eval = localSearch(current_plan, max_time, max_evaluations,
-                  used_evaluations, ls_type, ls_neighborhood, ls_target_type,
-                  tabu_size, trajectory_file);
-
+       if (ls_type == LSType::first) { 
+         aux_eval = FILocalSearch(current_plan, max_time, max_evaluations,
+                    used_evaluations, ls_neighborhood, ls_target_type,
+		    tabu_size, trajectory_file, continuous);
+       } else {
+         aux_eval = BILocalSearch(current_plan, max_time, max_evaluations,
+                    used_evaluations, ls_neighborhood, ls_target_type,
+                    tabu_size, trajectory_file);
+       }
+       
        if (aux_eval < best_eval) {
          best_eval = aux_eval;
          delete best_plan;
@@ -219,8 +226,9 @@ public:
        }
 
        current_iteration++;
-       cout << "  iteration: " << current_iteration << " ; eval: " <<
-               aux_eval << " ; best: " << best_eval << endl;
+       cout << "ILS  iteration: " << current_iteration << " ; current: " <<
+               aux_eval << " ; best: " << best_eval << "; evals:" <<
+	       used_evaluations << endl;
 
        // Print convergence information
        if (convergence_file!="") {
@@ -311,7 +319,7 @@ public:
   };
 
 
-  void addTabu (vector<NeighborMove>& tabu_list, NeighborMove move, int tabu_size) {
+  void addUndoTabu (vector<NeighborMove>& tabu_list, NeighborMove move, int tabu_size) {
     NeighborMove tabu_move = move;
 
     if (tabu_list.size() == tabu_size)
@@ -339,6 +347,16 @@ public:
     tabu_list.push_back(tabu_move);
   };
 
+
+  void addTabu (vector<NeighborMove>& tabu_list, NeighborMove move, int tabu_size) {
+    NeighborMove tabu_move = move;
+    
+    if (tabu_list.size() == tabu_size)
+      tabu_list.erase(tabu_list.begin());
+    
+    tabu_list.push_back(tabu_move);
+  };
+
   bool isTabu (NeighborMove move, vector<NeighborMove> tabu_list) {
     for (auto tabu_move : tabu_list) {
       if (tabu_move.beamlet_id != move.beamlet_id) continue;
@@ -352,13 +370,12 @@ public:
       return(true);
     }
     return(false);
-  }
+  };
 
-  double localSearch (Plan& current_plan, int max_time, int max_evaluations,
-                      int& used_evaluations, LSType ls_type,
-                      NeighborhoodType ls_neighborhood,
-                      LSTargetType ls_target_type, int tabu_size,
-                      string trajectory_file) {
+  double FILocalSearch (Plan& current_plan, int max_time, int max_evaluations,
+                        int& used_evaluations, NeighborhoodType ls_neighborhood,
+                        LSTargetType ls_target_type, int tabu_size,
+                        string trajectory_file, bool continuous) {
 
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();
@@ -366,8 +383,12 @@ public:
     NeighborhoodType current_neighborhood;
     LSTarget ls_target = {LSTargetType::target_none, best_move};
     vector <NeighborMove> tabu_list;
+    NeighborMove move;
 
-    int n_neighbor = 1;
+    int id_neighbor = 0;
+    int n_neighbors = 1;
+    bool generate_neighborhood = true;
+
     bool improvement = true;
 
     // the sequential flag indicates that the previous neighborhood was checked
@@ -390,77 +411,95 @@ public:
     //Start time
     std::clock_t time_end;
     double used_time;
-    cout << "Starting local search" << endl;
+
+    cout << "Local search" << endl;
 
     while (improvement) {
-      //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
-      current_neighborhood = selectNeighborhood (current_neighborhood,
-                                                 ls_neighborhood,
-                                                 improvement && !sequential_flag); // improvement is always true?
+      if (generate_neighborhood){ 
+        //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
+        current_neighborhood = selectNeighborhood (current_neighborhood,
+                                                   ls_neighborhood,
+                                                   improvement && !sequential_flag); // improvement is always true?
+
+        //Get the moves in the neighborhood (this is possible because the moves are not that many!)
+        neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target);
+        id_neighbor = 0;
+	n_neighbors = 0;
+	generate_neighborhood = false;
+      }
+      
       improvement = false;
-      //Get the moves in the neighborhood (this is possible because the moves are not that many!)
-      neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target);
-      n_neighbor = 0;//neighbor counter
 
-      cout << " Neighborhood: " << current_neighborhood << "; size: " <<
-              neighborhood.size() << " ";
+      cout << " -neighborhood: " << current_neighborhood << "; size: " <<
+             neighborhood.size() << " ";
 
-      for (NeighborMove move:neighborhood) {
+      while (n_neighbors < neighborhood.size()) {
+	
+        move = neighborhood[id_neighbor];
 
-        //cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id <<
-        //          "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << ");" << endl;
+        //Counter updates
+        n_neighbors++;
+        id_neighbor++;
+        if (id_neighbor >= neighborhood.size()) 
+          id_neighbor = 0;
+	
+		
         //Skip neighbor if its marked as tabu
-        if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
+        if (tabu_size > 0 && isTabu(move, tabu_list)) {
+	  continue;
+	}
 
-        //Generate the solution in the neighborhood
-
-        /*CHANGE: first compute delta_eval related to the move, then
-        if there is an improvement apply the move.
-
-        We should implement get_delta_eval(currente_plan, move)
-        for each representation */
+	//cout << "; neighbor: " << n_neighbors  << " " << id_neighbor << "(" << move.station_id <<
+        //       "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << ");" << endl;
 
         //-1.0 means that the move is not a valid move
         if(applyMove(current_plan, move) == -1.0)  continue;
 
-        //Counter updates
+        //Evaluation updates
         used_evaluations++;
-        n_neighbor++;
 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
-          cout << "  Neighbor: " << n_neighbor  << "(" << move.station_id <<
-                  "," << move.aperture_id << "," << move.action << "); Improvement: " <<
-                  current_plan.getEvaluation() << endl;
+	  
+          cout << "; neighbor: " << n_neighbors  << "; " 
+	       << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
+	       << "); improvement: " << current_plan.getEvaluation() << endl;
+	  
           improvement = true;
 
-          if(ls_neighborhood==NeighborhoodType::smixed_i && move.type==2)
+          if (ls_neighborhood==NeighborhoodType::smixed_i && move.type==2) {
         	  ls_neighborhood=NeighborhoodType::smixed_a;
-          else if(ls_neighborhood==NeighborhoodType::smixed_a && move.type==1)
+		  generate_neighborhood = true;
+	  } else {
+	    if (ls_neighborhood==NeighborhoodType::smixed_a && move.type==1) {
         	  ls_neighborhood=NeighborhoodType::smixed_i;
-
-
-          if (ls_type == LSType::first) {
-            // First improvement
-            current_eval = current_plan.getEvaluation();
-            current_plan.clearLast();
-            ls_target.target_type = ls_target_type;
-            ls_target.target_move = move;
-            if (tabu_size > 0)
-              addTabu(tabu_list, move, tabu_size);
-
-            break;
-          } else {
-            // Best improvement
-            current_eval = current_plan.getEvaluation();
-            best_move = move;
-            current_plan.undoLast(); //TODO: ignacio revisame!.
-            ls_target.target_type = ls_target_type;
-            ls_target.target_move = move;
+		  generate_neighborhood = true;
+	    }
           }
+
+	  if (!continuous)
+	    generate_neighborhood = true;
+
+
+          current_eval = current_plan.getEvaluation();
+          current_plan.clearLast();
+          ls_target.target_type = ls_target_type;
+          ls_target.target_move = move;
+
+	  // Add the undo movements as tabu
+          if (tabu_size > 0)
+             addUndoTabu(tabu_list, move, tabu_size);
+
+	  n_neighbors = 0;
+          break;
+          
         } else {
           //No improvement
           current_plan.undoLast();
+
+	  // Add the non-improving movement as tabu
+          if (tabu_size > 0)
+            addTabu(tabu_list, move, tabu_size);
         }
 
         // Termination criterion
@@ -470,28 +509,20 @@ public:
         if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
       }
 
-      // Apply best improvement move
-      if (ls_type == LSType::best && improvement) {
-        applyMove(current_plan, best_move);
-        current_eval = current_plan.getEvaluation();
-        current_plan.clearLast();
-        if (tabu_size > 0)
-          addTabu(tabu_list, best_move, tabu_size);
-        //No se agregan evaluaciones en este caso por que
-        //no es una solucion nueva...
-        //used_evaluations++;
-      }
-
       if (improvement) {
-         if (t_file.is_open())
-            t_file << used_evaluations << ";" << used_time << ";" << current_eval << "\n";
+	time_end = clock();
+        used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
+        if (t_file.is_open())
+           t_file << used_evaluations << ";" << used_time << ";" << current_eval << "\n";
 
       }
 
       //Check if imixed neighborhood
-      if (!improvement && ls_neighborhood==NeighborhoodType::imixed && current_neighborhood==NeighborhoodType::intensity){
+      if (!improvement && ls_neighborhood==NeighborhoodType::imixed &&
+	  current_neighborhood==NeighborhoodType::intensity){
     	  ls_neighborhood=NeighborhoodType::mixed;
     	  improvement = true;
+	  generate_neighborhood = true;
       }
 
       // Check sequential neighborhood
@@ -501,8 +532,9 @@ public:
           // improvement we allow to check also the next neighborhood
           // Note: this should be coordinated with the select neighborhood
           // function.
-		  sequential_flag = true;
+	  sequential_flag = true;
           improvement = true;
+	  generate_neighborhood = true;
         } else {
           sequential_flag = false;
         }
@@ -518,215 +550,167 @@ public:
     if (trajectory_file!="")
       t_file.close();
 
+    cout << endl;
     return(current_eval);
   };
 
+  double BILocalSearch (Plan& current_plan, int max_time, int max_evaluations,
+                      int& used_evaluations,  NeighborhoodType ls_neighborhood,
+                      LSTargetType ls_target_type, int tabu_size,
+                      string trajectory_file) {
+    
+    vector <NeighborMove> neighborhood;
+    double current_eval = current_plan.getEvaluation();
+    NeighborMove best_move = {0,0,0,0,0};
+    NeighborhoodType current_neighborhood;
+    LSTarget ls_target = {LSTargetType::target_none, best_move};
+    vector <NeighborMove> tabu_list;
+    
+    int n_neighbors = 0;
+    bool improvement = true;
+    
+    // the sequential flag indicates that the previous neighborhood was checked
+    // unsuccesfully
+    bool sequential_flag = false;
+    bool is_sequential = (ls_neighborhood == NeighborhoodType::sequential_i) ||
+      (ls_neighborhood == NeighborhoodType::sequential_a) ||
+      (ls_neighborhood == NeighborhoodType::sequential_a_loop) ||
+      (ls_neighborhood == NeighborhoodType::sequential_p);
 
-  /* Targeted version of the local search where a beamlert is identified as
-     promising and local search is directed to it */
-  /*double beamTargetedSearch (Plan& current_plan, int max_time, int max_iterations) {
-
-    cout << "## Staring ILS search." << endl;
-
-    //Start time
-    std::clock_t time_end;
-    time_begin=clock();
-
-    //Best plan found so far
-    Plan& best_plan= *new Plan(current_plan);
-
-    pair<bool, pair<Station*, int>> target_beam;
-    double local_eval, aux_eval,  best_eval=current_plan.eval();
-    double used_time=0;
-    // flag is used for the termination criterion
-    bool flag = true;
-    int no_improvement, iteration=1, perturbation_iteration=0;
-    no_improvement = 0;
-
-    local_eval=best_eval;
-
-    while (flag) {
-      // Get the targeted beamlet for local search
-      target_beam = getLSBeamlet(current_plan);
-      while (target_beam.second.second < 0) {
-        // If there is no beamlet available perturbate
-        // until we get one
-        cout << "NOTE: No beamlet available." << endl;
-        local_eval = perturbation(current_plan);
-        perturbation_iteration = iteration;
-        target_beam = getLSBeamlet(current_plan);
-        if (local_eval < best_eval) {
-          best_eval=local_eval;
-          best_plan.newCopy(current_plan);
-        }
-      }
-
-      cout << "Iteration: " << iteration <<
-              ", eval: " <<
-              EvaluationFunction::n_evaluations <<
-              ", time: " <<
-              (roundf(used_time * 1000) / 1000)  <<
-              ", best: " << best_eval <<
-              ", current: " << local_eval  <<
-              ", beamlet: " << target_beam.second.second  <<
-              ", station: " << target_beam.second.first->getAngle() <<
-              ", +-: " << target_beam.first;
-
-      // Apply local search on the targeted beamlet
-      aux_eval = localSearch (target_beam, current_plan);
-      cout << endl;
-
-      // Check if there is a new global best solution
-      if (aux_eval < best_eval) {
-        best_eval=aux_eval;
-        best_plan.newCopy(current_plan);
-      }
-
-      // Acceptance criterion
-      if (aux_eval < local_eval) {
-        // Accept improving solution
-        local_eval = aux_eval;
-        no_improvement = 0;
-      } else if (aux_eval!= local_eval && acceptanceCriterion(aux_eval, local_eval)) {
-        // Accept non-improving solution
-        local_eval = aux_eval;
-        no_improvement = 0;
-      } else {
-        // Not accept solution
-        undoLast(current_plan);
-        no_improvement ++;
-      }
-
-      // Update SA temperature
-      if (acceptance==ACCEPT_SA)
-         updateTemperature();
-
-      iteration++;
-
-      // Termination criterion
-      time_end=clock();
-      used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
-      if (max_time!=0 && used_time >= max_time) flag = false;
-      if (max_iterations!=0 && iteration>=max_iterations) flag = false;
-
-      // Check if we should perturbate
-      if ( perturbate(no_improvement, iteration )) {
-        local_eval = perturbation(current_plan);
-        perturbation_iteration = iteration;
-        no_improvement=no_improvement/2;
-      }
+      // Select initial neighborhood
+    current_neighborhood = selectInitialNeighborhood(ls_neighborhood);
+    
+    //Output file
+    ofstream t_file;
+    if (trajectory_file!="") {
+      t_file.open(trajectory_file.c_str(), ios::app);
     }
-
-    current_plan.newCopy(best_plan);
-    aux_eval=current_plan.getEvaluation();
-    best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
-    return(aux_eval);
-  };*/
-
-  /* Not targeted version having first ils and then als */
- /* double notTargetedSearch(Plan& current_plan, int max_time, int max_iterations) {
-
-    cout << "## Staring ILS search." << endl;
-    std::clock_t time_end;
-
+    
     //Start time
-    time_begin=clock();
-
-    //Best plan found so far
-    Plan& best_plan= *new Plan(current_plan);
-
-    double local_eval, aux_eval,  best_eval;
-    double used_time=0;
-    double ls_time=0;
-    // flag is used for the termination criterion
-    bool flag=true;
-    // improvement signals a new best solution found
-    bool improvement=true;
-    int no_improvement, iteration=1, perturbation_iteration=0;
-    no_improvement = 0;
-
-    best_eval = local_eval = current_plan.getEvaluation();
-    while (flag) {
-      cout << "Iteration: " << iteration << ", eval: " <<
-              EvaluationFunction::n_evaluations <<
-              ", time: "<< (roundf(used_time * 1000) / 1000)  <<
-              ", best: " << best_eval << ", current: " <<
-              local_eval << endl;
-
-      // Perturbate if we haven't improved last iteration
-      if (!improvement) {
-        local_eval = perturbation(current_plan);
-        cout << "Iteration: " << iteration << ", per: " << local_eval << endl;
-      }
-
+    std::clock_t time_end;
+    double used_time;
+    
+    cout << "Local search" << endl;
+    
+    while (improvement) {
+      
       improvement = false;
+      
+      //Update counter
+      n_neighbors = 0;
+      
+      //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
+      current_neighborhood = selectNeighborhood (current_neighborhood,
+                                                   ls_neighborhood,
+                                                   improvement && !sequential_flag); // improvement is always true?
+      //Get the moves in the neighborhood (this is possible because the moves are not that many!)
+      neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target);
+      
+      cout << " -neighborhood: " << current_neighborhood << "; size: " <<
+        neighborhood.size() << " ";
 
-      // Track the used time
-      if (max_time!=0) ls_time = max_time - used_time;
-
-      // Apply intensity ls
-      aux_eval = iLocalSearch (current_plan, ls_time, false);
-      // Check if there if there is a new solution was found
-      if ((local_eval - aux_eval) > 0.00001) {
-        local_eval = aux_eval;
+       for (NeighborMove move:neighborhood) {
+        
+        //Counter updates
+        n_neighbors++;
+        
+        //cout << "  Neighbor: " << n_neighbors  << "(" << move.station_id <<
+        //          "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << ");" << endl;
+        
+        //Skip neighbor if its marked as tabu
+        if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
+        
+        //-1.0 means that the move is not a valid move
+        if(applyMove(current_plan, move) == -1.0)  continue;
+        
+        //Evaluation updates
+        used_evaluations++;
+        
+        // Check if there is an improvement
+        if (current_plan.getEvaluation() < (current_eval-0.001)) {
+          cout << "; neighbor: " << n_neighbors  << "(" << move.station_id <<
+            "," << move.aperture_id << "," << move.action << "); Improvement: " <<
+              current_plan.getEvaluation() << endl;
+          
+          improvement = true;
+          
+          if(ls_neighborhood==NeighborhoodType::smixed_i && move.type==2)
+            ls_neighborhood=NeighborhoodType::smixed_a;
+          else if(ls_neighborhood==NeighborhoodType::smixed_a && move.type==1)
+            ls_neighborhood=NeighborhoodType::smixed_i;
+          
+          // Best improvement
+          current_eval = current_plan.getEvaluation();
+          best_move = move;
+          current_plan.undoLast(); //TODO: ignacio revisame!.
+          ls_target.target_type = ls_target_type;
+          ls_target.target_move = move;
+          
+        } else {
+          //No improvement
+          current_plan.undoLast();
+          // Add the non-improving movement as tabu
+          if (tabu_size > 0)
+            addTabu(tabu_list, move, tabu_size);
+        }
+        
+        // Termination criterion
+        time_end = clock();
+        used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
+        if (max_time!=0 && used_time >= max_time) break;
+        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
       }
-
-      // Check if there is a better global best
-      if ((best_eval - local_eval) > 0.00001) {
-        best_eval = local_eval;
-        best_plan.newCopy(current_plan);
+      
+      // Apply best improvement move
+      if (improvement) {
+        applyMove(current_plan, best_move);
+        current_eval = current_plan.getEvaluation();
+        current_plan.clearLast();
+        // Add the undo movements as tabu
+        if (tabu_size > 0)
+          addUndoTabu(tabu_list, best_move, tabu_size);
+        //No se agregan evaluaciones en este caso por que
+        //no es una solucion nueva...
+        //used_evaluations++;
       }
-
-      //Check print (comment if not needed)
-      //current_plan.eval();
-      //cout << "returned eval: " << aux_eval << " current local: " << local_eval << " in current plan: " << current_plan.getEvaluation()<< endl;
-      //cout << endl;
-      //for(int j=0;j<5;j++)
-      //current_plan.printIntensity(j);
-      //cout << endl;
-
-      // Check termination criterion
-      time_end = clock();
-      used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
-      if (max_time!=0 && used_time >= max_time) {
-        flag = false;
-        break;
+      
+      if (improvement) {
+        if (t_file.is_open())
+          t_file << used_evaluations << ";" << used_time << ";" << current_eval << "\n";
       }
-      // Update used time
-      if (max_time!=0) ls_time = max_time-used_time;
-
-      // Apply aperture ls
-      aux_eval = aLocalSearch (current_plan, ls_time , false);
-      // Check if there if there is a new solution was found
-      if ((local_eval - aux_eval) > 0.00001) {
-        local_eval = aux_eval;
+      
+      //Check if imixed neighborhood
+      if (!improvement && ls_neighborhood==NeighborhoodType::imixed && current_neighborhood==NeighborhoodType::intensity){
+        ls_neighborhood=NeighborhoodType::mixed;
         improvement = true;
       }
-
-      // Check if there is a better global best
-      if ((best_eval - local_eval) > 0.00001) {
-        best_eval = local_eval;
-        best_plan.newCopy(current_plan);
+      
+      // Check sequential neighborhood
+      if (is_sequential) {
+        if (!improvement & !sequential_flag) {
+          // If we are in sequential mode, when there is no
+          // improvement we allow to check also the next neighborhood
+          // Note: this should be coordinated with the select neighborhood
+          // function.
+          sequential_flag = true;
+          improvement = true;
+        } else {
+          sequential_flag = false;
+        }
       }
-
-      iteration++;
-
-      // Check termination criterion
-      time_end=clock();
-      used_time=double(time_end- time_begin) / CLOCKS_PER_SEC;
-      if (max_time!=0 && used_time >= max_time) flag = false;
-      if (max_iterations!=0 && iteration>=max_iterations) flag = false;
+      
+      // Termination criterion
+      time_end = clock();
+      used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
+      if (max_time!=0 && used_time >= max_time) break;
+      if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
     }
-
-    current_plan.newCopy(best_plan);
-    aux_eval = current_plan.getEvaluation();
-    best_plan.getEvaluationFunction()->generate_voxel_dose_functions();
-
-    time_end = clock();
-    used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
-    cout << "## Total used time: " << used_time << endl;
-    return(aux_eval);
-  };*/
+    
+    if (trajectory_file!="")
+      t_file.close();
+    
+    return(current_eval);
+  };
 
 };
 
