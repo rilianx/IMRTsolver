@@ -41,10 +41,7 @@ enum NeighborhoodType {
   sequential_p = 6,
   imixed = 7,
   smixed_i= 8,
-  smixed_a= 9,
-  aperture_loop = 10,
-  sequential_a_loop= 11
-
+  smixed_a= 9
 };
 
 enum LSType {
@@ -205,7 +202,7 @@ public:
      cout << "Starting iterated local search " << endl;
      while (true) {
        // Apply local search
-       if (ls_type == LSType::first) { 
+       if (ls_type == LSType::first) {
          aux_eval = FILocalSearch(current_plan, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
 		    tabu_size, trajectory_file, continuous);
@@ -214,7 +211,7 @@ public:
                     used_evaluations, ls_neighborhood, ls_target_type,
                     tabu_size, trajectory_file);
        }
-       
+
        if (aux_eval < best_eval) {
          best_eval = aux_eval;
          delete best_plan;
@@ -284,8 +281,7 @@ public:
      }
 
      if (user == NeighborhoodType::sequential_i ||
-         user == NeighborhoodType::sequential_a ||
-         user == NeighborhoodType::sequential_a_loop ) {
+         user == NeighborhoodType::sequential_a ) {
        if (keep_flag) {
          return (current);
        } else {
@@ -308,8 +304,6 @@ public:
        return(NeighborhoodType::intensity);
      else if (user == NeighborhoodType::sequential_a)
        return(NeighborhoodType::aperture);
-     else if (user == NeighborhoodType::sequential_a_loop)
-         return(NeighborhoodType::aperture_loop);
      else if (user == NeighborhoodType::sequential_p){
        float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
        if (r < 0.5) return(NeighborhoodType::intensity);
@@ -350,10 +344,10 @@ public:
 
   void addTabu (vector<NeighborMove>& tabu_list, NeighborMove move, int tabu_size) {
     NeighborMove tabu_move = move;
-    
+
     if (tabu_list.size() == tabu_size)
       tabu_list.erase(tabu_list.begin());
-    
+
     tabu_list.push_back(tabu_move);
   };
 
@@ -396,7 +390,6 @@ public:
     bool sequential_flag = false;
     bool is_sequential = (ls_neighborhood == NeighborhoodType::sequential_i) ||
                          (ls_neighborhood == NeighborhoodType::sequential_a) ||
-                         (ls_neighborhood == NeighborhoodType::sequential_a_loop) ||
                          (ls_neighborhood == NeighborhoodType::sequential_p);
 
     // Select initial neighborhood
@@ -415,7 +408,7 @@ public:
     cout << "Local search" << endl;
 
     while (improvement) {
-      if (generate_neighborhood){ 
+      if (generate_neighborhood){
         //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
         current_neighborhood = selectNeighborhood (current_neighborhood,
                                                    ls_neighborhood,
@@ -427,23 +420,23 @@ public:
 	n_neighbors = 0;
 	generate_neighborhood = false;
       }
-      
+
       improvement = false;
 
       cout << " -neighborhood: " << current_neighborhood << "; size: " <<
              neighborhood.size() << " ";
 
       while (n_neighbors < neighborhood.size()) {
-	
+
         move = neighborhood[id_neighbor];
 
         //Counter updates
         n_neighbors++;
         id_neighbor++;
-        if (id_neighbor >= neighborhood.size()) 
+        if (id_neighbor >= neighborhood.size())
           id_neighbor = 0;
-	
-		
+
+
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list)) {
 	  continue;
@@ -460,11 +453,11 @@ public:
 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
-	  
-          cout << "; neighbor: " << n_neighbors  << "; " 
+
+          cout << "; neighbor: " << n_neighbors  << "; "
 	       << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
 	       << "); improvement: " << current_plan.getEvaluation() << endl;
-	  
+
           improvement = true;
 
           if (ls_neighborhood==NeighborhoodType::smixed_i && move.type==2) {
@@ -492,7 +485,7 @@ public:
 
 	  n_neighbors = 0;
           break;
-          
+
         } else {
           //No improvement
           current_plan.undoLast();
@@ -558,94 +551,93 @@ public:
                       int& used_evaluations,  NeighborhoodType ls_neighborhood,
                       LSTargetType ls_target_type, int tabu_size,
                       string trajectory_file) {
-    
+
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();
     NeighborMove best_move = {0,0,0,0,0};
     NeighborhoodType current_neighborhood;
     LSTarget ls_target = {LSTargetType::target_none, best_move};
     vector <NeighborMove> tabu_list;
-    
+
     int n_neighbors = 0;
     bool improvement = true;
-    
+
     // the sequential flag indicates that the previous neighborhood was checked
     // unsuccesfully
     bool sequential_flag = false;
     bool is_sequential = (ls_neighborhood == NeighborhoodType::sequential_i) ||
       (ls_neighborhood == NeighborhoodType::sequential_a) ||
-      (ls_neighborhood == NeighborhoodType::sequential_a_loop) ||
       (ls_neighborhood == NeighborhoodType::sequential_p);
 
       // Select initial neighborhood
     current_neighborhood = selectInitialNeighborhood(ls_neighborhood);
-    
+
     //Output file
     ofstream t_file;
     if (trajectory_file!="") {
       t_file.open(trajectory_file.c_str(), ios::app);
     }
-    
+
     //Start time
     std::clock_t time_end;
     double used_time;
-    
+
     cout << "Local search" << endl;
-    
+
     while (improvement) {
-      
+
       improvement = false;
-      
+
       //Update counter
       n_neighbors = 0;
-      
+
       //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
       current_neighborhood = selectNeighborhood (current_neighborhood,
                                                    ls_neighborhood,
                                                    improvement && !sequential_flag); // improvement is always true?
       //Get the moves in the neighborhood (this is possible because the moves are not that many!)
       neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target);
-      
+
       cout << " -neighborhood: " << current_neighborhood << "; size: " <<
         neighborhood.size() << " ";
 
        for (NeighborMove move:neighborhood) {
-        
+
         //Counter updates
         n_neighbors++;
-        
+
         //cout << "  Neighbor: " << n_neighbors  << "(" << move.station_id <<
         //          "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << ");" << endl;
-        
+
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list)) continue;
-        
+
         //-1.0 means that the move is not a valid move
         if(applyMove(current_plan, move) == -1.0)  continue;
-        
+
         //Evaluation updates
         used_evaluations++;
-        
+
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
           cout << "; neighbor: " << n_neighbors  << "(" << move.station_id <<
             "," << move.aperture_id << "," << move.action << "); Improvement: " <<
               current_plan.getEvaluation() << endl;
-          
+
           improvement = true;
-          
+
           if(ls_neighborhood==NeighborhoodType::smixed_i && move.type==2)
             ls_neighborhood=NeighborhoodType::smixed_a;
           else if(ls_neighborhood==NeighborhoodType::smixed_a && move.type==1)
             ls_neighborhood=NeighborhoodType::smixed_i;
-          
+
           // Best improvement
           current_eval = current_plan.getEvaluation();
           best_move = move;
           current_plan.undoLast(); //TODO: ignacio revisame!.
           ls_target.target_type = ls_target_type;
           ls_target.target_move = move;
-          
+
         } else {
           //No improvement
           current_plan.undoLast();
@@ -653,14 +645,14 @@ public:
           if (tabu_size > 0)
             addTabu(tabu_list, move, tabu_size);
         }
-        
+
         // Termination criterion
         time_end = clock();
         used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
         if (max_time!=0 && used_time >= max_time) break;
         if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
       }
-      
+
       // Apply best improvement move
       if (improvement) {
         applyMove(current_plan, best_move);
@@ -673,18 +665,18 @@ public:
         //no es una solucion nueva...
         //used_evaluations++;
       }
-      
+
       if (improvement) {
         if (t_file.is_open())
           t_file << used_evaluations << ";" << used_time << ";" << current_eval << "\n";
       }
-      
+
       //Check if imixed neighborhood
       if (!improvement && ls_neighborhood==NeighborhoodType::imixed && current_neighborhood==NeighborhoodType::intensity){
         ls_neighborhood=NeighborhoodType::mixed;
         improvement = true;
       }
-      
+
       // Check sequential neighborhood
       if (is_sequential) {
         if (!improvement & !sequential_flag) {
@@ -698,17 +690,17 @@ public:
           sequential_flag = false;
         }
       }
-      
+
       // Termination criterion
       time_end = clock();
       used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
       if (max_time!=0 && used_time >= max_time) break;
       if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
     }
-    
+
     if (trajectory_file!="")
       t_file.close();
-    
+
     return(current_eval);
   };
 

@@ -58,7 +58,7 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 };
 
 vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_all(Plan &P){
-   if(ShuffledApertureNeighbors.size()==0){
+   //if(ShuffledApertureNeighbors.size()==0){
      vector < NeighborMove > moves;
      list<Station*> stations = P.get_stations();
      int k=0;
@@ -76,11 +76,12 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_all(Plan &P)
      }
 
      std::random_shuffle ( moves.begin(), moves.end(), myrandom);
+     return moves;
 
-     ShuffledApertureNeighbors=moves;
-     last_move=-1;
-   }
-   return ShuffledApertureNeighbors;
+     //ShuffledApertureNeighbors=moves;
+     //last_move=-1;
+   //}
+   //return ShuffledApertureNeighbors;
 
  }
 
@@ -205,11 +206,11 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
   if (ls_neighborhood == intensity) {
     neighborList = getShuffledIntensityNeighbors(current_plan);
   } else if (ls_neighborhood == aperture) {
-    neighborList = getShuffledApertureNeighbors(current_plan);
-    //neighborList = getShuffledApertureNeighbors_target(current_plan,10);
-  } else if (ls_neighborhood == aperture_loop) {
     neighborList = getShuffledApertureNeighbors_all(current_plan);
-  } else if (ls_neighborhood == mixed) {
+    //neighborList = getShuffledApertureNeighbors_target(current_plan,10);
+  }/* else if (ls_neighborhood == aperture_loop) {
+    neighborList = getShuffledApertureNeighbors_all(current_plan);
+  } */else if (ls_neighborhood == mixed) {
     //mixed
     neighborList = getShuffledNeighbors(current_plan);
   }else if (ls_neighborhood == smixed_i) {
