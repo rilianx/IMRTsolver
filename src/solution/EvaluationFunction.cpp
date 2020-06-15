@@ -147,7 +147,7 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 
 		if(Zmin[o]>0 && Z[o][k] < Zmin[o]) D[o][k]=-w[o]*(Z[o][k]-Zmin[o])/nb_voxels[o];
 
-		else if(Z[o][k] > Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o])/nb_voxels[o];
+		else if(Z[o][k] >= Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o])/nb_voxels[o];
 
 		if(D[o][k]!=0.0)
 			voxels.insert(make_pair(D[o][k],make_pair(o,k)));
