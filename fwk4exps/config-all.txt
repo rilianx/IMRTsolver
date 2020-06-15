@@ -6,14 +6,20 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = ibo_continuous
+algo_names = ibo_continuous ibo_targeted
 #ibo_dao_random
 #ibo_dao_conv
 #dao_neigh ibo_neigh ibo_setup_bi-li
 
 [ibo_continuous]
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --ls_simple=aperture --convergence=IBO_aperture_continuous --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_simple=aperture --convergence=IBO_aperture_continuous --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --continuous
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_targeted]
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_simple=aperture --convergence=IBO_aperture_targeted --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted
 outputpos_times = 0
 outputpos_boxes = 0
 
