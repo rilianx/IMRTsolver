@@ -907,6 +907,54 @@ namespace imrt {
 		return(diff);
   }
 
+  /* Function that closes a row from the left, if lside is true, or
+   from the right size otherwise. Return diff if the closing was performed.*/
+  list<pair <int,double> > Station::closeRow(int row, int aperture, bool lside) {
+    
+    list<pair <int, double> > diff;
+    int beam; 
+    pair <int,int> pattern;
+    
+    clearHistory();
+    
+    pattern = getApertureShape(aperture, row);
+    
+    if (pattern.first == -1) return(diff);
+    
+    if (lside) {
+      beam = pattern.first;
+    } else {
+      beam = pattern.second;
+    }
+    diff = closeBeamlet(beam, aperture, lside);
+    
+    return(diff);
+  };
+
+  /* Function that opens a row from the left, if lside is true, or
+   from the right size otherwise. Return true if the closing was performed.*/
+  list <pair<int,double> > Station::openRow(int row, int aperture, bool lside) {
+    list<pair<int, double>> diff;
+    int beam; 
+    pair <int,int> pattern;
+    pair <int,int> active;
+    clearHistory();
+    
+    pattern = getApertureShape(aperture, row);
+    active = collimator.getActiveRange(row, getAngle());
+    if (lside){
+      if (pattern.first == active.first) return(diff);
+      beam = pattern.first;
+    } else {
+      if (pattern.second == active.second) return(diff);
+      beam = pattern.second;
+    }
+    
+    diff = openBeamlet(beam, aperture);
+  
+    return(diff);
+  };
+
   list <pair< int,double> > Station::getModifyIntensityApertureDiff (int aperture, double size) {
     list < pair <int, double > > diff;
     if ((intensity[aperture]+size) < 0 || (intensity[aperture]+size) > max_intensity) {

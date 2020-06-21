@@ -24,7 +24,8 @@ struct NeighborMove {
   int station_id;
   int aperture_id;
   // Action
-  // 1: open (increase)
+  // 1: open left (increase)
+  // 2: open right (increase)
   // -1 close left (reduce intensity)
   // -2 close right
   // -3 close from closest border
@@ -138,7 +139,7 @@ public:
     	  move = neighborhood[i];
     	  cout << " -move type " << move.type << ", s:" <<
                move.station_id << ", a:" << move.aperture_id <<
-               ", b:" << move.beamlet_id << ", action:"<< move.action << endl;
+               ", r:" << move.beamlet_id << ", action:"<< move.action << endl;
 
 		  applyMoveP(current_plan, move);
       }
@@ -424,7 +425,7 @@ public:
       improvement = false;
 
       cout << " -neighborhood: " << current_neighborhood << "; size: " <<
-             neighborhood.size() << " ";
+             neighborhood.size() << "; curren best: " << current_eval << endl;;
 
       while (n_neighbors < neighborhood.size()) {
 
@@ -436,17 +437,23 @@ public:
         if (id_neighbor >= neighborhood.size())
           id_neighbor = 0;
 
+//	cout << "    neighbor: " << n_neighbors  << " " << id_neighbor << "(" << move.station_id <<
+ //              "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << "); ";
+
 
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list)) {
+   //       cout << " tabu" << endl;
 	  continue;
 	}
-
-	//cout << "; neighbor: " << n_neighbors  << " " << id_neighbor << "(" << move.station_id <<
-        //       "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << ");" << endl;
-
+       
         //-1.0 means that the move is not a valid move
-        if(applyMove(current_plan, move) == -1.0)  continue;
+        if(applyMove(current_plan, move) == -1.0){
+     //     cout << " skipped" << endl;
+          continue;
+        }
+       
+       // cout << current_plan.getEvaluation() << endl; 
 
         //Evaluation updates
         used_evaluations++;
@@ -454,7 +461,7 @@ public:
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
 
-          cout << "; neighbor: " << n_neighbors  << "; "
+          cout << "    neighbor: " << n_neighbors  << "; "
 	       << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
 	       << "); improvement: " << current_plan.getEvaluation() << endl;
 

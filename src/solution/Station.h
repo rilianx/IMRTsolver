@@ -266,6 +266,9 @@ public:
   double getApertureIntensity(int aperture);
   int getMaxIntensity();
 
+  list<pair <int,double>> closeRow(int row, int aperture, bool lside);
+  list <pair<int,double>> openRow(int row, int aperture, bool lside);
+
   list <pair<int,double>> undoLast ();
 
   void clearHistory();

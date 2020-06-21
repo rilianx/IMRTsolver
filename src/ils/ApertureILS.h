@@ -65,6 +65,8 @@ public:
   vector < NeighborMove > getFriendsNeighbors(Plan &P, NeighborMove target);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   double applyMove (Plan &P, NeighborMove move);
+  bool checkMove (Plan &P, NeighborMove move);
+
   string planToString(Plan &P);
 
   int getStepIntensity ();

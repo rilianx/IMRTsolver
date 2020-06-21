@@ -163,6 +163,74 @@ namespace imrt {
     return(evaluation_fx);
   };
 
+  double Plan::openRow(int station, int aperture, int row, bool side) {
+    Station * s = get_station(station);
+    double aux_eval=0;
+    list<pair<int, double> > diff;
+    pair <int, int> pattern = s->getApertureShape(aperture, row);
+    pair <int, int> active  = s->collimator.getActiveRange(row, s->getAngle());
+    int beamlet;
+    double min_new_eval = DBL_MAX;
+    
+    if (active.first == -1) return (evaluation_fx);
+
+    if (pattern.first == -1) {
+      //All row are closed find best opening beamlet
+      for (int i=active.first; i<=active.second; i++) {
+        aux_eval= get_delta_eval(*s, i, s->getApertureIntensity(aperture));
+        if (aux_eval < min_new_eval){
+          beamlet = i;
+          min_new_eval = aux_eval;
+        };
+      }
+    } else {
+      if (side) {
+        beamlet = pattern.first - 1;
+        if (active.first > beamlet) return(evaluation_fx);
+      } else {
+        beamlet = pattern.second + 1;
+        if (active.second < beamlet) return(evaluation_fx);
+      }
+    }
+    
+    if (get_delta_eval(*s, beamlet, s->getApertureIntensity(aperture)) > evaluation_fx){
+      clearLast();
+      return(evaluation_fx);
+    }
+    
+    diff = s->openBeamlet(beamlet, aperture);
+    if(diff.size() <1) {
+      clearLast();
+      return(evaluation_fx);
+    }
+    
+    return(incremental_eval(*s, diff));
+  };
+
+  double Plan::closeRow(int station, int aperture, int row, bool side) {
+    Station * s = get_station(station);
+    list<pair<int, double> > diff;
+    pair <int, int> pattern = s->getApertureShape(aperture, row);
+    int beamlet;
+    
+    if (side)
+      beamlet = pattern.first;
+    else
+      beamlet = pattern.second;
+    
+    if (get_delta_eval(*s, beamlet, -(s)->getApertureIntensity(aperture)) > evaluation_fx){
+      clearLast();
+      return(evaluation_fx);
+    }
+    diff = s->closeRow(row, aperture, side);
+    if (diff.size() > 0) {
+      incremental_eval(*s, diff);
+    } else {
+      clearLast();
+    }
+    return(evaluation_fx);
+  };
+
   double Plan::modifyIntensityAperture (int station, int aperture, int delta) {
     Station * s = get_station(station);
     list<pair<int, double> > diff;

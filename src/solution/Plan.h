@@ -10,6 +10,7 @@
 
 #include "EvaluationFunction.h"
 #include "Station.h"
+#include <float.h>
 
 namespace imrt {
 
@@ -104,6 +105,10 @@ public:
   double openBeamlet(int station, int aperture, int beamlet);
 
   double closeBeamlet(int station, int aperture, int beamlet, int side);
+
+  double openRow(int station, int aperture, int row, bool side);
+
+  double closeRow(int station, int aperture, int row, bool side);
 
   double modifyIntensityAperture (int station, int aperture, int delta);
 
