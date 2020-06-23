@@ -19,36 +19,16 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   int k=0;
   for(auto s:stations){
 
-	  if(s->int2nb.size() < s->getNbApertures()){
-		  NeighborMove move = {2,k,0,+1,0};
+	  NeighborMove move = {2,k,0,+1,0};
+		moves.push_back(move);
+
+	  for(int i=0; i<s->getNbApertures(); i++){
+			NeighborMove move = {2,k,i+1,+1,0};
+		  moves.push_back(move);
+
+		  move = {2,k,i+1,-1,0};
 		  moves.push_back(move);
 	  }
-
-	  for(pair <int, int> intensity : s->int2nb){
-		  if (intensity.first < s->getMaxIntensity()){
-			  NeighborMove move = {2,k,intensity.first,+1,0};
-			  moves.push_back(move);
-		  }
-
-		  NeighborMove move = {2,k,intensity.first,-1,0};
-		  moves.push_back(move);
-	  }
-
-	  //move for generating intermediate intensities
-	  /*if(s->int2nb.size() < s->getNbApertures()){
-		  int intensity_prev=0;
-		  s->int2nb.insert(make_pair(s->getMaxIntensity(),0));
-		  for(pair <int, int> intensity : s->int2nb){
-			  if(intensity.first - intensity_prev > 1){
-				  NeighborMove move = {2,k, int(intensity.first - intensity_prev)/2,+1,0};
-				  moves.push_back(move);
-			      move = {2,k, int(intensity.first - intensity_prev+0.6)/2,-1,0};
-			      moves.push_back(move);
-			  }
-			  intensity_prev=intensity.first;
-		  }
-		  s->int2nb.erase(s->getMaxIntensity());
-	  }*/
 
 	  k++;
   }
@@ -58,7 +38,6 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 };
 
 vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_all(Plan &P){
-   //if(ShuffledApertureNeighbors.size()==0){
      vector < NeighborMove > moves;
      list<Station*> stations = P.get_stations();
      int k=0;
@@ -77,11 +56,6 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_all(Plan &P)
 
      std::random_shuffle ( moves.begin(), moves.end(), myrandom);
      return moves;
-
-     //ShuffledApertureNeighbors=moves;
-     //last_move=-1;
-   //}
-   //return ShuffledApertureNeighbors;
 
  }
 
@@ -308,8 +282,6 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
   int j = s->beam2pos[beamlet].second;
 
   if (type == 1) {
-
-
     // single beam
     double intensity;
 
@@ -329,6 +301,14 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
 
   } else {
     // change intensity
+    if((int)intens > s->int2nb.size() || (intens == 0.0 && s->getNbApertures())) return -1.0;
+    if(intens != 0.0){
+       map< int, int >::iterator iter=s->int2nb.begin();
+       std::advance( iter, ((int) intens-1) );
+       intens = iter->first;
+     }
+
+
     if (action < 0){
       if(s->int2nb.find(intens+0.5) != s->int2nb.end())
     	  diff = s->change_intensity(intens, -1.0);
@@ -338,8 +318,6 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
 
 
     }else{
-
-
       if(s->int2nb.find(intens+0.5) != s->int2nb.end() || intens==0.0)
     	  diff = s->change_intensity(intens, +1.0);
       else
@@ -353,7 +331,7 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
         	current_eval=current_plan.incremental_eval(*s, diff);
         }else
         	s->diff_undo(diff);
-    }
+    }else return -1.0;
 
   }
 
