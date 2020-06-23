@@ -10,7 +10,8 @@
 namespace imrt {
 
 
-
+  int IntensityILS2::vsize=100;
+  double IntensityILS2::min_improvement=0.05;
 
 vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   list<Station*> stations = P.get_stations();
@@ -37,66 +38,42 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   return(moves);
 };
 
-vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_all(Plan &P){
-     vector < NeighborMove > moves;
-     list<Station*> stations = P.get_stations();
-     int k=0;
-     for(auto s:stations){
-   	   for (int i=0; i<s->I.nb_rows();i++)
-  			 for (int j=0; j<s->I.nb_cols(); j++)
-  				 if(s->I(i,j)!=-1){
-  						 NeighborMove move = {1,k,0,+1,s->pos2beam[make_pair(i,j)]};
-  						 moves.push_back(move);
-
-  						 move = {1,k,0,-1,s->pos2beam[make_pair(i,j)]};
-  						 moves.push_back(move);
-  				 }
-   	  k++;
-     }
-
-     std::random_shuffle ( moves.begin(), moves.end(), myrandom);
-     return moves;
-
- }
-
 vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan &P, int nv){
-  vector < NeighborMove > moves;
+  vector < NeighborMove > best_moves;
+  vector < NeighborMove > shuffled_moves;
   multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
     P.getEvaluationFunction()->best_beamlets(P, nv);
   bool first=true;
-  for(auto b : beamlets){
 
+  for(auto b : beamlets){
     Station *s = P.get_station(b.second.first);
     pair<int,int> ij = s->beam2pos[b.second.second];
     int i=ij.first, j=ij.second;
     double intensity=s->I(i,j);
     if(b.first > 0) {
       intensity=s->intensityUp(i,j);
-      if(intensity != s->I(i,j)){
-        if(first && b.first < 0.05) return getShuffledApertureNeighbors(P);
-        else first=false;
-
-
         NeighborMove move = {1,b.second.first,0,+1,b.second.second};
-        moves.push_back(move);
-      }
-    }else if(b.first < 0) {
-      intensity=s->intensityDown(i,j);
-      if(intensity != s->I(i,j)){
-        if(first && b.first < 0.05) return getShuffledApertureNeighbors(P);
-        else first=false;
+        if(b.first>=min_improvement) best_moves.push_back(move);
+        else shuffled_moves.push_back(move);
 
-      NeighborMove move = {1,b.second.first,0,-1,b.second.second};
-      moves.push_back(move);
-      }
+        move = {1,b.second.first,0,-1,b.second.second};
+        shuffled_moves.push_back(move);
+    }else if(b.first <= 0) {
+      intensity=s->intensityDown(i,j);
+        NeighborMove move = {1,b.second.first,0,-1,b.second.second};
+        if(b.first<=-min_improvement) best_moves.push_back(move);
+        else shuffled_moves.push_back(move);
+
+        move = {1,b.second.first,0,+1,b.second.second};
+        shuffled_moves.push_back(move);
     }
   }
 
-  //deberian ir solo los que no han sido agregados
-  //vector < NeighborMove > a_list = getShuffledApertureNeighbors(P);
-  //moves.insert(moves.end(), a_list.begin(), a_list.end());
+  //std::random_shuffle ( best_moves.begin(), best_moves.end(), myrandom);
+  std::random_shuffle ( shuffled_moves.begin(), shuffled_moves.end(), myrandom);
+  best_moves.insert(best_moves.end(), shuffled_moves.begin(), shuffled_moves.end());
 
-  return moves;
+  return best_moves;
 }
 
 vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors(Plan &P){
@@ -190,9 +167,9 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
     neighborList = getShuffledIntensityNeighbors(current_plan);
   } else if (ls_neighborhood == aperture) {
     if(ls_target.target_type!=LSTargetType::target_friends)
-       neighborList = getShuffledApertureNeighbors_all(current_plan);
+       neighborList = getShuffledApertureNeighbors(current_plan);
     else
-       neighborList = getShuffledApertureNeighbors_target(current_plan,100);
+       neighborList = getShuffledApertureNeighbors_target(current_plan,vsize);
   }else if (ls_neighborhood == mixed) {
     //mixed
     neighborList = getShuffledNeighbors(current_plan);

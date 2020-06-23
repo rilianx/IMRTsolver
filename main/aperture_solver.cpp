@@ -117,8 +117,9 @@ int main(int argc, char** argv){
   // Target beamlet heuristic
   bool targeted_search = false;
   LSTargetType target_type = LSTargetType::target_none;
-  int vsize = 50;
+  int vsize = 100;
   int bsize = 20;
+  double min_improvement=0.05;
 
   // Perturbation
   PerturbationType perturbation_type = PerturbationType::p_mixed;
@@ -217,6 +218,9 @@ int main(int argc, char** argv){
   args::ValueFlag<int>    _vsize    (heur, "int",
                                     "Number of considered worst voxels (" +
                                      to_string(vsize)+")", {"vsize"});
+ args::ValueFlag<double>    _min_improvement    (heur, "double",
+                                   "Minimum beamlet improvement estimation(" +
+                                    to_string(min_improvement)+")", {"min_impr"});
 
   // Perturbation parameters
   args::Group perargs (parser, "Perturbation:");
@@ -305,6 +309,9 @@ int main(int argc, char** argv){
 
 	if(_bsize) bsize = _bsize.Get();
 	if(_vsize) vsize = _vsize.Get();
+  if(_min_improvement) min_improvement=_min_improvement.Get();
+  IntensityILS2::vsize=vsize;
+  IntensityILS2::min_improvement=min_improvement;
 
   if(_max_apertures) max_apertures=_max_apertures.Get();
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
@@ -633,7 +640,7 @@ int main(int argc, char** argv){
     NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;
     cost = mixed_ils.iteratedLocalSearch(P, maxtime, maxeval, ls_type, ls_type, continuous,
 					 neighborhood, neighborhood_DAO, target_type,
-					 target_type, perturbation_type, perturbation_size,
+					 LSTargetType::target_none, perturbation_type, perturbation_size,
 					 tabu_size, convergence_file);
     used_evaluations = mixed_ils.total_evals;
   }

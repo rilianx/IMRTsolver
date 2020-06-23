@@ -12,6 +12,14 @@ algo_names = ibodao_continuous
 #ibo_dao_conv
 #dao_neigh ibo_neigh ibo_setup_bi-li
 
+[ibodao_targeted]
+exec = "../AS"
+tuning_param = MINIMPR
+tuning_values =  --min_impr=0.05 --convergence=IBODAO_target0.05, --min_impr=0.01 --convergence=IBODAO_target0.01, --min_impr=0.10 --convergence=IBODAO_target0.10
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --convergence=IBODAO_bili_continuous --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted _MINIMPR
+outputpos_times = 0
+outputpos_boxes = 0
+
 [ibodao_continuous]
 exec = "../AS"
 params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --convergence=IBODAO_bili_continuous --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --continuous

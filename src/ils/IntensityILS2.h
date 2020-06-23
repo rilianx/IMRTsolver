@@ -17,6 +17,9 @@ namespace imrt {
 class IntensityILS2 : public ILS {
 public:
 
+  static int vsize;
+  static double min_improvement;
+
   IntensityILS2() : ILS() { };
 
   IntensityILS2(const IntensityILS2 & ils) : ILS(ils) {
@@ -29,7 +32,6 @@ public:
                                         LSTarget ls_target);
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
-  vector < NeighborMove > getShuffledApertureNeighbors_all(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors_target(Plan &P, int nv=5);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
