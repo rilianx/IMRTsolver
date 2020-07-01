@@ -15,7 +15,7 @@ algo_names = ibodao_targeted_tabu
 [ibodao_targeted_tabu]
 exec = "../AS"
 tuning_param = TABUSIZE
-tuning_values =  --tabu-size=0 --convergence=IBODAO_tsize0, --tabu-size=100 --convergence=IBODAO_tsize100, --tabu-size=100 --convergence=IBODAO_tsize200, --tabu-size=100 --convergence=IBODAO_tsize400
+tuning_values =  --tabu-size=50 --convergence=IBODAO_tsize50, --tabu-size=200 --convergence=IBODAO_tsize200, --tabu-size=400 --convergence=IBODAO_tsize400
 params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 _TABUSIZE
 outputpos_times = 0
 outputpos_boxes = 0
