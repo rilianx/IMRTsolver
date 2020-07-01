@@ -112,136 +112,157 @@ namespace imrt {
     return(evaluation_fx);
   }
 
-  double Plan::openBeamlet(int station, int aperture, int beamlet) {
+  double Plan::openBeamlet(int station, int aperture, int beamlet, bool delta_eval,
+      list<pair<int, double> >* diff) {
     Station * s = get_station(station);
     double aux_eval=0;
-    list<pair<int, double> > diff;
+    if(!delta_eval) diff = new list<pair<int, double> >;
 
+    /*
     if (get_delta_eval(*s, beamlet, s->getApertureIntensity(aperture)) > evaluation_fx){
 			clearLast();
       return(evaluation_fx);
-    }
+    }*/
 
-    diff = s->openBeamlet(beamlet, aperture);
-    if(diff.size() <1) {
-      clearLast();
+    *diff = s->openBeamlet(beamlet, aperture);
+
+    if(!delta_eval){
+      if (diff->size() > 0)
+        incremental_eval(*s, *diff);
+       else
+        clearLast();
+      delete diff;
       return(evaluation_fx);
-    }
 
-    return(incremental_eval(*s, diff));
+    }else
+      return get_delta_eval(*s, *diff);
   };
 
-  double Plan::closeBeamlet(int station, int aperture, int beamlet, int side) {
+  double Plan::closeBeamlet(int station, int aperture, int beamlet, int side, bool delta_eval,
+      list<pair<int, double> >* diff) {
+
+
     Station * s = get_station(station);
-    list<pair<int, double> > diff;
+    if(!delta_eval) diff = new list<pair<int, double> >;
     double l_eval, r_eval;
 
+    /*
     if (get_delta_eval(*s, beamlet, -(s)->getApertureIntensity(aperture)) > evaluation_fx){
       clearLast();
       return(evaluation_fx);
     }
+    */
 
     if (side == 1) {
-      diff = s->closeBeamlet(beamlet, aperture, true);
-      if (diff.size() > 0) {
-        incremental_eval(*s, diff);
-      } else {
-        clearLast();
-      }
+      *diff = s->closeBeamlet(beamlet, aperture, true);
     } else if (side==2) {
-      diff = s->closeBeamlet(beamlet, aperture, false);
-      if (diff.size() > 0) {
-        incremental_eval(*s, diff);
-      } else {
-        clearLast();
-      }
+      *diff = s->closeBeamlet(beamlet, aperture, false);
     } else {
       cout << "ERROR!! you must specify a  valid side for closing a beamlet!" << endl;
       cout << "side " << side << endl;
       getchar();
     }
-    return(evaluation_fx);
+
+    if(!delta_eval){
+      if (diff->size() > 0)
+        incremental_eval(*s, *diff);
+       else
+        clearLast();
+      delete diff;
+      return(evaluation_fx);
+
+    }else
+      return get_delta_eval(*s, *diff);
+
+
   };
 
-  double Plan::openRow(int station, int aperture, int row, bool side) {
-    Station * s = get_station(station);
-    double aux_eval=0;
-    list<pair<int, double> > diff;
-    pair <int, int> pattern = s->getApertureShape(aperture, row);
-    pair <int, int> active  = s->collimator.getActiveRange(row, s->getAngle());
-    int beamlet;
-    double min_new_eval = DBL_MAX;
-    
-    if (active.first == -1) return (evaluation_fx);
+  double Plan::openRow(int station, int aperture, int row, bool side,
+		 bool delta_eval, list<pair<int, double> >* diff){
+  Station * s = get_station(station);
+  double aux_eval=0;
+  pair <int, int> pattern = s->getApertureShape(aperture, row);
+  pair <int, int> active  = s->collimator.getActiveRange(row, s->getAngle());
+  int beamlet;
+  double min_new_eval = DBL_MAX;
 
-    if (pattern.first == -1) {
-      //All row are closed find best opening beamlet
-      for (int i=active.first; i<=active.second; i++) {
-        aux_eval= get_delta_eval(*s, i, s->getApertureIntensity(aperture));
-        if (aux_eval < min_new_eval){
-          beamlet = i;
-          min_new_eval = aux_eval;
-        };
-      }
+  if (active.first == -1) return (evaluation_fx);
+
+  if (pattern.first == -1) {
+    //All row are closed find best opening beamlet
+    for (int i=active.first; i<=active.second; i++) {
+      aux_eval= get_delta_eval(*s, i, s->getApertureIntensity(aperture));
+      if (aux_eval < min_new_eval){
+        beamlet = i;
+        min_new_eval = aux_eval;
+      };
+    }
+  } else {
+    if (side) {
+      beamlet = pattern.first - 1;
+      if (active.first > beamlet) return(evaluation_fx);
     } else {
-      if (side) {
-        beamlet = pattern.first - 1;
-        if (active.first > beamlet) return(evaluation_fx);
+      beamlet = pattern.second + 1;
+      if (active.second < beamlet) return(evaluation_fx);
+    }
+  }
+
+  *diff = s->openBeamlet(beamlet, aperture);
+
+  if(!delta_eval){
+    if (diff->size() > 0)
+      incremental_eval(*s, *diff);
+     else
+      clearLast();
+    delete diff;
+    return(evaluation_fx);
+
+  }else
+    return get_delta_eval(*s, *diff);
+};
+
+double Plan::closeRow(int station, int aperture, int row, bool side,
+   bool delta_eval, list<pair<int, double> >* diff){
+  Station * s = get_station(station);
+  pair <int, int> pattern = s->getApertureShape(aperture, row);
+  int beamlet;
+
+  if (side)
+    beamlet = pattern.first;
+  else
+    beamlet = pattern.second;
+
+
+  *diff = s->closeRow(row, aperture, side);
+  if(!delta_eval){
+    if (diff->size() > 0)
+      incremental_eval(*s, *diff);
+     else
+      clearLast();
+    delete diff;
+    return(evaluation_fx);
+
+  }else
+    return get_delta_eval(*s, *diff);
+};
+
+  double Plan::modifyIntensityAperture (int station, int aperture, int delta, bool delta_eval,
+      list<pair<int, double> >* diff) {
+    Station * s = get_station(station);
+    if(!delta_eval) diff = new list<pair<int, double> >;
+
+
+    *diff = s->modifyIntensityAperture(aperture, delta);
+    if(!delta_eval){
+      if (diff->size() > 0) {
+        incremental_eval(*s, *diff);
       } else {
-        beamlet = pattern.second + 1;
-        if (active.second < beamlet) return(evaluation_fx);
+        clearLast();
       }
-    }
-    
-    if (get_delta_eval(*s, beamlet, s->getApertureIntensity(aperture)) > evaluation_fx){
-      clearLast();
+      delete diff;
       return(evaluation_fx);
-    }
-    
-    diff = s->openBeamlet(beamlet, aperture);
-    if(diff.size() <1) {
-      clearLast();
-      return(evaluation_fx);
-    }
-    
-    return(incremental_eval(*s, diff));
-  };
-
-  double Plan::closeRow(int station, int aperture, int row, bool side) {
-    Station * s = get_station(station);
-    list<pair<int, double> > diff;
-    pair <int, int> pattern = s->getApertureShape(aperture, row);
-    int beamlet;
-    
-    if (side)
-      beamlet = pattern.first;
-    else
-      beamlet = pattern.second;
-    
-    if (get_delta_eval(*s, beamlet, -(s)->getApertureIntensity(aperture)) > evaluation_fx){
-      clearLast();
-      return(evaluation_fx);
-    }
-    diff = s->closeRow(row, aperture, side);
-    if (diff.size() > 0) {
-      incremental_eval(*s, diff);
-    } else {
-      clearLast();
-    }
-    return(evaluation_fx);
-  };
-
-  double Plan::modifyIntensityAperture (int station, int aperture, int delta) {
-    Station * s = get_station(station);
-    list<pair<int, double> > diff;
-
-    diff = s->modifyIntensityAperture(aperture, delta);
-    if (diff.size() > 0) {
-      incremental_eval(*s, diff);
-    } else {
-      clearLast();
-    }
-    return(evaluation_fx);
+    }else
+      return get_delta_eval (*s, *diff);
   }
 
   void Plan::undoLast() {

@@ -239,24 +239,19 @@ struct NeighborMove {
 };*/
 
 
-double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p) {
-
+double IntensityILS2::get_delta_eval(Plan &current_plan, NeighborMove move, list<pair<int, double> >& diff){
   double current_eval = current_plan.getEvaluation();
 
-  if(move.type==1 && ShuffledApertureNeighbors.size()>0) {
-    last_move = (last_move+1)%ShuffledApertureNeighbors.size();
-    move=ShuffledApertureNeighbors[last_move];
-  }
-
-  list<pair<int, double> > diff;
   int type            = move.type;
-  Station * s         = current_plan.get_station(move.station_id);
+  Station* s                   = current_plan.get_station(move.station_id);
   int beamlet         = move.beamlet_id;
   int action          = move.action;
   double intens	  = move.aperture_id;
 
   int i = s->beam2pos[beamlet].first;
   int j = s->beam2pos[beamlet].second;
+
+  double delta_eval= -1.0;
 
   if (type == 1) {
     // single beam
@@ -269,52 +264,46 @@ double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p)
 
      if(intensity == s->I(i,j)) return -1.0; //the move is not valid
 
-  	 double delta_eval = current_plan.get_delta_eval (*s, i, j, intensity-s->I(i,j));
-     if(p || delta_eval < -0.001){
-	   s->change_intensity(i, j, intensity, &diff);
-	   current_eval = current_plan.incremental_eval(*s, diff); // current_plan.incremental_eval(*s, i, j, intensity-s->I(i,j));
-
-     }
+  	 delta_eval = current_plan.get_delta_eval (*s, i, j, intensity-s->I(i,j));
+     s->change_intensity(i, j, intensity, &diff);
 
   } else {
     // change intensity
-    if((int)intens > s->int2nb.size() || (intens == 0.0 && s->getNbApertures())) return -1.0;
+    if((int)intens > s->int2nb.size() || (intens == 0.0 && s->int2nb.size()==s->getNbApertures()) )
+        return -1.0;
     if(intens != 0.0){
        map< int, int >::iterator iter=s->int2nb.begin();
        std::advance( iter, ((int) intens-1) );
        intens = iter->first;
      }
 
-
-    if (action < 0){
-      if(s->int2nb.find(intens+0.5) != s->int2nb.end())
-    	  diff = s->change_intensity(intens, -1.0);
-      else
-    	  diff = s->generate_intensity(intens, false);
-
-
-
-    }else{
-      if(s->int2nb.find(intens+0.5) != s->int2nb.end() || intens==0.0)
-    	  diff = s->change_intensity(intens, +1.0);
-      else
-    	  diff = s->generate_intensity(intens, true);
-    }
+    if (action < 0)  diff = s->change_intensity(intens, -1.0);
+    else diff = s->change_intensity(intens, +1.0);
 
 
     if(!diff.empty()){
-        double delta_eval = current_plan.get_delta_eval (*s, diff);
-        if(p || delta_eval < -0.001){
-        	current_eval=current_plan.incremental_eval(*s, diff);
-        }else
-        	s->diff_undo(diff);
+        delta_eval = current_plan.get_delta_eval (*s, diff);
     }else return -1.0;
 
   }
 
-  return(current_eval);
+  return delta_eval;
+}
 
-};
+double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p) {
+  list<pair<int, double> > diff;
+  double delta_eval = get_delta_eval(current_plan, move, diff);
+  double current_eval = 0.0;
+  Station *s = current_plan.get_station(move.station_id);
+
+  if(delta_eval == -1.0) return 1.0;
+  if(p || delta_eval < -0.001)
+	   current_eval = current_plan.incremental_eval(*s, diff);
+  else
+     s->diff_undo(diff);
+
+  return(current_eval);
+}
 
 string IntensityILS2::planToString(Plan &P) {
   return(P.toStringIntensities());

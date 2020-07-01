@@ -102,15 +102,20 @@ public:
 	  return make_pair(it->first.second, it->second);
 	}
   */
-  double openBeamlet(int station, int aperture, int beamlet);
+  double openBeamlet(int station, int aperture, int beamlet,
+		bool delta_eval=false, list<pair<int, double> >* diff=NULL);
 
-  double closeBeamlet(int station, int aperture, int beamlet, int side);
+  double closeBeamlet(int station, int aperture, int beamlet, int side,
+		 bool delta_eval=false, list<pair<int, double> >* diff=NULL);
 
-  double openRow(int station, int aperture, int row, bool side);
+  double openRow(int station, int aperture, int row, bool side,
+		 bool delta_eval=false, list<pair<int, double> >* diff=NULL);
 
-  double closeRow(int station, int aperture, int row, bool side);
+  double closeRow(int station, int aperture, int row, bool side,
+		 bool delta_eval=false, list<pair<int, double> >* diff=NULL);
 
-  double modifyIntensityAperture (int station, int aperture, int delta);
+  double modifyIntensityAperture (int station, int aperture, int delta,
+		bool delta_eval=false, list<pair<int, double> >* diff=NULL);
 
 	void undoLast();
 

@@ -53,6 +53,9 @@ public:
 	  return applyMove(P,move,true);
   }
 
+  double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff);
+
+
   string planToString(Plan &P);
 private:
   static int myrandom (int i) { return std::rand()%i;}

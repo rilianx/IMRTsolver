@@ -163,6 +163,8 @@ public:
 	  return applyMove (current_plan, move);
   }
 
+ virtual double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff) = 0;
+
   virtual double applyMove (Plan & current_plan, NeighborMove move) = 0;
 
   virtual string planToString(Plan & current_plan) = 0;
@@ -446,20 +448,22 @@ public:
    //       cout << " tabu" << endl;
 	  continue;
 	}
-       
-        //-1.0 means that the move is not a valid move
-        if(applyMove(current_plan, move) == -1.0){
-     //     cout << " skipped" << endl;
-          continue;
-        }
-       
-       // cout << current_plan.getEvaluation() << endl; 
+
+        //calcular delta_eval en vez de aplicar y luego deshacer...
+
+        list<pair<int, double> > diff;
+        double delta_eval = get_delta_eval(current_plan, move, diff);
+        Station *s = current_plan.get_station(move.station_id);
+
+        if(diff.empty()) continue;
 
         //Evaluation updates
         used_evaluations++;
 
         // Check if there is an improvement
-        if (current_plan.getEvaluation() < (current_eval-0.001)) {
+        //if (current_plan.getEvaluation() < (current_eval-0.001)) {
+        if (delta_eval < -0.001) {
+           current_eval = current_plan.incremental_eval(*s, diff);
 
           cout << "    neighbor: " << n_neighbors  << "; "
 	       << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
@@ -469,33 +473,34 @@ public:
 
           if (ls_neighborhood==NeighborhoodType::smixed_i && move.type==2) {
         	  ls_neighborhood=NeighborhoodType::smixed_a;
-		  generate_neighborhood = true;
-	  } else {
-	    if (ls_neighborhood==NeighborhoodType::smixed_a && move.type==1) {
-        	  ls_neighborhood=NeighborhoodType::smixed_i;
-		  generate_neighborhood = true;
-	    }
-          }
+		        generate_neighborhood = true;
+	        } else {
+	          if (ls_neighborhood==NeighborhoodType::smixed_a && move.type==1) {
+        	     ls_neighborhood=NeighborhoodType::smixed_i;
+		           generate_neighborhood = true;
+	          }
+         }
 
-	  if (!continuous)
-	    generate_neighborhood = true;
+	       if (!continuous)
+	          generate_neighborhood = true;
 
 
-          current_eval = current_plan.getEvaluation();
-          current_plan.clearLast();
-          ls_target.target_type = ls_target_type;
-          ls_target.target_move = move;
+         current_eval = current_plan.getEvaluation();
+         //current_plan.clearLast();
+         ls_target.target_type = ls_target_type;
+         ls_target.target_move = move;
 
-	  // Add the undo movements as tabu
-          if (tabu_size > 0)
-             addUndoTabu(tabu_list, move, tabu_size);
+	       // Add the undo movements as tabu
+         if (tabu_size > 0)
+           addUndoTabu(tabu_list, move, tabu_size);
 
 	  n_neighbors = 0;
           break;
 
         } else {
           //No improvement
-          current_plan.undoLast();
+          //current_plan.undoLast();
+          s->diff_undo(diff);
 
 	  // Add the non-improving movement as tabu
           if (tabu_size > 0)
