@@ -50,7 +50,7 @@ public:
         while(true){
           F = ibo.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_IBO, continuous,
             ls_neighborhood_IBO, ls_target_type_IBO, perturbation_type,
-            0, 0 /*tabu size*/, convergence_file, total_evals, begin_time);
+            0, tabu_size, convergence_file, total_evals, begin_time);
           total_evals=ibo.used_evaluations;
           //plan for perturbations
 
