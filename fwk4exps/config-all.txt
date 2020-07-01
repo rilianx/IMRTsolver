@@ -6,17 +6,17 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = ibodao_targeted
+algo_names = ibodao_targeted_tabu
 #ibo_continuous ibo_targeted
 #ibo_dao_random
 #ibo_dao_conv
 #dao_neigh ibo_neigh ibo_setup_bi-li
 
-[ibodao_targeted]
+[ibodao_targeted_tabu]
 exec = "../AS"
-tuning_param = MINIMPR
-tuning_values =  --min_impr=0.05 --convergence=IBODAO_target0.05, --min_impr=0.01 --convergence=IBODAO_target0.01, --min_impr=0.10 --convergence=IBODAO_target0.10
-params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted _MINIMPR
+tuning_param = TABUSIZE
+tuning_values =  --tabu-size=0 --convergence=IBODAO_tsize0, --tabu-size=100 --convergence=IBODAO_tsize100, --tabu-size=100 --convergence=IBODAO_tsize200, --tabu-size=100 --convergence=IBODAO_tsize400
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 _TABUSIZE
 outputpos_times = 0
 outputpos_boxes = 0
 
