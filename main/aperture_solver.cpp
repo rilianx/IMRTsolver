@@ -269,6 +269,9 @@ int main(int argc, char** argv){
                                  "Generate plot and save in file", {"plot"});
 
   // Output file parameters
+  args::Flag _irace (io_opt, "bool",
+                                 "To configure with irace", {"irace"});
+
   args::ValueFlag<string> _convergence_file (io_opt, "string",
                                  "File to output convergence", {"convergence"});
 
@@ -657,8 +660,9 @@ int main(int argc, char** argv){
   cout << "##**************************************************************************"
        << endl;
   cout << "##"<<endl;
-  cout << "## Best solution found: " <<  cost << " "<< P.eval() << endl;
+  cout << "## Best solution found: " <<  cost << endl; //<< " "<< P.eval() << endl;
 
+   if(_irace) return 0;
 
 	cout << endl;
 	for(int i=0;i<5;i++)

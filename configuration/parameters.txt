@@ -1,18 +1,7 @@
 ## name		switch		     type	values			[conditions (using R syntax)]
-
-#parameter solver only to use in the general tuning
-solver				"-s "							c	(ibo_ls, dao_ls)
-
-sinitial			"--"							c	(open-max-setup,open-min-setup,closed-max-setup,closed-min-setup,rand-setup)
-bsize					"--bsize "				i	(2,40)
-vsize					"--vsize "				i	(2,100)
-
-
-acceptance		"--"							c	(accept-best, accept-sa)
-temperature 	"--temperature "	i	(10,100)	|	acceptance %in% c("accept-sa")
-alphat				"--alphaT " 			r	(0.5,1)	|	acceptance %in% c("accept-sa")
-
-#parameter 
-localsearch	"--"									c	(best-improvement, first-improvement)	|	solver %in% c("dao_ls")
-perturbation	"--perturbation-size "	i	(0,10)	|	solver %in% c("dao_ls")
-pintensity    "--prob-intensity " 		r (0,1)	|	solver %in% c("dao_ls")
+setup			"--setup "		        c (open_min,random)
+vsize     "--vsize "		        r,log (0.0001,1.0) | targeted == "--targeted"
+min_impr  "--min_impr "         r,log (0.001,1.0) | targeted == "--targeted"
+psize   "--perturbation-size "  c (0,2,3,5,7,1,5,50)
+tabu-size "--tabu-size "        i (0,400)
+targeted  ""                    c ("--targeted"," ")

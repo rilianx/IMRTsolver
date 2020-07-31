@@ -16,7 +16,7 @@ algo_names = MIXEDpert
 exec = "../AS"
 tuning_param = PERTSIZE
 tuning_values =  --perturbation-size=0 --convergence=MIXEDpert0, --perturbation-size=2 --convergence=MIXEDpert2, --perturbation-size=3 --convergence=MIXEDpert3, --perturbation-size=5 --convergence=MIXEDpert5, --perturbation-size=7 --convergence=MIXEDpert7, --perturbation-size=15 --convergence=MIXEDpert15, --perturbation-size=50 --convergence=MIXEDpert50
-params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 --vsize=0.002 _PERTSIZE
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=25000 --ls=first --setup=open_min --tabu-size=200 --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 --vsize=0.002 _PERTSIZE
 outputpos_times = 0
 outputpos_boxes = 0
 

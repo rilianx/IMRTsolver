@@ -20,8 +20,7 @@ maxExperiments = 2000
 
 ## Indicates the number of decimal places to be considered for the
 ## real parameters.
-digits = 2
+digits = 4
 
 ## END of scenario file
 ############################################################################
-

@@ -21,14 +21,14 @@ error() {
 EXE=../AS
 
 # Fixed parameters that should be always passed to the algorithm.
-FIXED_PARAMS=" --maxiter 0 --maxtime 20 "
+FIXED_PARAMS=" -s mixedILS --ls_sequential=aperture --maxeval=25000 --ls=first --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=/home/ignacio/IMRTsolver --targeted "
 
 CONFIG_ID="$1"
 INSTANCE_ID="$2"
 SEED="$3"
-INSTANCE="$4 $5 $6 $7"
+INSTANCE="$4 $5"
 # All other parameters are the candidate parameters to be passed to program
-shift 7 || error "Not enough parameters"
+shift 5 || error "Not enough parameters"
 CONFIG_PARAMS=$*
 
 STDOUT=c${CONFIG_ID}-${INSTANCE_ID}-${SEED}.stdout
@@ -42,17 +42,17 @@ fi
 # Now we can call the target by building a command line with all parameters for it
 $EXE ${FIXED_PARAMS} $INSTANCE --seed $SEED ${CONFIG_PARAMS} 1> $STDOUT 2> $STDERR
 
-# The output of the candidate $CONFIG_ID should be written in the file 
+# The output of the candidate $CONFIG_ID should be written in the file
 # c${CONFIG_ID}.stdout.
 # Does this file exist?
 if [ ! -s "${STDOUT}" ]; then
-    # In this case, the file does not exist. Let's exit with a value 
+    # In this case, the file does not exist. Let's exit with a value
     # different from 0. In this case irace will stop with an error.
     error "${STDOUT}: No such file or directory"
 fi
 
 # Ok, the file exist. It contains the whole output written by the target algorithm.
-# This script should return a single numerical value, the best objective 
+# This script should return a single numerical value, the best objective
 # value found by this run. The following line is to extract
 # this value from the file containing the output.
 COST=$(tail -20 ${STDOUT} | grep -o -E 'Best solution found: [-+0-9.e]+' | cut -d ':' -f2)
