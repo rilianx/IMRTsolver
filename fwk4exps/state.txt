@@ -1,7 +1,7 @@
-algos:ibo_dao_random_PERTSIZE--perturbation-size=2 --convergence=IBODAO_pert2_30000 ibo_dao_random_PERTSIZE --perturbation-size=3 --convergence=IBODAO_pert3_30000 ibo_dao_random_PERTSIZE --perturbation-size=5 --convergence=IBODAO_pert5_30000 ibo_dao_random_PERTSIZE --perturbation-size=7 --convergence=IBODAO_pert7_30000 
-gains (average relative times):1.000000 1.000000 1.000000 1.000000 
-gains (total time)            :1.000000 1.000000 1.000000 1.000000 
-compared instances:  0   0   0   0 
-runs    :420 420 420 420 
-L:  0   0   0   0 
-W:  0   0   0   0 
+algos:MIXEDpert_PERTSIZE--perturbation-size=0 --convergence=MIXEDpert0 MIXEDpert_PERTSIZE --perturbation-size=2 --convergence=MIXEDpert2 MIXEDpert_PERTSIZE --perturbation-size=3 --convergence=MIXEDpert3 MIXEDpert_PERTSIZE --perturbation-size=5 --convergence=MIXEDpert5 MIXEDpert_PERTSIZE --perturbation-size=7 --convergence=MIXEDpert7 MIXEDpert_PERTSIZE --perturbation-size=15 --convergence=MIXEDpert15 MIXEDpert_PERTSIZE --perturbation-size=50 --convergence=MIXEDpert50 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0   0   0   0 
+runs    :  0   0   0   0   0   0   0 
+L:  0   0   0   0   0   0   0 
+W:  0   0   0   0   0   0   0 

@@ -6,11 +6,19 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = ibo_bili_targeted
+algo_names = MIXEDpert
 #ibo_continuous ibo_targeted
 #ibo_dao_random
 #ibo_dao_conv
 #dao_neigh ibo_neigh ibo_setup_bi-li
+
+[MIXEDpert]
+exec = "../AS"
+tuning_param = PERTSIZE
+tuning_values =  --perturbation-size=0 --convergence=MIXEDpert0, --perturbation-size=2 --convergence=MIXEDpert2, --perturbation-size=3 --convergence=MIXEDpert3, --perturbation-size=5 --convergence=MIXEDpert5, --perturbation-size=7 --convergence=MIXEDpert7, --perturbation-size=15 --convergence=MIXEDpert15, --perturbation-size=50 --convergence=MIXEDpert50
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 --vsize=0.002 _PERTSIZE
+outputpos_times = 0
+outputpos_boxes = 0
 
 [ibo_bili_targeted]
 exec = "../AS"

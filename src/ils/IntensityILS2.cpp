@@ -10,7 +10,7 @@
 namespace imrt {
 
 
-  int IntensityILS2::vsize=100;
+  double IntensityILS2::vsize=0.01;
   double IntensityILS2::min_improvement=0.05;
 
 vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
@@ -38,11 +38,11 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   return(moves);
 };
 
-vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan &P, int nv){
+vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan &P, double vsize){
   vector < NeighborMove > best_moves;
   vector < NeighborMove > shuffled_moves;
   multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
-    P.getEvaluationFunction()->best_beamlets(P, nv);
+    P.getEvaluationFunction()->best_beamlets(P, vsize);
   bool first=true;
 
   for(auto b : beamlets){

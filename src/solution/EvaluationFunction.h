@@ -141,7 +141,7 @@ public:
 	//Return the beamlets sorted by impact on F taking into account the nv worst voxels.
 	//Each returned beamlet is a pair eval,(station, beamlet)
   multimap < double, pair<int, int>, MagnitudeCompare >
-  best_beamlets(Plan& p, int nv);
+  best_beamlets(Plan& p, double vsize=0.01);
 
   //returns a map of beamlets sorted by their impact in F (derivative, (station, beamlet))
 	multimap < double, pair<Station*, int>, MagnitudeCompare > get_sorted_beamlets(Plan& p);

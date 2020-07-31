@@ -117,7 +117,7 @@ int main(int argc, char** argv){
   // Target beamlet heuristic
   bool targeted_search = false;
   LSTargetType target_type = LSTargetType::target_none;
-  int vsize = 100;
+  double vsize = 0.002;
   int bsize = 20;
   double min_improvement=0.05;
 
@@ -215,8 +215,8 @@ int main(int argc, char** argv){
   args::ValueFlag<int>    _bsize    (heur, "int",
                                     "Number of considered beamlets for selection (" +
                                      to_string(bsize)+")", {"bsize"});
-  args::ValueFlag<int>    _vsize    (heur, "int",
-                                    "Number of considered worst voxels (" +
+  args::ValueFlag<double>    _vsize    (heur, "double",
+                                    "Percentage of considered worst voxels (" +
                                      to_string(vsize)+")", {"vsize"});
  args::ValueFlag<double>    _min_improvement    (heur, "double",
                                    "Minimum beamlet improvement estimation(" +
@@ -602,7 +602,7 @@ int main(int argc, char** argv){
   double used_evaluations = 0;
    std::clock_t begin_time = clock();
   if (strategy=="dao_ls") {
-    ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
+    ils = new ApertureILS(bsize, 0, prob_intensity, step_intensity);
     cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file);
@@ -628,7 +628,7 @@ int main(int argc, char** argv){
     int evals=ils->used_evaluations;
     std::clock_t begin=ils->time_begin;
 
-    ils = new ApertureILS(bsize, vsize, prob_intensity, step_intensity);
+    ils = new ApertureILS(bsize, 0, prob_intensity, step_intensity);
     neighborhood = NeighborhoodType::sequential_i;
     //if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
     cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, continuous, neighborhood,
@@ -636,7 +636,7 @@ int main(int argc, char** argv){
 				    tabu_size, convergence_file, evals, begin);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="mixedILS") {
-    MixedILS mixed_ils(bsize, vsize, prob_intensity, step_intensity);
+    MixedILS mixed_ils(bsize, 0, prob_intensity, step_intensity);
     NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;
     cost = mixed_ils.iteratedLocalSearch(P, maxtime, maxeval, ls_type, ls_type, continuous,
 					 neighborhood, neighborhood_DAO, target_type,

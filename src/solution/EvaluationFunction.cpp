@@ -383,9 +383,13 @@ void EvaluationFunction::undo_last_eval(vector<double>& w,
 
 
 multimap < double, pair<int, int>, MagnitudeCompare >
-EvaluationFunction::best_beamlets(Plan& p, int nv){
-	multimap < double, pair<int, int>, MagnitudeCompare > bestb;
+EvaluationFunction::best_beamlets(Plan& p, double vsize){
+	int tot_voxels=0;
+	for(int o=0; o<nb_organs; o++) tot_voxels+=nb_voxels[o];
 
+	int nv = (double) tot_voxels*vsize;
+
+	multimap < double, pair<int, int>, MagnitudeCompare > bestb;
 	double max_ev=0.0;
 	int k=0;
 	for(auto s:p.get_stations()){
