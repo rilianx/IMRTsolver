@@ -2,6 +2,6 @@ algos:MIXEDpert_PERTSIZE--perturbation-size=0 --convergence=MIXEDpert0 MIXEDpert
 gains (average relative times):1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
 gains (total time)            :1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 
 compared instances:  0   0   0   0   0   0   0 
-runs    :  0   0   0   0   0   0   0 
+runs    :  2   1   1   1   1   1   1 
 L:  0   0   0   0   0   0   0 
 W:  0   0   0   0   0   0   0 
