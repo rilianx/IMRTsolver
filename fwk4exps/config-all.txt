@@ -12,6 +12,18 @@ algo_names = MIXEDpert
 #ibo_dao_conv
 #dao_neigh ibo_neigh ibo_setup_bi-li
 
+# --setup open_min --vsize 0.002  --min_impr 0.05   --perturbation-size 7 --tabu-size 188 --targeted
+# --setup open_min --vsize 0.0008 --min_impr 0.0064 --perturbation-size 7 --tabu-size 203 --targeted
+# --setup open_min --vsize 0.0008 --min_impr 0.0049 --perturbation-size 7 --tabu-size 175 --targeted
+# --setup open_min --vsize 0.0005 --min_impr 0.0043 --perturbation-size 2 --tabu-size 199 --targeted
+
+
+[irace1]
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=25000 --ls=first --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=irace1
+outputpos_times = 0
+outputpos_boxes = 0
+
 [MIXEDpert]
 exec = "../AS"
 tuning_param = PERTSIZE

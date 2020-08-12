@@ -137,11 +137,22 @@ public:
           neighborhood = getNeighborhood(current_plan, neighborhood_type,
                                          ls_target);
     	  move = neighborhood[i];
+
+        list<pair<int, double> > diff;
+        double delta_eval = get_delta_eval(current_plan, move, diff);
+        Station *s = current_plan.get_station(move.station_id);
+
+        if(diff.empty()){i--; continue;}
+
+        current_plan.incremental_eval(*s, diff);
+
     	  cout << " -move type " << move.type << ", s:" <<
                move.station_id << ", a:" << move.aperture_id <<
                ", r:" << move.beamlet_id << ", action:"<< move.action << endl;
 
-		  applyMoveP(current_plan, move);
+
+
+		    //applyMoveP(current_plan, move);
       }
     }
     return(current_plan.getEvaluation());
