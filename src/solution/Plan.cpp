@@ -70,6 +70,8 @@ namespace imrt {
     w=p.w;
     Zmin=p.Zmin;
     Zmax=p.Zmax;
+    for( auto station :stations ) delete station;
+
     stations.clear();
     //real_stations.clear();
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
