@@ -227,11 +227,12 @@ public:
        }
 
        if (aux_eval < best_eval) {
-         cout << aux_eval <<";"<< best_eval << endl;
          best_eval = aux_eval;
          delete best_plan;
 
          best_plan = new Plan(current_plan);
+         for(int i=0;i<5;i++)
+           current_plan.printIntensity(i, true);
 
          cout << current_plan.eval()  << endl;
          cout << best_plan->eval()  << endl;
