@@ -86,8 +86,9 @@ public:
           if (perturbation_size == 0)  break;
 
           //Perturbation
+          cout << "pert" << endl;
           ibo.perturbation(P_pert, perturbation_type, perturbation_size);
-          //cout << "Ppert:" << P_pert.eval() << endl;
+          cout << "Ppert:" << P_pert.eval() << endl;
           P.newCopy(P_pert);
           cout << "P:" << P.eval() << endl;
         }
