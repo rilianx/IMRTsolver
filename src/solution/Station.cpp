@@ -323,7 +323,7 @@ namespace imrt {
 		  cout << "Angle "<< angle << endl;
 	    cout << " aperture intensities: ";
 	    cout << intensity[0];
-	    for (int i=1;i<max_apertures;i++)
+	    for (int i=1;i<intensity.size();i++)
 	      cout << ", " << intensity[i];
 	    cout << endl <<" intensity matrix:"<< endl;
 		  for (int i=0; i<collimator.getXdim();i++) {
@@ -910,24 +910,24 @@ namespace imrt {
   /* Function that closes a row from the left, if lside is true, or
    from the right size otherwise. Return diff if the closing was performed.*/
   list<pair <int,double> > Station::closeRow(int row, int aperture, bool lside) {
-    
+
     list<pair <int, double> > diff;
-    int beam; 
+    int beam;
     pair <int,int> pattern;
-    
+
     clearHistory();
-    
+
     pattern = getApertureShape(aperture, row);
-    
+
     if (pattern.first == -1) return(diff);
-    
+
     if (lside) {
       beam = pattern.first;
     } else {
       beam = pattern.second;
     }
     diff = closeBeamlet(beam, aperture, lside);
-    
+
     return(diff);
   };
 
@@ -935,11 +935,11 @@ namespace imrt {
    from the right size otherwise. Return true if the closing was performed.*/
   list <pair<int,double> > Station::openRow(int row, int aperture, bool lside) {
     list<pair<int, double>> diff;
-    int beam; 
+    int beam;
     pair <int,int> pattern;
     pair <int,int> active;
     clearHistory();
-    
+
     pattern = getApertureShape(aperture, row);
     active = collimator.getActiveRange(row, getAngle());
     if (lside){
@@ -949,9 +949,9 @@ namespace imrt {
       if (pattern.second == active.second) return(diff);
       beam = pattern.second;
     }
-    
+
     diff = openBeamlet(beam, aperture);
-  
+
     return(diff);
   };
 
