@@ -63,6 +63,8 @@ public:
 
           P.generateApertures();
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
+          for(int i=0;i<5;i++)
+            current_plan.printIntensity(i, false);
 
           F = dao.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_DAO, continuous,
             ls_neighborhood_DAO, ls_target_type_DAO, perturbation_type,
