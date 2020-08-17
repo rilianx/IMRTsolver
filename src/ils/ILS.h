@@ -227,6 +227,7 @@ public:
        }
 
        if (aux_eval < best_eval) {
+         cout << aux_eval <<";"<< best_eval << endl;
          best_eval = aux_eval;
          delete best_plan;
 
