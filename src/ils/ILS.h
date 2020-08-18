@@ -231,8 +231,10 @@ public:
          delete best_plan;
 
          best_plan = new Plan(current_plan);
-         for(int i=0;i<5;i++)
+         for(int i=0;i<5;i++){
+           current_plan.get_station(i)->generateIntensityMatrix();
            current_plan.printIntensity(i, false);
+         }
 
          cout << current_plan.eval()  << endl;
          cout << best_plan->eval()  << endl;
