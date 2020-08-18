@@ -72,7 +72,6 @@ public:
 
 
           for(int i=0;i<5;i++){
-            P.get_station(i)->generateIntensityMatrix();
             P.get_station(i)->printApertures();
             P.printIntensity(i, false);
           }
