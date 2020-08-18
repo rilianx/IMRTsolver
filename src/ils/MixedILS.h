@@ -63,14 +63,16 @@ public:
 
           P.generateApertures();
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
-          for(int i=0;i<5;i++)
-            P.printIntensity(i, false);
 
           F = dao.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_DAO, continuous,
             ls_neighborhood_DAO, ls_target_type_DAO, perturbation_type,
       			  0, tabu_size, convergence_file, total_evals, begin_time);
 
           total_evals=dao.used_evaluations;
+
+          P.printApertures();
+          for(int i=0;i<5;i++)
+            P.printIntensity(i, false);
 
           //TODO: save best plan
           if(F<bestF){
