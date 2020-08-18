@@ -230,9 +230,9 @@ public:
          best_eval = aux_eval;
          delete best_plan;
 
+         current_plan.get_station(i)->generateIntensityMatrix();
          best_plan = new Plan(current_plan);
          for(int i=0;i<5;i++){
-           current_plan.get_station(i)->generateIntensityMatrix();
            current_plan.printIntensity(i, false);
          }
 
