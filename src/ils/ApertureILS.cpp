@@ -637,12 +637,12 @@ bool ApertureILS::checkMove (Plan & current_plan, NeighborMove move) {
       if (pattern.first==-1 || pattern.second==-1) return(true);
       if (action ==1){
         // Open to the left
-        beamlet = beamlet--;
+        beamlet--;
         if (active.first > beamlet)
           return(false);
       } else {
         // Open to the right
-        beamlet = beamlet++;
+        beamlet++;
         if (active.second < beamlet) return (false);
       }
       if (!s->isActiveBeamlet(beamlet) && s->isOpenBeamlet(beamlet, aperture))
