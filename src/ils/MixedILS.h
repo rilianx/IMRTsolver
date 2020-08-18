@@ -70,9 +70,11 @@ public:
 
           total_evals=dao.used_evaluations;
 
-          P.printApertures();
-          for(int i=0;i<5;i++)
+
+          for(int i=0;i<5;i++){
+            P.get_station(i)->printApertures();
             P.printIntensity(i, false);
+          }
 
           //TODO: save best plan
           if(F<bestF){
