@@ -237,7 +237,7 @@ public:
            current_plan.printIntensity(i, false);
          }
 
-         cout << current_plan.eval()  << endl;
+         
          //cout << best_plan->eval()  << endl;
        }
 
