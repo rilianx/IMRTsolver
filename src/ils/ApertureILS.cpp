@@ -634,7 +634,7 @@ bool ApertureILS::checkMove (Plan & current_plan, NeighborMove move) {
         return(false);
     } else {
       // Open a beamlet in the row
-      if (pattern.first==-1 && pattern.second==-1) return(true);
+      if (pattern.first==-1 || pattern.second==-1) return(true);
       if (action ==1){
         // Open to the left
         beamlet--;
@@ -645,8 +645,8 @@ bool ApertureILS::checkMove (Plan & current_plan, NeighborMove move) {
         beamlet++;
         if (active.second < beamlet) return (false);
       }
-      if (!s->isActiveBeamlet(beamlet) || s->isOpenBeamlet(beamlet, aperture))
-        return(false);
+      //if (!s->isActiveBeamlet(beamlet) && s->isOpenBeamlet(beamlet, aperture))
+        //return(false);
     }
   }
   return(true);
