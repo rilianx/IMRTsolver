@@ -271,8 +271,8 @@ double Plan::closeRow(int station, int aperture, int row, bool side,
     if (last_changed==NULL) return;
 
     list< pair< int, double > > diff = last_changed->undoLast();
-    if (diff.size()>0)
-      incremental_eval (*last_changed, diff);
+    //if (diff.size()>0)
+      //incremental_eval (*last_changed, diff);
 
     last_changed->clearHistory();
     last_changed = NULL;

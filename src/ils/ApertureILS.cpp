@@ -116,7 +116,7 @@ double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, dou
   }
 
   diff = station.openBeamlet(beamlet, aperture);
-  if(diff.size() <1) {
+  if(diff.size() == 0) {
     P.clearLast();
     return(c_eval);
   }

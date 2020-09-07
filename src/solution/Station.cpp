@@ -332,6 +332,22 @@ namespace imrt {
 			  }
 			  cout << endl;
 		  }
+      cout << "aperture intensities: " ;
+      for(double in : intensity)
+         cout << in << " " ;
+
+      cout << endl;
+
+      cout << "Apertures:" << endl;
+
+      for (int row=0; row< A[0].size(); row++){
+        for(int ap=0; ap< A.size(); ap++)
+          cout << A[ap][row].first << "," << A[ap][row].second << "   ";
+        cout << endl;
+      }
+      cout << endl;
+
+
 	  }else{
 		  for (int i=0; i<collimator.getXdim();i++) {
 			  for (int j=0; j<collimator.getYdim(); j++) {
@@ -859,7 +875,7 @@ namespace imrt {
   }
 
   /* Function that opens a beamlet from the left, if lside is true, or
-     from the right size otherwise. Return true if the closing was performed.*/
+     from the right size otherwise. Return true if the opening was performed.*/
   list <pair<int,double> > Station::openBeamlet(int beam, int aperture) {
     list<pair<int, double>> diff;
     clearHistory();
@@ -1099,7 +1115,7 @@ namespace imrt {
 
     for (list<pair<int,double> >::iterator it=last_diff.begin();it!=last_diff.end();it++) {
       coord=collimator.indexToPos(it->first, angle);
-      change_intensity(coord.first, coord.second,  I(coord.first,coord.second) - it->second);
+      //change_intensity(coord.first, coord.second,  I(coord.first,coord.second) - it->second);
       //I(coord.first,coord.second) = I(coord.first,coord.second) - (it->second);
       undo_diff.push_back(make_pair(it->first, -(it->second)));
     }

@@ -479,43 +479,41 @@ public:
         // Check if there is an improvement
         //if (current_plan.getEvaluation() < (current_eval-0.001)) {
         if (delta_eval < -0.001) {
-           current_eval = current_plan.incremental_eval(*s, diff);
+            current_eval = current_plan.incremental_eval(*s, diff);
+            current_plan.clearLast();
 
-          cout << "    neighbor: " << n_neighbors  << "; "
-	       << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
-	       << "); improvement: " << current_plan.getEvaluation() << endl;
+            cout << "    neighbor: " << n_neighbors  << "; "
+          << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
+          << "); improvement: " << current_plan.getEvaluation() << endl;
 
-          improvement = true;
+            improvement = true;
 
-          if (ls_neighborhood==NeighborhoodType::smixed_i && move.type==2) {
-        	  ls_neighborhood=NeighborhoodType::smixed_a;
-		        generate_neighborhood = true;
-	        } else {
-	          if (ls_neighborhood==NeighborhoodType::smixed_a && move.type==1) {
-        	     ls_neighborhood=NeighborhoodType::smixed_i;
-		           generate_neighborhood = true;
-	          }
-         }
+            if (ls_neighborhood==NeighborhoodType::smixed_i && move.type==2) {
+              ls_neighborhood=NeighborhoodType::smixed_a;
+              generate_neighborhood = true;
+            } else {
+              if (ls_neighborhood==NeighborhoodType::smixed_a && move.type==1) {
+                ls_neighborhood=NeighborhoodType::smixed_i;
+                generate_neighborhood = true;
+              }
+          }
 
-	       if (!continuous)
-	          generate_neighborhood = true;
+          if (!continuous)
+              generate_neighborhood = true;
+          
+          ls_target.target_type = ls_target_type;
+          ls_target.target_move = move;
 
+          // Add the undo movements as tabu
+          if (tabu_size > 0)
+            addUndoTabu(tabu_list, move, tabu_size);
 
-         current_eval = current_plan.getEvaluation();
-         //current_plan.clearLast();
-         ls_target.target_type = ls_target_type;
-         ls_target.target_move = move;
-
-	       // Add the undo movements as tabu
-         if (tabu_size > 0)
-           addUndoTabu(tabu_list, move, tabu_size);
-
-	  n_neighbors = 0;
-          break;
+            n_neighbors = 0;
+            break;
 
         } else {
           //No improvement
-          //current_plan.undoLast();
+          s->undoLast();
           s->diff_undo(diff);
 
 	  // Add the non-improving movement as tabu
