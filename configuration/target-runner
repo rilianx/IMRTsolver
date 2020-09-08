@@ -18,10 +18,10 @@ error() {
 
 
 # Path to the target algorithm executable:
-EXE=../AS
+EXE=~/IMRTsolver/AS
 
 # Fixed parameters that should be always passed to the algorithm.
-FIXED_PARAMS=" -s mixedILS --ls_sequential=aperture --maxeval=25000 --ls=first --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=/home/ignacio/IMRTsolver --targeted "
+FIXED_PARAMS=" -s mixedILS --ls_sequential=aperture --maxeval=25000 --ls=first --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=/home/ignacio/IMRTsolver --irace"
 
 CONFIG_ID="$1"
 INSTANCE_ID="$2"

@@ -1,7 +1,7 @@
 ## name		switch		     type	values			[conditions (using R syntax)]
 setup			"--setup "		        c (open_min,random)
-vsize     "--vsize "		        r,log (0.0001,1.0) | targeted == "--targeted"
-min_impr  "--min_impr "         r,log (0.001,1.0) | targeted == "--targeted"
-psize   "--perturbation-size "  c (0,2,3,5,7,1,5,50)
-tabu-size "--tabu-size "        i (0,400)
-targeted  ""                    c ("--targeted"," ")
+vsize     "--vsize "		        r,log (0.0001,0.05) | targeted == "--targeted"
+minimpr  "--min_impr "         r,log (0.001,0.1) | targeted == "--targeted"
+psize   "--perturbation-size "  c (0,2,3,5,7,10,15,50)
+tsize "--tabu-size "        i (0,400)
+targeted ""                    c ("--targeted"," ")
