@@ -6,7 +6,10 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = irace
+algo_names = ibo_pert ibo_ls ibodao_ls
+
+#MIXEDpert_rand
+#irace
 #MIXEDpert
 #ibo_continuous ibo_targeted
 #ibo_dao_random
@@ -22,6 +25,25 @@ algo_names = irace
 #264  --setup random --perturbation-size 2 --tabu-size 299
 #211  --setup open_min --vsize 0.0045 --min_impr 0.0316 --perturbation-size 5 --tabu-size 150 --targeted
 #10   --setup random --perturbation-size 2 --tabu-size 277
+
+
+[ibo_pert]
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=25000 --ls=first --setup=open_min --tabu-size=200 --perturbation-size=3 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 --vsize=0.002 --convergence=ibo_pert
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibo_ls]
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 --convergence=ibo_ls
+outputpos_times = 0
+outputpos_boxes = 0
+
+[ibodao_ls]
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 --convergence=ibodao_ls
+outputpos_times = 0
+outputpos_boxes = 0
 
 
 [irace]
@@ -40,6 +62,14 @@ params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=25
 outputpos_times = 0
 outputpos_boxes = 0
 
+[MIXEDpert_rand]
+exec = "../AS"
+tuning_param = PERTSIZE
+tuning_values =  --perturbation-size=0 --convergence=MIXEDpert0-rand, --perturbation-size=2 --convergence=MIXEDpert2-rand, --perturbation-size=3 --convergence=MIXEDpert3-rand, --perturbation-size=5 --convergence=MIXEDpert5-rand, --perturbation-size=7 --convergence=MIXEDpert7-rand
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=25000 --ls=first --setup=random --tabu-size=280 --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. _PERTSIZE
+outputpos_times = 0
+outputpos_boxes = 0
+
 [ibo_bili_targeted]
 exec = "../AS"
 tuning_param = MINIMPR
@@ -48,10 +78,11 @@ params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=0 --
 outputpos_times = 0
 outputpos_boxes = 0
 
+
 [ibodao_targeted_tabu]
 exec = "../AS"
 tuning_param = TABUSIZE
-tuning_values =  --tabu-size=50 --convergence=IBODAO_tsize50, --tabu-size=200 --convergence=IBODAO_tsize200, --tabu-size=400 --convergence=IBODAO_tsize400
+tuning_values = --tabu-size=100 --convergence=IBODAO_tsize100, --tabu-size=0 --convergence=IBODAO_tsize0, --tabu-size=50 --convergence=IBODAO_tsize50, --tabu-size=200 --convergence=IBODAO_tsize200, --tabu-size=400 --convergence=IBODAO_tsize400
 params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=0 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --targeted --min_impr=0.05 _TABUSIZE
 outputpos_times = 0
 outputpos_boxes = 0

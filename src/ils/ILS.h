@@ -394,7 +394,8 @@ public:
     double current_eval = current_plan.getEvaluation();
     NeighborMove best_move = {0,0,0,0,0};
     NeighborhoodType current_neighborhood;
-    LSTarget ls_target = {LSTargetType::target_none, best_move};
+    LSTarget ls_target = {ls_target_type, best_move};
+
     vector <NeighborMove> tabu_list;
     NeighborMove move;
 
@@ -483,8 +484,10 @@ public:
             current_plan.clearLast();
 
             cout << "    neighbor: " << n_neighbors  << "; "
-          << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
+          << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
           << "); improvement: " << current_plan.getEvaluation() << endl;
+
+
 
             improvement = true;
 
@@ -513,8 +516,29 @@ public:
 
         } else {
           //No improvement
+          for(int ii=0;ii<5;ii++){
+            if(current_plan.get_station(ii)->int2nb.size()>5){
+              cout << "before undo" << endl;
+              current_plan.get_station(ii)->printIntensity();
+              exit(0);
+            }
+            
+          }
           s->undoLast();
           s->diff_undo(diff);
+
+          for(int ii=0;ii<5;ii++){
+            
+            if(current_plan.get_station(ii)->int2nb.size()>5){
+              cout << "after undo" << endl;
+              cout << "    neighbor: " << n_neighbors  << "; "
+          << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
+          << "); improvement: " << current_plan.getEvaluation() << endl;
+              current_plan.get_station(ii)->printIntensity();
+              exit(0);
+            }
+            
+          }
 
 	  // Add the non-improving movement as tabu
           if (tabu_size > 0)

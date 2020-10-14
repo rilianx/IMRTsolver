@@ -61,8 +61,13 @@ public:
           for(int i=0;i<5;i++)
             P.printIntensity(i);
 
+          cout << "generating apertures" << endl;
           P.generateApertures();
+
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
+
+          for(int i=0;i<5;i++)
+            P.printIntensity(i);
 
           F = dao.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_DAO, continuous,
             ls_neighborhood_DAO, ls_target_type_DAO, perturbation_type,

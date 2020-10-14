@@ -226,6 +226,7 @@ namespace imrt {
         } else {
           selmin=-1;selmax=-1;
         }
+        
         angle_row_beam_active[i].push_back(make_pair(selmin, selmax));
       }
     }

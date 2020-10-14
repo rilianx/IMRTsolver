@@ -614,8 +614,13 @@ namespace imrt {
 
 	  for (int i=0; i<collimator.getXdim();i++)
 		  for (int j=0; j<collimator.getYdim(); j++)
-			  if(I(i,j)==intensity)
+			  if(I(i,j)==intensity){
+          cout << "("<< i << "," << j << ") --> " << I(i,j)+delta << endl;
+          int b = pos2beam[make_pair(i,j)];
+          cout << "beamlet: "  << pos2beam[make_pair(i,j)] << endl;
+          cout << beam2pos[b].first << "," << beam2pos[b].second << endl;
 				  change_intensity(i, j, I(i,j)+delta, &diff);
+        }
 
 	  return diff;
   }
@@ -719,7 +724,7 @@ namespace imrt {
   }
 
   bool Station::isOpenBeamlet(int beam, int aperture) {
-  	auto coord = collimator.indexToPos(beam, angle);
+  	auto coord = beam2pos[beam];
         if (!collimator.isActiveBeamAngle(coord.first, coord.second,angle)) return(false);
     //cout << "Checking beamlet: " << beam << " angle:" << aperture << endl;
     //cout << "Position: " << coord.first << "," << coord.second << endl;
@@ -758,7 +763,7 @@ namespace imrt {
   }
 
   bool Station::isActiveBeamlet(int beam) {
-    auto coord = collimator.indexToPos(beam, angle);
+    auto coord = beam2pos[beam];
     if(!collimator.isActiveBeamAngle(coord.first, coord.second,angle)) {
     	//cout << "Not active" << endl;
     	return(false);
@@ -774,7 +779,7 @@ namespace imrt {
     clearHistory();
 
     if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
-      auto coord = collimator.indexToPos(beam, angle);
+      auto coord = beam2pos[beam];
       int row = coord.first;
 
       last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
@@ -783,7 +788,7 @@ namespace imrt {
         // Close from the left side
 
         for (int i=0; i<=coord.second-A[aperture][row].first; i++) {
-          auto coord2 = collimator.indexToPos(beam-(coord.second-A[aperture][row].first)+i, angle);
+          auto coord2 = beam2pos[beam-(coord.second-A[aperture][row].first)+i];
           diff.push_back(make_pair(beam-(coord.second-A[aperture][row].first)+i, -intensity[aperture]));
           change_intensity(coord2.first, coord2.second, I(coord2.first, coord2.second) - intensity[aperture]);
           //I(coord2.first,coord2.second) = I(coord2.first,coord2.second) - intensity[aperture];
@@ -799,7 +804,7 @@ namespace imrt {
         // Close from the right side
 
         for (int i=0;i<=A[aperture][row].second-coord.second;i++) {
-          auto coord2 = collimator.indexToPos(beam+i, angle);
+          auto coord2 = beam2pos[beam+i];
           diff.push_back(make_pair(beam+i, -intensity[aperture]));
           change_intensity(coord2.first, coord2.second, I(coord2.first, coord2.second) - intensity[aperture]);
           //I(coord2.first,coord2.second) = I(coord2.first,coord2.second) - intensity[aperture];
@@ -830,7 +835,7 @@ namespace imrt {
 
 
     if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
-      auto coord = collimator.indexToPos(beam, angle);
+      auto coord = beam2pos[beam];;
       int row= coord.first;
 
       last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
@@ -839,7 +844,7 @@ namespace imrt {
         // Close from the left side
 
         for (int i=0; i<=coord.second-A[aperture][row].first; i++) {
-          auto coord2 = collimator.indexToPos(beam-(coord.second-A[aperture][row].first)+i, angle);
+          auto coord2 = beam2pos[beam-(coord.second-A[aperture][row].first)+i];
           diff.push_back(make_pair(beam-(coord.second-A[aperture][row].first)+i, -intensity[aperture]));
           change_intensity(coord2.first, coord2.second, I(coord2.first, coord2.second) - intensity[aperture]);
           //I(coord2.first,coord2.second) = I(coord2.first,coord2.second) - intensity[aperture];
@@ -855,7 +860,7 @@ namespace imrt {
         // Close from the right side
 
         for (int i=0;i<=A[aperture][row].second-coord.second;i++) {
-          auto coord2 = collimator.indexToPos(beam+i, angle);
+          auto coord2 = beam2pos[beam+i];
           diff.push_back(make_pair(beam+i, -intensity[aperture]));
           change_intensity(coord2.first, coord2.second, I(coord2.first, coord2.second) - intensity[aperture]);
           //I(coord2.first,coord2.second) = I(coord2.first,coord2.second) - intensity[aperture];
@@ -881,7 +886,7 @@ namespace imrt {
     clearHistory();
 
     if (isActiveBeamlet(beam) && !isOpenBeamlet(beam, aperture)) {
-      auto coord = collimator.indexToPos(beam, angle);
+      auto coord = beam2pos[beam];;
       int row = coord.first;
 
       // Record the configuration of the row to be open
@@ -899,7 +904,7 @@ namespace imrt {
         // Row has open beamlets
         if (A[aperture][row].first > coord.second) {
           for (int i=0;i<(A[aperture][row].first-coord.second);i++) {
-            auto coord2 = collimator.indexToPos(beam+i, angle);
+            auto coord2 = beam2pos[beam+i];
             diff.push_back(make_pair(beam+i, intensity[aperture]));
             change_intensity(coord2.first, coord2.second, I(coord2.first,coord2.second) + intensity[aperture]);
             //I(coord2.first,coord2.second) = I(coord2.first,coord2.second) + intensity[aperture];
@@ -907,7 +912,7 @@ namespace imrt {
           A[aperture][row].first = coord.second;
         } else {
           for (int i=0;i<(coord.second-A[aperture][row].second);i++) {
-            auto coord2 = collimator.indexToPos(beam-(coord.second-A[aperture][row].second)+1+i, angle);
+            auto coord2 = beam2pos[beam-(coord.second-A[aperture][row].second)+1+i];
             diff.push_back(make_pair(beam-(coord.second-A[aperture][row].second)+1+i, intensity[aperture]));
             change_intensity(coord2.first, coord2.second, I(coord2.first,coord2.second) + intensity[aperture]);
             //I(coord2.first,coord2.second) = I(coord2.first,coord2.second) + intensity[aperture];
@@ -1038,12 +1043,16 @@ namespace imrt {
 
 
     // Create diff and update
+    //cout << collimator.getXdim() << "," <<  collimator.getYdim()  << endl;
     for (int i=0; i<collimator.getXdim(); i++) {
       if (A[aperture][i].first<0 || A[aperture][i].second<0)
         continue;
       int beamlet = pos2beam[make_pair(i, A[aperture][i].first)];
       for(int j=A[aperture][i].first; j<=A[aperture][i].second; j++){
-        auto coord = collimator.indexToPos(beamlet, angle);
+
+        //auto coord = beam2pos[beamlet];
+        auto coord = beam2pos[beamlet];
+        //cout << coord.first <<"," << coord.second << endl;
         change_intensity(coord.first, coord.second, I(coord.first, coord.second) + size);
         diff.push_back(make_pair(beamlet, size));
         beamlet++;
@@ -1060,7 +1069,8 @@ namespace imrt {
       return;
     }
     for (auto it=diff.begin(); it!=diff.end(); it++) {
-      coord = collimator.indexToPos(it->first, angle);
+      //coord = collimator.indexToPos(it->first, angle);
+      coord = beam2pos[it->first];
       change_intensity(coord.first, coord.second,  I(coord.first,coord.second) + it->second);
       //I(coord.first,coord.second) = I(coord.first,coord.second) + it->second;
       if (I(coord.first,coord.second) < 0) {
@@ -1114,7 +1124,8 @@ namespace imrt {
     }
 
     for (list<pair<int,double> >::iterator it=last_diff.begin();it!=last_diff.end();it++) {
-      coord=collimator.indexToPos(it->first, angle);
+      //coord=collimator.indexToPos(it->first, angle);
+      coord=beam2pos[it->first];
       //change_intensity(coord.first, coord.second,  I(coord.first,coord.second) - it->second);
       //I(coord.first,coord.second) = I(coord.first,coord.second) - (it->second);
       undo_diff.push_back(make_pair(it->first, -(it->second)));

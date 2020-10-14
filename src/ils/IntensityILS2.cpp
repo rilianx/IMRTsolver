@@ -44,7 +44,6 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan 
   multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
     P.getEvaluationFunction()->best_beamlets(P, vsize);
   bool first=true;
-
   for(auto b : beamlets){
     Station *s = P.get_station(b.second.first);
     pair<int,int> ij = s->beam2pos[b.second.second];
