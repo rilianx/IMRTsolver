@@ -123,7 +123,7 @@ int main(int argc, char** argv){
 
   // Perturbation
   PerturbationType perturbation_type = PerturbationType::p_mixed;
-  int perturbation_size = 2;
+  int perturbation_size = 0;
 
   // Files
   string path = ".";

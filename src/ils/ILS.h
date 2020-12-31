@@ -188,7 +188,7 @@ public:
                               LSType ls_type, bool continuous, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
                               int perturbation_size, int tabu_size, string convergence_file,
-			      int evaluations=0, std::clock_t begin = clock(), bool verbose=true) {
+			      int evaluations=0, std::clock_t begin = clock(), bool verbose=false) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double best_eval = current_plan.getEvaluation();
@@ -387,7 +387,7 @@ public:
   double FILocalSearch (Plan& current_plan, int max_time, int max_evaluations,
                         int& used_evaluations, NeighborhoodType ls_neighborhood,
                         LSTargetType ls_target_type, int tabu_size,
-                        string trajectory_file, bool continuous, bool verbose=true) {
+                        string trajectory_file, bool continuous, bool verbose=false) {
 
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();
