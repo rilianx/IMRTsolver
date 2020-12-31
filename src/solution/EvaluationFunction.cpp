@@ -15,6 +15,7 @@ int EvaluationFunction::n_evaluations=0;
 EvaluationFunction* EvaluationFunction::instance=NULL;
 
 void EvaluationFunction::create_voxel2beamlet_list(vector<Volume>& volumes, const Collimator& collimator){
+	cout << "creating maps: voxel2beamlet and beamlet2voxel" << endl;
 	for (int i=0;i<collimator.getNbAngles();i++){
 		for(int o=0; o<nb_organs; o++){
 			 int angle = collimator.getAngle(i);
@@ -22,12 +23,13 @@ void EvaluationFunction::create_voxel2beamlet_list(vector<Volume>& volumes, cons
 			 for(int k=0; k<nb_voxels[o]; k++){
 				 for(int b=0; b<collimator.getNangleBeamlets(angle); b++)
 					 if(D(k,b) > 0.0) {
-						 voxel2beamlet_list[make_pair(o,k)].push_back(make_pair(angle,b));
-						 beamlet2voxel_list[make_pair(angle,b)].insert(make_pair(-abs(D(k,b)), make_pair(o,k)));
+						 voxel2beamlet_list[angle][make_pair(o,k)].push_back(b);
+						 beamlet2voxel_list[angle][b].insert(make_pair(-abs(D(k,b)), make_pair(o,k)));
 					 }
 			 }
 		}
 	}
+	cout << "maps created" << endl;
 }
 
 EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator& collimator) : prev_F(0.0), F(0.0),
@@ -98,14 +100,16 @@ void EvaluationFunction::generate_Z(const Plan& p){
 	//we update the dose distribution matrices Z with the dose delivered by the station
 	for(int o=0; o<nb_organs; o++){
 		 for(int k=0; k<nb_voxels[o]; k++){
-		   double dose=0.0;
-			 list<pair <int,int> > beamlets = voxel2beamlet_list[make_pair(o,k)];
-			 for(auto bl:beamlets){
-				 int angle=bl.first; int b=bl.second;
-				 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
-				 dose += Dep(k,b)*p.angle2station.at(angle)->getIntensity(b);
-			 }
-		   Z[o][k] += dose;
+		   	double dose=0.0;
+		   	for (auto s: p.get_stations()){
+				int angle = s->getAngle();
+				list<int>& beamlets = voxel2beamlet_list[angle][make_pair(o,k)];
+				for(auto b:beamlets){
+					const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+					dose += Dep(k,b)*p.angle2station.at(angle)->getIntensity(b);
+				}
+		   	}
+		   	Z[o][k] += dose;
 		 }
 	}
 }
@@ -125,7 +129,6 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 				 pen += w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
 
 			update_sorted_voxels(w, Zmin, Zmax, o, k);
-			update_beamlets_impact(o, k);
 		}
 		//cout << pen/nb_voxels[o] << endl;
 		F+=pen/nb_voxels[o];
@@ -153,23 +156,10 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 			voxels.insert(make_pair(D[o][k],make_pair(o,k)));
 }
 
-void EvaluationFunction::update_beamlets_impact(int o, int k, double prev_Dok){
-	list<pair <int,int> >& beamlets = voxel2beamlet_list[make_pair(o,k)];
-	for(auto bl:beamlets){
-		beamlet_impact[bl] -= prev_Dok;
-		int angle = bl.first;
-		int b = bl.second;
-		const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
-		beamlet_impact[bl] += D[o][k] * Dep(k,b);
-	}
-
-
-}
-
 double EvaluationFunction::get_ratio_beamlet(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, int angle, int b){
 			double ev=0;
-			multimap<double, pair<int,int> > voxels = beamlet2voxel_list[make_pair(angle,b)];
+			multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
 			double T=0.0,O=0.0;
 			for(auto voxel:voxels){
 				int o=voxel.second.first;
@@ -188,7 +178,7 @@ double EvaluationFunction::get_ratio_beamlet(vector<double>& w,
 
 double EvaluationFunction::get_impact_beamlet(int angle, int b){
 			double ev=0;
-			multimap<double, pair<int,int> > voxels = beamlet2voxel_list[make_pair(angle,b)];
+			multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
 			for(auto voxel:voxels){
 				int o=voxel.second.first;
 				int k=voxel.second.second;
@@ -224,8 +214,7 @@ EvaluationFunction::get_sorted_beamlets(Plan& p){
 double EvaluationFunction::get_delta_eval(int angle, int b, double delta_intensity,
 	vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,int n_voxels) const{
 
-	 multimap<double, pair<int,int> > voxels =
-	                                   beamlet2voxel_list.at(make_pair(angle,b));
+	 multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(angle).at(b);
 	 double delta_F=0.0;
 
 	 int i=0;
@@ -351,7 +340,6 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 
 		double prev_Dok=D[o][k];
 		update_sorted_voxels(w, Zmin, Zmax, o, k);
-		//update_beamlets_impact(o, k, prev_Dok);
 
 		//we save the last changes (see undo_last_eval)
 		Z_diff.push_back(make_pair(make_pair(o,k),delta));
@@ -374,7 +362,6 @@ void EvaluationFunction::undo_last_eval(vector<double>& w,
 
 		double prev_Dok=D[o][k];
 		update_sorted_voxels(w, Zmin, Zmax, o, k);
-		//update_beamlets_impact(o, k, prev_Dok);
 	}
 	F=prev_F;
 	prev_F=F; Z_diff.clear();
@@ -454,7 +441,7 @@ void EvaluationFunction::generate_voxel_dose_functions (){
 bool EvaluationFunction::Zupdate(int angle, int b, double delta_intensity, bool return_if_unfeasible,
 			vector<double>& Zmax){
 
-	multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(make_pair(angle,b));
+	multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
 	bool feasible = true;
 	 for(auto voxel:voxels){
 		 int o=voxel.second.first, k=voxel.second.second;
@@ -484,7 +471,7 @@ void EvaluationFunction::Zrollback(){
 }
 
 pair<double,double> EvaluationFunction::get_value_cost(int angle, int b, vector<double>& Zmin, vector<double>& Zmax){
-	multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(make_pair(angle,b));
+	multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
 	double cost=0.0, value=0.0;
 	 for(auto voxel:voxels){
 		 int o=voxel.second.first, k=voxel.second.second;

@@ -64,7 +64,8 @@ struct LSTarget {
 enum PerturbationType {
   p_intensity = 1,
   p_aperture = 2,
-  p_mixed = 3
+  p_mixed = 3,
+  none = 4
 };
 
 class ILS {
@@ -112,7 +113,7 @@ public:
   };
 */
   double perturbation(Plan& current_plan, PerturbationType perturbation_type,
-                              int perturbation_size) {
+                              int perturbation_size, bool verbose=true) {
     vector <NeighborMove> neighborhood;
     bool is_move = false;
     NeighborhoodType neighborhood_type;
@@ -132,7 +133,7 @@ public:
     }
 
     if (is_move ){
-      cout << "ILS perturbation:" << endl;
+      if(verbose) cout << "ILS perturbation:" << endl;
       for (int i=0; i < perturbation_size; i++) {
           neighborhood = getNeighborhood(current_plan, neighborhood_type,
                                          ls_target);
@@ -146,6 +147,7 @@ public:
 
         current_plan.incremental_eval(*s, diff);
 
+      if(verbose)
     	  cout << " -move type " << move.type << ", s:" <<
                move.station_id << ", a:" << move.aperture_id <<
                ", r:" << move.beamlet_id << ", action:"<< move.action << endl;
@@ -186,7 +188,7 @@ public:
                               LSType ls_type, bool continuous, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
                               int perturbation_size, int tabu_size, string convergence_file,
-			      int evaluations=0, std::clock_t begin = clock()) {
+			      int evaluations=0, std::clock_t begin = clock(), bool verbose=true) {
      int current_iteration = 0;
      double aux_eval = current_plan.getEvaluation();
      double best_eval = current_plan.getEvaluation();
@@ -219,11 +221,11 @@ public:
        if (ls_type == LSType::first) {
          aux_eval = FILocalSearch(current_plan, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
-		    tabu_size, trajectory_file, continuous);
+		    tabu_size, trajectory_file, continuous, verbose);
        } else {
          aux_eval = BILocalSearch(current_plan, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
-                    tabu_size, trajectory_file);
+                    tabu_size, trajectory_file, verbose);
        }
 
        if (aux_eval < best_eval) {
@@ -233,18 +235,15 @@ public:
 
 
          best_plan = new Plan(current_plan);
-         for(int i=0;i<5;i++){
-           current_plan.printIntensity(i, false);
-         }
 
          
          //cout << best_plan->eval()  << endl;
        }
 
        current_iteration++;
-       cout << "ILS  iteration: " << current_iteration << " ; current: " <<
-               aux_eval << " ; best: " << best_eval << "; evals:" <<
-	       used_evaluations << endl;
+       if(verbose)
+          cout << "ILS  iteration: " << current_iteration << " ; current: " <<
+            aux_eval << " ; best: " << best_eval << "; evals:" << used_evaluations << endl;
 
        // Print convergence information
        if (convergence_file!="") {
@@ -261,7 +260,7 @@ public:
        if (perturbation_size == 0)  break;
 
        //Perturbation
-       perturbation(current_plan, perturbation_type, perturbation_size);
+       perturbation(current_plan, perturbation_type, perturbation_size, verbose);
 
      }
 
@@ -388,7 +387,7 @@ public:
   double FILocalSearch (Plan& current_plan, int max_time, int max_evaluations,
                         int& used_evaluations, NeighborhoodType ls_neighborhood,
                         LSTargetType ls_target_type, int tabu_size,
-                        string trajectory_file, bool continuous) {
+                        string trajectory_file, bool continuous, bool verbose=true) {
 
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();
@@ -443,7 +442,8 @@ public:
 
       improvement = false;
 
-      cout << " -neighborhood: " << current_neighborhood << "; size: " <<
+      if(verbose)
+        cout << " -neighborhood: " << current_neighborhood << "; size: " <<
              neighborhood.size() << "; curren best: " << current_eval << endl;;
 
       while (n_neighbors < neighborhood.size()) {
@@ -483,9 +483,10 @@ public:
             current_eval = current_plan.incremental_eval(*s, diff);
             current_plan.clearLast();
 
+        if(verbose)
             cout << "    neighbor: " << n_neighbors  << "; "
-          << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
-          << "); improvement: " << current_plan.getEvaluation() << endl;
+              << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
+              << "); improvement: " << current_plan.getEvaluation() << endl;
 
 
 
@@ -516,29 +517,9 @@ public:
 
         } else {
           //No improvement
-          for(int ii=0;ii<5;ii++){
-            if(current_plan.get_station(ii)->int2nb.size()>5){
-              cout << "before undo" << endl;
-              current_plan.get_station(ii)->printIntensity();
-              exit(0);
-            }
-            
-          }
           s->undoLast();
           s->diff_undo(diff);
 
-          for(int ii=0;ii<5;ii++){
-            
-            if(current_plan.get_station(ii)->int2nb.size()>5){
-              cout << "after undo" << endl;
-              cout << "    neighbor: " << n_neighbors  << "; "
-          << "(" << move.station_id <<   "," << move.aperture_id << "," << move.action
-          << "); improvement: " << current_plan.getEvaluation() << endl;
-              current_plan.get_station(ii)->printIntensity();
-              exit(0);
-            }
-            
-          }
 
 	  // Add the non-improving movement as tabu
           if (tabu_size > 0)
@@ -593,14 +574,16 @@ public:
     if (trajectory_file!="")
       t_file.close();
 
-    cout << endl;
+    if(verbose)
+      cout << endl;
+
     return(current_eval);
   };
 
   double BILocalSearch (Plan& current_plan, int max_time, int max_evaluations,
                       int& used_evaluations,  NeighborhoodType ls_neighborhood,
                       LSTargetType ls_target_type, int tabu_size,
-                      string trajectory_file) {
+                      string trajectory_file, bool verbose=true) {
 
     vector <NeighborMove> neighborhood;
     double current_eval = current_plan.getEvaluation();
@@ -632,6 +615,7 @@ public:
     std::clock_t time_end;
     double used_time;
 
+
     cout << "Local search" << endl;
 
     while (improvement) {
@@ -648,7 +632,8 @@ public:
       //Get the moves in the neighborhood (this is possible because the moves are not that many!)
       neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target);
 
-      cout << " -neighborhood: " << current_neighborhood << "; size: " <<
+      if(verbose)
+        cout << " -neighborhood: " << current_neighborhood << "; size: " <<
         neighborhood.size() << " ";
 
        for (NeighborMove move:neighborhood) {
@@ -670,8 +655,9 @@ public:
 
         // Check if there is an improvement
         if (current_plan.getEvaluation() < (current_eval-0.001)) {
-          cout << "; neighbor: " << n_neighbors  << "(" << move.station_id <<
-            "," << move.aperture_id << "," << move.action << "); Improvement: " <<
+          if(verbose)
+            cout << "; neighbor: " << n_neighbors  << "(" << move.station_id <<
+              "," << move.aperture_id << "," << move.action << "); Improvement: " <<
               current_plan.getEvaluation() << endl;
 
           improvement = true;

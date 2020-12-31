@@ -32,7 +32,7 @@ public:
                                 LSTargetType ls_target_type_DAO,
                                 PerturbationType perturbation_type,
                                 int perturbation_size, int tabu_size, string convergence_file,
-                                int evaluations=0, std::clock_t begin_time = clock()) {
+                                int evaluations=0, std::clock_t begin_time = clock(), bool verbose=false) {
 
         double F =P.getEvaluation();
         double bestF = F;
@@ -40,48 +40,30 @@ public:
 
         Plan* best_plan=new Plan(P);
 
-        //fast convergence
-        //NeighborhoodType neighborhood = NeighborhoodType::intensity;
-        //F = ibo.iteratedLocalSearch(P, max_time, 30, ls_type_IBO,
-        //  neighborhood, ls_target_type_IBO, perturbation_type,
-        //  0, 0 /*tabu size*/, convergence_file, total_evals, begin_time);
-        //total_evals=ibo.used_evaluations;
-
         while(true){
           F = ibo.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_IBO, continuous,
             ls_neighborhood_IBO, ls_target_type_IBO, perturbation_type,
-            0, tabu_size, convergence_file, total_evals, begin_time);
+            0, tabu_size, convergence_file, total_evals, begin_time, verbose);
           total_evals=ibo.used_evaluations;
           //plan for perturbations
 
-          //cout << "P:" << P.eval() << endl;
           Plan P_pert(P);
-          //cout << "Ppert:" << P_pert.eval() << endl;
-
-          for(int i=0;i<5;i++)
-            P.printIntensity(i);
-
-          cout << "generating apertures" << endl;
           P.generateApertures();
 
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
 
-          for(int i=0;i<5;i++)
-            P.printIntensity(i);
-
           F = dao.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_DAO, continuous,
             ls_neighborhood_DAO, ls_target_type_DAO, perturbation_type,
-      			  0, tabu_size, convergence_file, total_evals, begin_time);
-
+      			  0, tabu_size, convergence_file, total_evals, begin_time, verbose);
           total_evals=dao.used_evaluations;
 
 
-          for(int i=0;i<5;i++){
+          for(int i=0;i<P.getNStations();i++){
             P.get_station(i)->generateIntensityMatrix();
-            P.get_station(i)->printApertures();
-            P.printIntensity(i, false);
+            //P.get_station(i)->printApertures();
+            //P.printIntensity(i, false);
           }
-          cout << P.eval()  << endl;
+          P.eval();
 
           //TODO: save best plan
           if(F<bestF){
@@ -99,11 +81,12 @@ public:
           if (perturbation_size == 0)  break;
 
           //Perturbation
-          cout << "pert" << endl;
-          ibo.perturbation(P_pert, perturbation_type, perturbation_size);
-          cout << "Ppert:" << P_pert.eval() << endl;
+          //cout << "pert" << endl;
+          ibo.perturbation(P_pert, perturbation_type, perturbation_size, verbose);
+          //cout << "Ppert:" << P_pert.eval() << endl;
           P.newCopy(P_pert);
-          cout << "P:" << P.eval() << endl;
+          //cout << "P:" << P.eval() << endl;
+          P.eval();
         }
         P.newCopy(*best_plan);
         delete best_plan;

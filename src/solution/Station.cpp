@@ -13,12 +13,13 @@ namespace imrt {
   Station::Station(Collimator& collimator, vector<Volume>& volumes,
                    int _angle, int max_apertures, int max_intensity,
                    int initial_intensity, int step_intensity,
-                   StationSetup setup, fstream* myfile): collimator(collimator),
+                   StationSetup setup, istringstream* fm): collimator(collimator),
                    angle(_angle) , max_apertures(max_apertures),
                    A(max_apertures), intensity(max_apertures),
                    max_intensity(max_intensity),
                    initial_intensity(initial_intensity),
                    step_intensity(step_intensity) {
+                     
     min_intensity=1;
 
     n_volumes=volumes.size();
@@ -47,13 +48,19 @@ namespace imrt {
     // TODO: this should be in the initialize Station
     //       function
     // File intensity initialization
-    if(myfile) {
-    	for (int i=0; i<collimator.getXdim(); i++) {
-    	   for (int j=0; j<collimator.getYdim(); j++) {
-    		   int a;*myfile>>a;
-    		   if(a!=-1) change_intensity(i, j, a);
-    	   }
-    	}
+    if(fm) {
+      for (int i=0; i<collimator.getXdim(); i++) {
+      for (int j=0; j<collimator.getYdim(); j++) {
+        if (collimator.isActiveBeamAngle(i,j,angle)) {
+          if (fm->tellg() != -1){ //the streaming is not over
+            int a; *fm>>a;
+       		  if(a!=-1) change_intensity(i, j, a);
+          } else I(i,j)=0;
+        } else {
+          I(i,j)=-1;
+        }
+      }
+      }
     }
 
     last_mem = make_pair(make_pair(-1,-1), make_pair(-1,-1));
@@ -346,17 +353,15 @@ namespace imrt {
         cout << endl;
       }
       cout << endl;
-
+      cout << "nb_intensities:" << int2nb.size() << endl;
 
 	  }else{
-		  for (int i=0; i<collimator.getXdim();i++) {
-			  for (int j=0; j<collimator.getYdim(); j++) {
-				  if(I(i,j)!=-1.0) printf("\t%2.1f", I(i,j));
-			  }
-		  }
+		  for (int i=0; i<collimator.getXdim();i++) 
+			  for (int j=0; j<collimator.getYdim(); j++) 
+				  if(I(i,j)!=-1.0) cout << I(i,j) << " ";
 	  }
 
-    cout << "nb_intensities:" << int2nb.size() << endl;
+    
   }
 
   void Station::setApertureShape (int a, int row, int start, int end) {
@@ -615,10 +620,7 @@ namespace imrt {
 	  for (int i=0; i<collimator.getXdim();i++)
 		  for (int j=0; j<collimator.getYdim(); j++)
 			  if(I(i,j)==intensity){
-          cout << "("<< i << "," << j << ") --> " << I(i,j)+delta << endl;
           int b = pos2beam[make_pair(i,j)];
-          cout << "beamlet: "  << pos2beam[make_pair(i,j)] << endl;
-          cout << beam2pos[b].first << "," << beam2pos[b].second << endl;
 				  change_intensity(i, j, I(i,j)+delta, &diff);
         }
 

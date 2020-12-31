@@ -9,17 +9,20 @@
 
 namespace imrt {
 
-Volume::Volume(Collimator& collimator, string deposition_file) :
+Volume::Volume(Collimator& collimator, string deposition_file, int max_voxels_per_organ) :
 		collimator(collimator) {
-  set_data(deposition_file);
+    if(deposition_file!="")
+      set_data(deposition_file, max_voxels_per_organ);
 }
 
-void Volume::set_data(string file) {
+void Volume::set_data(string file, int max_voxels_per_organ, list<int> angles) {
+
   string line, linec;
   ifstream myfile (file);
   stringstream ss;
   double aux1, aux2;
   vector <pair<double,double> >::iterator it;
+  if(angles.size()==0) angles=collimator.getAngles();
 
   //nb_beamlets=-1;
   nb_voxels=-1;
@@ -37,23 +40,38 @@ void Volume::set_data(string file) {
     lines.push_back(line);
   myfile.close();
   nb_voxels = lines.size()-1;
+  //cout << nb_voxels << endl;
+
+  
+  double step=1;
+  if(max_voxels_per_organ < nb_voxels){
+    step = (double) nb_voxels/ (double) max_voxels_per_organ;
+    nb_voxels = max_voxels_per_organ;
+  }
+  
   ss.str(lines[0]);
 
-  for(auto angle:collimator.getAngles())
+  for(auto angle:angles){
     D[angle]=Matrix(nb_voxels, collimator.getNangleBeamlets(angle));
+  }
 
+  auto ang = angles.begin();
   for (int i=0; i<nb_voxels; i++) {
-    ss.clear(); ss.str(lines[i]);
+    
+    int ii = step* (double) i;
+    ss.clear(); ss.str(lines[ii]);
     getline(ss, line, '\t');
     int a=0, j=0;
+    ang = angles.begin();
     int count=0;
     while (getline(ss, line, '\t') ) {
-      if (j >= collimator.getNangleBeamlets( collimator.getAngle(a) )) {
-        a++; j=0;
+      if (j >= collimator.getNangleBeamlets( *ang )) {
+         a++; ang++; j=0; 
       }
-      D[ collimator.getAngle(a) ](i,j)=atof(line.c_str());
+      D[ *ang ](i,j)=atof(line.c_str());
       j++;
     }
+    
   }
 
 }

@@ -52,12 +52,12 @@ struct pair_hash
 
  struct MagnitudeCompare
  {
-     bool operator()(const double& lhs, const double& rhs)
+     bool operator()(const double& lhs, const double& rhs) const
      {
          return abs(lhs) > abs(rhs);
      }
 
-     bool operator()(const pair< double, pair<int,int> >& lhs, const pair< double, pair<int,int> >& rhs)
+     bool operator()(const pair< double, pair<int,int> >& lhs, const pair< double, pair<int,int> >& rhs) const
      {
     	 if(abs(lhs.first) > abs(rhs.first)) return true;
     	 if(abs(lhs.first) == abs(rhs.first)){
@@ -129,9 +129,6 @@ public:
 	void update_sorted_voxels(vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, int o, int k);
 
-  //Update the impacts og each beamlet affected by the voxel [o][k]
-	void update_beamlets_impact(int o, int k, double prev_Dok=0.0);
-
 
   //Additional functions
 
@@ -170,6 +167,10 @@ public:
 
 	int n_volumes;
 
+	vector< vector<double> >& get_Z(){
+		return Z;
+	};
+
 private:
 	//dose distribution vectors for each organ
 	vector< vector<double> > Z;
@@ -194,15 +195,15 @@ private:
 	// all the tumor voxels sorted by derivative (may be useful for algorithms)
    set< pair< double, pair<int,int> >, MagnitudeCompare >  voxels;
 
-  //Beamlets (angle,b) sorted by impact (partial derivative magnitude)
+  //Beamlets [angle][b] sorted by impact (partial derivative magnitude)
   //multimap < double, pair<int, int>, MagnitudeCompare > sorted_beamlets;
-	unordered_map <pair<int, int>, double, pair_hash> beamlet_impact;
+   unordered_map < int, unordered_map <int, double> > beamlet_impact;
 
-  //voxels (o,k) --> beamlet list (angle,b)
-  unordered_map < pair<int, int>, list< pair<int,int> >, pair_hash > voxel2beamlet_list;
+  //voxels[angle][o,k] --> beamlet list (b)
+  unordered_map < int, unordered_map < pair<int, int>, list <int> , pair_hash > > voxel2beamlet_list;
 
-  //beamlet (angle,b) --> lista de voxels (o,k)
-  unordered_map < pair<int, int>, multimap<double, pair<int,int> >, pair_hash > beamlet2voxel_list;
+  //beamlet [angle][b] --> lista de voxels (o,k)
+  unordered_map < int, unordered_map <int, multimap<double, pair<int,int> > > > beamlet2voxel_list;
 
 	//Matrix of derivatives for each organ and voxel (may be useful for algorithms)
 	//How much increase/decrease F increasing the voxel in one unity.

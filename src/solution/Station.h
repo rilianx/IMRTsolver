@@ -93,7 +93,7 @@ public:
    // Constructs a new Station
   Station(Collimator& _collimator, vector<Volume>& volumes, int _angle,
           int max_apertures, int max_intensity=28, int initial_intensity=0,
-          int step_intensity=2, StationSetup setup=StationSetup::open_all_min, fstream* myfile=NULL);
+          int step_intensity=2, StationSetup setup=StationSetup::open_all_min, istringstream* fluence_map=NULL);
 
   Station(const Station &s);
 

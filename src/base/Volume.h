@@ -51,17 +51,20 @@ namespace imrt {
       int nb_voxels;
 
 
-      void set_data(string file);
+    
 
     public:
-      Volume(Collimator& collimator, string deposition_file);
-
+      Volume(Collimator& collimator, string deposition_file, int max_voxels_per_organ=100000);
+      void set_data(string file, int max_voxels_per_organ=100000, list<int> angles = list<int>());
       void print_deposition();
       void print_coordinates();
       int getNbVoxels() {return nb_voxels;}
       //void print_r_active_size();
 
       Matrix& getDepositionMatrix(int angle);
+      int get_n_matrices(){
+        return D.size();
+      }
 
   };
 }

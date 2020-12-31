@@ -129,7 +129,6 @@ int main(int argc, char** argv){
   string path = ".";
   string file = "data/testinstance_0_70_140_210_280.txt";
   string file2 = "data/test_instance_coordinates.txt";
-  char* file3 = NULL;
   string convergence_file = "";
   string output_file = "";
   string json_file = "";
@@ -260,8 +259,6 @@ int main(int argc, char** argv){
                                  "File with the deposition matrix", {"file-dep"});
   args::ValueFlag<string> _file2 (io_opt, "string",
                                  "File with the beam coordinates", {"file-coord"});
-  args::ValueFlag<string> _file3 (io_opt, "string",
-                                 "File with initial intensities", {"file-sol"});
   args::ValueFlag<string> _path  (io_opt, "string",
                                  string("Absolute path of the executable ") +
                                  "(if it is executed from other directory)", {"path"});
@@ -420,7 +417,6 @@ int main(int argc, char** argv){
   // Archivos del problem
   if (_file) file=_file.Get();
   if (_file2) file2=_file2.Get();
-  if (_file3) file3=strdup(_file3.Get().c_str()); //intensidades de partida
   if (_path) path=_path.Get();
 
   int aux=chdir(path.c_str());
@@ -485,7 +481,7 @@ int main(int argc, char** argv){
   // Create an initial plan
   Plan P (w, Zmin, Zmax, collimator, volumes, max_apertures,
           max_intensity, initial_intensity, step_intensity,
-          initial_setup, file3);
+          initial_setup);
 
   double best_eval = P.getEvaluation();
 

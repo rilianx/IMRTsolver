@@ -30,7 +30,7 @@ public:
   Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax,
        Collimator& collimator, vector<Volume>& volumes, int max_apertures,
        int max_intensity, int initial_intensity, int step_intensity=2,
-       StationSetup setup = open_all_min, char* file=NULL);
+       StationSetup setup = open_all_min, istringstream* fm_stream=NULL, vector<int> bac = vector<int>());
 
   Plan(const Plan &p);
 

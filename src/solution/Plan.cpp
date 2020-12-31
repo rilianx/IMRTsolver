@@ -19,33 +19,33 @@ namespace imrt {
   Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax,
              Collimator& collimator, vector<Volume>& volumes, int max_apertures,
              int max_intensity, int initial_intensity,
-             int step_intensity, StationSetup setup, char* file) :
+             int step_intensity, StationSetup setup, istringstream* fm_stream, vector<int> bac) :
              ev(EvaluationFunction::getInstance(volumes, collimator)),
              w(w), Zmin(Zmin), Zmax(Zmax) {
 
-    cout << "##Initilizing plan."<< endl;
+      cout << "##Initilizing plan."<< endl;
 
-    fstream* myfile=NULL;
-    if(file) myfile=new fstream(file, std::ios_base::in);
+      if(bac.size()>0) n_stations=bac.size();
+      else n_stations = collimator.getNbAngles();
 
-    for (int i=0;i<collimator.getNbAngles();i++) {
-      Station* station = new Station(collimator, volumes, collimator.getAngle(i),
-                                     max_apertures, max_intensity, initial_intensity,
-                                     step_intensity, setup, myfile);
-      add_station(*station);
-      angle2station[collimator.getAngle(i)] = station;
-    }
-    n_stations= stations.size();
-    if(myfile){
-    	myfile->close();
-        delete myfile;
-    }
-    cout << "##  Created " << stations.size() << " stations."<< endl;
-    eval();
-    cout << "##  Initial evaluation: " << evaluation_fx << "."<< endl;
-    last_changed=NULL;
+      for (int i=0;i<n_stations;i++) {
+        int angle=collimator.getAngle(i);
+        if(bac.size()>0) angle=bac[i];
 
-    //ev.create_beam2voxel_list(*this);
+        Station* station = new Station(collimator, volumes, angle,
+                                      max_apertures, max_intensity, initial_intensity,
+                                      step_intensity, setup, fm_stream);
+        add_station(*station);
+        angle2station[angle] = station;
+      }
+
+
+      cout << "##  Created " << stations.size() << " stations."<< endl;
+      eval();
+      cout << "##  Initial evaluation: " << evaluation_fx << "."<< endl;
+      last_changed=NULL;
+
+      //ev.create_beam2voxel_list(*this);
   };
 
   Plan::Plan(const Plan &p): ev(p.ev), w(p.w), Zmin(p.Zmin), Zmax(p.Zmax), last_changed(NULL) {

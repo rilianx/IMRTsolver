@@ -5,6 +5,16 @@
  *      Author: iaraya, leslie
  */
 
+
+/*******Sockets stuff*********/
+#include <unistd.h>
+#include <stdio.h> 
+#include <sys/socket.h> 
+#include <stdlib.h> 
+#include <netinet/in.h> 
+/******************/
+
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <set>
@@ -21,10 +31,76 @@
 #include "IntensityILS2.h"
 #include "MixedILS.h"
 #include "args.hxx"
+#include <dirent.h>
 
 
 using namespace std;
 using namespace imrt;
+
+
+void initialize_socket(int& server_fd, struct sockaddr_in& address, int port){
+    int opt = 1; 
+    int addrlen = sizeof(address); 
+
+       
+    // Creating socket file descriptor 
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
+    { 
+        perror("socket failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+       
+    // Forcefully attaching socket to the port 8080 
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, 
+                                                  &opt, sizeof(opt))) 
+    { 
+        perror("setsockopt"); 
+        exit(EXIT_FAILURE); 
+    } 
+    address.sin_family = AF_INET; 
+    address.sin_addr.s_addr = INADDR_ANY; 
+    address.sin_port = htons( port ); 
+       
+    // Forcefully attaching socket to the port 8080 
+    if (bind(server_fd, (struct sockaddr *)&address,  
+                                 sizeof(address))<0) 
+    { 
+        perror("bind failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+
+    if (listen(server_fd, 3) < 0) 
+    { 
+        perror("listen"); 
+        exit(EXIT_FAILURE); 
+    }
+}
+
+pair<string, int> listen_instruction(int server_fd, struct sockaddr_in address){
+	int new_socket, valread; 
+    int opt = 1; 
+    int addrlen = sizeof(address); 
+    char buffer[1024] = {0}; 
+
+
+
+    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
+                       (socklen_t*)&addrlen))<0) 
+    { 
+        perror("accept"); 
+        exit(EXIT_FAILURE); 
+    } 
+    valread = read( new_socket , buffer, 1024); 
+    
+	//char *hello = "Hello from server"; 
+	//send(new_socket , hello , strlen(hello) , 0 ); 
+    //printf("Hello message sent\n"); 
+	buffer[strlen(buffer)-1]=0;
+
+
+    return make_pair(string(buffer),new_socket); 
+} 
+
 
 set<int> get_angles(string file, int n){
   ifstream _file(file.c_str(), ios::in);
@@ -65,19 +141,24 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator, int
              organ_filename << ", stopping! \n";
 
   cout << "##Reading volume files." << endl;
-  getline(organ_file, line);
-  while (organ_file) {
-    getline(organ_file, line);
-    if (line.empty()) continue;
-    cout << "##  " << line << endl;
-    //Assuming one data point
-    organ_files.push_back(line);
+  //getline(organ_file, line); //--> angles
+
+
+  for(int j=0;j<3;j++){
+    Volume v(collimator, "");
+    int k=0;
+    while (k<70) {
+      getline(organ_file, line);
+      if (line.empty()) continue;
+      cout << "##  " << line << endl;
+      list<int> angles;
+      for(int i=0;i<350;i+=70) angles.push_back(i+k);
+      v.set_data(line, max_voxels, angles);
+      k+=5;
+    }
+    volumes.push_back(v);
   }
   organ_file.close();
-  cout << "##  Read " << organ_files.size() << " files"<< endl;
-
-  for (int i=0; i<organ_files.size(); i++)
-    volumes.push_back(Volume(collimator, organ_files[i], max_voxels));
 
   return(volumes);
 }
@@ -85,13 +166,17 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator, int
 
 int main(int argc, char** argv){
 
+	int server_fd; struct sockaddr_in address;
+
+
+
   int seed = time(NULL);
 
   // Budget and execution variables
   int maxiter = 5000;
   int ibo_evals = 2500;
   int maxtime = 0;
-  int maxeval = 0;
+  int maxeval = 0; 
 
   // Aperture and intensity configuration
   StationSetup initial_setup = StationSetup::open_min_k;;
@@ -114,10 +199,12 @@ int main(int argc, char** argv){
 
   // Files
   string path = ".";
-  string file = "data/testinstance_0_70_140_210_280.txt";
+
+
   string file2 = "data/test_instance_coordinates.txt";
   char* file3 = NULL;
   int max_voxels=100000;
+  int port = 8080;
 
 
   args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********",
@@ -126,6 +213,8 @@ int main(int argc, char** argv){
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
   args::ValueFlag<int>    _seed     (parser, "int", "Seed  (" +
                                      to_string(seed)+")", {"seed"});
+  args::ValueFlag<int>    _port    (parser, "int", "port  (" +
+                                     to_string(seed)+")", {"port"});
 
   // Search strategies
   args::Group strat (parser, "Strategy options:");
@@ -164,16 +253,16 @@ int main(int argc, char** argv){
   // Problem file parameters
   args::Group io_opt (parser, "Input output options:");
   args::ValueFlag<string> _file  (io_opt, "string",
-                                 "File with the deposition matrix", {"file-dep"});
+                                 "Files with the deposition matrices", {"files-dep"});
   args::ValueFlag<string> _file2 (io_opt, "string",
                                  "File with the beam coordinates", {"file-coord"});
-  args::ValueFlag<string> _file3 (io_opt, "string",
-                                 "File with initial intensities", {"file-sol"});
   args::ValueFlag<string> _path  (io_opt, "string",
                                  string("Absolute path of the executable ") +
                                  "(if it is executed from other directory)", {"path"}); 
   args::ValueFlag<string> _bac  (io_opt, "string",
                                  "Beam angle configuration ", {"bac"});     
+  args::ValueFlag<string> _fm  (io_opt, "string",
+                                 "Initial fluence map ", {"fm"});  
   args::ValueFlag<int> _max_voxels  (io_opt, "int",
                                  "Maximum number of voxels per organ ", {"max_voxels"});                        
 
@@ -201,33 +290,24 @@ int main(int argc, char** argv){
 
   // Local search strategy
   if(_tabu_size) tabu_size = _tabu_size.Get();
+  if(_port) port= _port.Get();
  
-  // Input files
-  if (_file) file=_file.Get();
+
+
   if (_file2) file2=_file2.Get();
-  if (_file3) file3=strdup(_file3.Get().c_str()); //intensidades de partida
   if (_path) path=_path.Get();
 
   int aux=chdir(path.c_str());
 
   string base_name="output";
   if (_convergence_file) base_name=string("output/") + _convergence_file.Get();
-  string convergence_file = base_name + "/" + basename(file.c_str()) + "_" + to_string(seed) + ".conv";
+  string convergence_file = base_name + "_" + to_string(seed) + ".conv";
 
-  cout << "##**************************************************************************"
-       << endl;
-  cout << "##**************************************************************************"
-       << endl;
-
-  cout << "##******** IMRT-Solver (DAO-ILS) *********" << endl;
-
-  cout << "##**************************************************************************"
-       << endl;
-  cout << "##**************************************************************************"
-       << endl;
+	initialize_socket(server_fd, address, port);
+  pair<string, int> message = listen_instruction(server_fd, address);
 
   // Iniciar generador de numeros aleatorios
-  srand(seed);
+  srand(seed); 
 
   vector<double> w={1,1,5};
   vector<double> Zmin={0,0,76};
@@ -238,145 +318,146 @@ int main(int argc, char** argv){
 
   if(_max_voxels) max_voxels=_max_voxels.Get();
 
-  // Create colimator object and volumes
-  Collimator collimator (file2, get_angles(file, 5));
+  int angint[]= {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,
+                120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,
+                215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300,305,
+                310,315,320,325,330,335,340,345};
+  set<int> angles(angint,angint+70);
+  string file = _file.Get();
+
+  Collimator collimator (file2, angles); 
   vector<Volume> volumes = createVolumes (file, collimator, max_voxels);
+  //cout << volumes[0].get_n_matrices() << endl;
 
-  // Create an initial plan
-  cout << "creating the initial treatment plan" << endl;
-
-  vector<int> bac;
-
-	if(_bac){
-		std::istringstream bac_stream(_bac.Get());
-    int a;
-    while (bac_stream >> a ) bac.push_back(a);
-	}
-
-  Plan P (w, Zmin, Zmax, collimator, volumes, max_apertures,
-          max_intensity, I_0, step_intensity,
-          initial_setup, file3, bac);
-
-  double best_eval = P.getEvaluation();
-
-  cout << "##" << endl
-       << "##**************************************************************************"
-       << endl;
-  cout << "##*********************************** INFO *********************************"
-       << endl;
-  cout << "##**************************************************************************"
-       << endl;
-  cout << "##" << endl << "## Solver: "<< endl;
-  cout << "##   Iterations: " << maxiter << endl;
-  cout << "##   Time: " << maxtime << endl;
-  cout << "##   Evaluations: " << maxeval << endl;
-  cout << "##   Seed: " << seed << endl;
-  cout << "##   Apertures: " << max_apertures << endl;
-  cout << "##   Initial intensity: " << I_0 << endl;
-  cout << "##   Max intensity: " << max_intensity << endl;
-  cout << "##   Step intensity: " << step_intensity << endl;
-  cout << "##   Local search: first improvement"  << endl;
-  cout << "##   Tabu list size: " << tabu_size << endl;
-  cout << "##   Targeted search: yes (friends)"  << endl;
-  cout << "##   Perturbation: mixed " << endl;
-  cout << "##   Perturbation size: 3" << endl;
-
-  cout << "##" << endl << "## Colimator configuration: "<< endl;
-  cout << "##   Stations: " << collimator.getNbAngles() << endl;
-  cout << "##   Angles: ";
-  for (int i=0; i<collimator.getNbAngles();i++)
-    cout << collimator.getAngle(i) << " ";
-  cout << endl;
+  cout << "creating evaluation function" << endl;
+  EvaluationFunction& ev = EvaluationFunction::getInstance(volumes, collimator);
 
 
-  cout << "##" << endl << "## Instance information: "<< endl;
-  cout << "##   Volumes: " << volumes.size() << endl;
-
-  cout << "##" << endl << "## Output files: " << endl;
-
-  cout << "##" << endl
-       << "##**************************************************************************"
-       << endl;
-  cout << "##********************************** SEARCH ********************************"
-       << endl;
-  cout << "##**************************************************************************"
-       << endl;
-
-
-
-  cout << "## Initial solution: " << best_eval << endl;
-  cout  << "##" << endl;
-  cout << endl;
-  for(int i=0;i<P.getNStations();i++)
-    P.printIntensity(i);
-  cout << endl;
-
-
-
-
+  /**************** UNTIL HERE: INIT INSTANCE ****************/
+  Plan* P= NULL;
   double cost;
   double used_evaluations = 0;
   std::clock_t begin_time = clock();
 
+  std::ostringstream response2;
+  response2 << "ready" << endl;
+  send(message.second , response2.str().c_str() , response2.str().size() , 0 ); 
+	close(message.second);
 
-  MixedILS mixed_ils(0, 0, 0, 1 /*step_intensity*/);
-  cost = mixed_ils.iteratedLocalSearch(P, maxtime, maxeval, LSType::first, LSType::first, 
-          false /*continuous*/, NeighborhoodType::sequential_a, NeighborhoodType::sequential_i, LSTargetType::target_friends,
-          LSTargetType::target_none, PerturbationType::p_mixed, 3 /*perturbation_size*/,
-          tabu_size, convergence_file);
-  used_evaluations = mixed_ils.total_evals;
+  server:
+  std::ostringstream response;
+  response.clear();
 
-  cout << "##**************************************************************************"
-       << endl;
-  cout << "##******************************* RESULTS **********************************"
-       << endl;
-  cout << "##**************************************************************************"
-       << endl;
-  cout << "##"<<endl;
-  cout << "## Best solution found: " <<  cost << endl; //<< " "<< P.eval() << endl;
+  message = listen_instruction(server_fd, address);
+  istringstream message_stream(message.first);
+  string instruction; message_stream >> instruction;
+  
 
-	cout << endl;
-	for(int i=0;i<P.getNStations();i++)
-		P.printIntensity(i, true);
+  if(instruction == "get_info"){
+    for (auto v : volumes)
+      response << v.getNbVoxels() << " ";
+    response << endl;
 
-	cout << endl;
+    for (auto angle : collimator.getAngles())
+      response << angle << " ";
+    response << endl;
 
-  cout <<  cost << " ";
+    response << "{" ;
+    for (auto angle : collimator.getAngles())
+      response << angle << ": " << collimator.getNangleBeamlets(angle) << ", ";
+    
+    response << "}" << endl;
 
-  std::clock_t time_end = clock();
-  double used_time = double(time_end - begin_time) / CLOCKS_PER_SEC;
+    //matrices shapes
 
-  cout <<  used_time << " " << used_evaluations << " ";
+    response << collimator.getXdim() << " " << collimator.getYdim() << endl;
+    //valid shapes of matrices
+    for (auto angle : collimator.getAngles()){
+      for (int i=0; i<collimator.getXdim(); i++) {
+        for (int j=0; j<collimator.getYdim(); j++) {
+          if (collimator.isActiveBeamAngle(i,j,angle)) {
+            response << 1 << " ";
+          } else {
+            response << 0 << " ";
+          }
+        }
+      }
+      response << endl;
+    }
 
-  const list<Station*> stations=P.get_stations();
+  }else if(instruction == "init_fluence_map"){
+    cout << instruction << endl;
+    /*** init_fluence_map n_angles angle1 angle2 ... angleN fm1 fm2 fm3... fmn ***/
+    int n_angles; message_stream >> n_angles;
+    vector<int> bac(n_angles);
+    for (int i=0; i<n_angles; i++){
+       int angle; message_stream >> angle; bac[i] = angle;
+    }
 
-  int tot_alpha=0;
-  for(auto s:stations){
-    string str="dao_ls";
-    int alpha=s->get_sum_alpha(str);
-    cout << alpha << " " ;
-    tot_alpha+=alpha;
+    istringstream* fluence_map = &message_stream;
+    if(P!= NULL) delete P;
+    P = new Plan (w, Zmin, Zmax, collimator, volumes, max_apertures,
+            max_intensity, I_0, step_intensity,
+            initial_setup, fluence_map, bac);
+
+    response << P->getEvaluation();
+
+  }else if(instruction == "local_search"){
+    /** local_search neigh maxeval **/
+    cout << "local_search" << endl;
+    NeighborhoodType n_type;
+    string neigh; message_stream >> neigh;
+    if(neigh=="beam_intensity") n_type=NeighborhoodType::aperture;
+    else if(neigh=="level_intensity") n_type=NeighborhoodType::intensity;
+    else if(neigh=="mixed") n_type=NeighborhoodType::mixed;
+    int maxeval; message_stream >> maxeval;
+
+    IntensityILS2 ibo;
+    cost = ibo.iteratedLocalSearch(*P, maxtime, maxeval, LSType::first, false /*continuous*/,
+              n_type, LSTargetType::target_friends, PerturbationType::none, 
+              0 /*perturbation_size*/, tabu_size, convergence_file, 0, begin_time, true /*verbose*/);
+    used_evaluations=ibo.used_evaluations;
+
+    response << cost << " " << used_evaluations; 
+
+  }else if(instruction == "perturbation"){
+    IntensityILS2 ibo;
+    ibo.perturbation(*P, PerturbationType::p_mixed, 3, false /*verbose*/);
+    response << "perturbation ready" << endl;
+  }else if(instruction == "get_fluence_map"){
+    cout << "get_fluence_map" << endl;
+    std::streambuf*     oldbuf  = std::cout.rdbuf( response.rdbuf() ); //para retornar cout..
+	  for(int i=0;i<P->getNStations();i++){
+		  P->printIntensity(i, true);
+      cout << endl ; 
+    }
+    std::cout.rdbuf(oldbuf);
+  }else if(instruction == "get_dose_vector"){
+    vector<vector<double>> Z = ev.get_Z();
+    for(vector<double> organZ : Z){
+      for(double z : organZ)
+        response << z << " ";
+      response << endl;
+    }
+  }else if(instruction == "get_deposition_matrix"){
+    int organ;  message_stream >> organ;
+    int angle;  message_stream >> angle;
+    Matrix& D = volumes[organ].getDepositionMatrix(angle); 
+    for(int k=0; k< D.nb_rows(); k++){
+      for(int b=0; b< D.nb_cols(); b++)
+         response << D(k,b) << " "  ; 
+      response << endl; 
+    }
+
+  }else if(instruction == "quit"){
+    return 0;
   }
-  cout << tot_alpha << " ";
 
+  send(message.second , response.str().c_str() , response.str().size() , 0 ); 
+	close(message.second);
+	cout << "listening..." << endl;
 
-  int nb_apertures=0;
-  for(auto s:stations){
-    string str="dao_ls";
-    int ap=s->get_nb_apertures(str);
-    cout << ap << " " ;
-    nb_apertures+=ap;
-  }
-  cout << nb_apertures << endl;
-
-  return 0;
-
-
-	/*cout << "********   Summary of the results    *********"<< endl;
-	best_eval = F.eval(P,w,Zmin,Zmax);
-	cout << "Final solution: " << best_eval << endl << endl;
-
-  F.generate_voxel_dose_functions ();*/
+  goto server;
 
 
 	return 0;

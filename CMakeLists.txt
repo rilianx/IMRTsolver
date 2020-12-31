@@ -21,7 +21,7 @@ src/solution
 src/ils
 )
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3")
 
 # ADD_DEFINITION(-g -pg)
 
@@ -30,8 +30,10 @@ ADD_LIBRARY(imrt ${SOURCES})
 
 #ADD_EXECUTABLE(TEST main/test.cpp)
 ADD_EXECUTABLE(AS main/aperture_solver.cpp)
+ADD_EXECUTABLE(DAO_ILS main/daoils.cpp)
 ADD_EXECUTABLE(LSA main/leaf-sequencing-algorithm.cpp)
 
 #target_link_libraries(TEST imrt)
 target_link_libraries(AS imrt)
+target_link_libraries(DAO_ILS imrt)
 target_link_libraries(LSA imrt)
