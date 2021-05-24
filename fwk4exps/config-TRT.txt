@@ -4,49 +4,103 @@ mintime = 0.0001
 maxtime = 40
 factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
-max_seeds = 30
-min_seeds = 30
-algo_names = FM1 FM2 mixedLS1 mixedLS2 mixedILS1 mixedILS2
+max_seeds = 10
+min_seeds = 10
+algo_names = mixedILS3
 
+#Best targeted configurations for TRT003 according to irace 
+# Best configurations as commandlines (first number is the configuration ID; same order as above):
+#230  --vsize 0.0004 --min_impr 0.1512 --tabu-size 238
+#205  --vsize 0.0004 --min_impr 0.1654 --tabu-size 223
+#110  --vsize 0.0004 --min_impr 0.1488 --tabu-size 227
+
+#267  --vsize 0.0006 --min_impr 0.3203
+#211  --vsize 0.001 --min_impr 0.3601
+#118  --vsize 0.0005 --min_impr 0.4421
+
+
+[FM1-targeted]
+description = "Targeted tabued sequential neighbourhood with the bi->li movement (local search + perturbations)"
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_simple=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --convergence=FM1-t --targeted --min_impr=0.3 --vsize=0.0005
+outputpos_times = 0
+outputpos_boxes = 0
+
+[FM2-targeted]
+description = "FM-based neighbourhood with the bi->li movement (local search)"
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --convergence=FM2-t --targeted --min_impr=0.3 --vsize=0.0005
+outputpos_times = 0
+outputpos_boxes = 0
+
+[mixedLS3-p0]
+description = "Targeted tabued sequential neighbourhood with the bi->li movement (local search + perturbations)"
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --path=.. --convergence=mixedILS3-p0
+outputpos_times = 0
+outputpos_boxes = 0
+
+[mixedILS30.1]
+description = "Targeted tabued sequential neighbourhood with the bi->li movement (local search + perturbations)"
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --tabu-size=200 --perturbation-size=3 --seed=_SEED  --max-intensity=20 --path=.. --targeted --min_impr=0.1 --vsize=0.002 --convergence=mixedILS3-0.1
+outputpos_times = 0
+outputpos_boxes = 0
+
+
+[A1]
+description = "Aperture-based neighbourhood with the in->ap movement (local search)"
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s dao_ls --ls_sequential=intensity --maxeval=15000 --ls=first --initial-intensity=5 --setup=open_min_k --seed=_SEED  --max-intensity=20 --path=.. --convergence=A1
+outputpos_times = 0
+outputpos_boxes = 0
 
 [FM1]
 description = "FM-based neighbourhood with the bi movement (local search)"
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --ls_simple=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --targeted --min_impr=0.05 --vsize=0.002 --convergence=mixedILS
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_simple=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --convergence=FM1
 outputpos_times = 0
 outputpos_boxes = 0
 
 [FM2]
 description = "FM-based neighbourhood with the bi->li movement (local search)"
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --convergence=mixedILS
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --convergence=FM2
 outputpos_times = 0
 outputpos_boxes = 0
 
 [mixedLS1]
 description = "Sequential neighbourhood with the bi->li movement (local search)"
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --convergence=mixedILS
-outputpos_times = 0
-outputpos_boxes = 0
-
-[mixedLS2]
-description = "Targeted sequential neighbourhood with the bi->li movement (local search)"
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --targeted --min_impr=0.05 --vsize=0.002 --convergence=mixedILS
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --seed=_SEED  --max-intensity=20 --path=.. --convergence=mixedLS1
 outputpos_times = 0
 outputpos_boxes = 0
 
 [mixedILS1]
-description = "Targeted sequential neighbourhood with the bi->li movement (local search + perturbations)"
+description = "Sequential neighbourhood with the bi->li movement (local search + perturbations)"
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --perturbation-size=3 --seed=_SEED  --max-intensity=20 --path=.. --targeted --min_impr=0.05 --vsize=0.002 --convergence=mixedILS
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --perturbation-size=3 --seed=_SEED  --max-intensity=20 --path=.. --convergence=mixedILS1
 outputpos_times = 0
 outputpos_boxes = 0
 
 [mixedILS2]
-description = "Targeted tabued sequential neighbourhood with the bi->li movement (local search + perturbations)"
+description = "Tabued sequential neighbourhood with the bi->li movement (local search + perturbations)"
 exec = "../AS"
-params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --tabu-size=200 --perturbation-size=3 --seed=_SEED  --max-intensity=20 --path=.. --targeted --min_impr=0.05 --vsize=0.002 --convergence=mixedILS
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --tabu-size=200 --perturbation-size=3 --seed=_SEED  --max-intensity=20 --path=.. --convergence=mixedILS2
 outputpos_times = 0
 outputpos_boxes = 0
+
+[mixedILS3]
+description = "Targeted tabued sequential neighbourhood with the bi->li movement (local search + perturbations)"
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s mixedILS --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --tabu-size=200 --perturbation-size=3 --seed=_SEED  --max-intensity=20 --path=.. --targeted --min_impr=0.05 --vsize=0.002 --convergence=mixedILS3
+outputpos_times = 0
+outputpos_boxes = 0
+
+[FMILS2]
+description = "Targeted tabued FM neighbourhood with the bi->li movement (local search + perturbations)"
+exec = "../AS"
+params = --file-dep=_INSTANCE  -s ibo_ls --ls_sequential=aperture --maxeval=15000 --ls=first --setup=open_min --tabu-size=200 --perturbation-size=3 --seed=_SEED  --max-intensity=20 --path=.. --targeted --min_impr=0.05 --vsize=0.002 --convergence=FMILS2
+outputpos_times = 0
+outputpos_boxes = 0
+

@@ -22,7 +22,9 @@ void Volume::set_data(string file, int max_voxels_per_organ, list<int> angles) {
   stringstream ss;
   double aux1, aux2;
   vector <pair<double,double> >::iterator it;
+
   if(angles.size()==0) angles=collimator.getAngles();
+
 
   //nb_beamlets=-1;
   nb_voxels=-1;
@@ -52,6 +54,7 @@ void Volume::set_data(string file, int max_voxels_per_organ, list<int> angles) {
   ss.str(lines[0]);
 
   for(auto angle:angles){
+    cout << angle << endl;
     D[angle]=Matrix(nb_voxels, collimator.getNangleBeamlets(angle));
   }
 
@@ -162,6 +165,8 @@ bool Volume::set_data(string file, vector<string> angle_coord_files){
 
     //print_deposition();
 }*/
+
+
 
 Matrix& Volume::getDepositionMatrix(int angle){
   return(D[angle]);

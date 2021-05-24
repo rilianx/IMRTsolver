@@ -491,20 +491,32 @@ namespace imrt {
 
 
   double Station::intensityUp(int i, int j){
-    if(I(i,j)==-1) return I(i,j);
+    if(I(i,j)==-1 || I(i,j) == max_intensity) return I(i,j);
+    if(int2nb.size()==0) return I(i,j) + 1.0;
+    
     if(getMaxIntensityRow(i) == int(I(i,j)+0.5) ||
         (j-1>=0 && I(i,j-1)>I(i,j)) || (j+1<I.nb_cols() && I(i,j+1)>I(i,j)) ){
+
+
             //next available intensity
-            if(I(i,j)==0) return int2nb.begin()->first;
+            double ret = -1.0;
+            if(I(i,j)==0) ret= int2nb.begin()->first;
             else{
               map< int, int >::iterator it = int2nb.find(I(i,j)+0.5); it++;
               if(it!=int2nb.end())
-                return it->first;
+                ret= it->first;
+              
             }
+
+            //condición para evitar salto demasiado grande
+            if(ret - I(i,j) > 2 && int2nb.size() < max_apertures) ret = I(i,j) + 1.0;
+
+            if(ret!= -1.0) return ret; 
     }
 
     if(int2nb.size() < max_apertures && getMaxIntensityRow(i) == int(I(i,j)+0.5) && I(i,j)<getMaxIntensity())
     	return I(i,j) + 1.0; // (getMaxIntensity()-I(i,j)+1)/2; // 1.0;
+    
 
 
 
@@ -616,6 +628,8 @@ namespace imrt {
 
   list< pair< int, double > > Station::change_intensity(double intensity, double delta){
 	  list< pair< int, double > > diff;
+
+    if(intensity==max_intensity) return diff;
 
 	  for (int i=0; i<collimator.getXdim();i++)
 		  for (int j=0; j<collimator.getYdim(); j++)

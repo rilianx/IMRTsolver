@@ -52,7 +52,7 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan 
     if(b.first > 0) {
       intensity=s->intensityUp(i,j);
         NeighborMove move = {1,b.second.first,0,+1,b.second.second};
-        if(b.first>=min_improvement) best_moves.push_back(move);
+        if(b.first>=abs(min_improvement)) best_moves.push_back(move);
         else shuffled_moves.push_back(move);
 
         move = {1,b.second.first,0,-1,b.second.second};
@@ -60,7 +60,7 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan 
     }else if(b.first <= 0) {
       intensity=s->intensityDown(i,j);
         NeighborMove move = {1,b.second.first,0,-1,b.second.second};
-        if(b.first<=-min_improvement) best_moves.push_back(move);
+        if(b.first<=-abs(min_improvement)) best_moves.push_back(move);
         else shuffled_moves.push_back(move);
 
         move = {1,b.second.first,0,+1,b.second.second};
@@ -68,7 +68,8 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan 
     }
   }
 
-  //std::random_shuffle ( best_moves.begin(), best_moves.end(), myrandom);
+  if(min_improvement < 0.0)
+    std::random_shuffle ( best_moves.begin(), best_moves.end(), myrandom);
   std::random_shuffle ( shuffled_moves.begin(), shuffled_moves.end(), myrandom);
   best_moves.insert(best_moves.end(), shuffled_moves.begin(), shuffled_moves.end());
 

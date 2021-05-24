@@ -264,6 +264,8 @@ int main(int argc, char** argv){
                                  "(if it is executed from other directory)", {"path"});
   args::Flag _plot               (io_opt, "bool",
                                  "Generate plot and save in file", {"plot"});
+  args::Flag _verbose               (io_opt, "bool",
+                                 "Verbose", {"verbose"});
 
   // Output file parameters
   args::Flag _irace (io_opt, "bool",
@@ -271,6 +273,8 @@ int main(int argc, char** argv){
 
   args::ValueFlag<string> _convergence_file (io_opt, "string",
                                  "File to output convergence", {"convergence"});
+
+                                 
 
 	try
 	{
@@ -610,13 +614,13 @@ int main(int argc, char** argv){
     ils = new IntensityILS2();
     cost = ils->iteratedLocalSearch(P, maxtime, maxeval, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
-				    tabu_size, convergence_file);
+				    tabu_size, convergence_file, 0, clock(), _verbose);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="ibo+dao") {
     ils = new IntensityILS2();
     cost = ils->iteratedLocalSearch(P, maxtime, ibo_evals, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
-				    tabu_size, convergence_file);
+				    tabu_size, convergence_file, 0, clock(), _verbose);
     cout << "eval:" << P.eval() << endl;
     P.generateApertures();
 
@@ -640,7 +644,7 @@ int main(int argc, char** argv){
     cost = mixed_ils.iteratedLocalSearch(P, maxtime, maxeval, ls_type, ls_type, continuous,
 					 neighborhood, neighborhood_DAO, target_type,
 					 LSTargetType::target_none, perturbation_type, perturbation_size,
-					 tabu_size, convergence_file);
+					 tabu_size, convergence_file, 0, clock(), _verbose);
     used_evaluations = mixed_ils.total_evals;
   }
 

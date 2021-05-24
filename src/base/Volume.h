@@ -59,6 +59,7 @@ namespace imrt {
       void print_deposition();
       void print_coordinates();
       int getNbVoxels() {return nb_voxels;}
+      bool valid_angle(int angle){ return (D.find(angle) != D.end()); }
       //void print_r_active_size();
 
       Matrix& getDepositionMatrix(int angle);

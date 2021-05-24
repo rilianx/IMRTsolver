@@ -19,6 +19,8 @@ void EvaluationFunction::create_voxel2beamlet_list(vector<Volume>& volumes, cons
 	for (int i=0;i<collimator.getNbAngles();i++){
 		for(int o=0; o<nb_organs; o++){
 			 int angle = collimator.getAngle(i);
+			 if( !volumes[o].valid_angle(angle)) continue;
+			 
 			 const Matrix&  D = volumes[o].getDepositionMatrix(angle);
 			 for(int k=0; k<nb_voxels[o]; k++){
 				 for(int b=0; b<collimator.getNangleBeamlets(angle); b++)

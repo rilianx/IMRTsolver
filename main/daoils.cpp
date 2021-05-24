@@ -129,6 +129,41 @@ set<int> get_angles(string file, int n){
   return angles;
 }
 
+list<int> get_angles(string str, string& organ_name) 
+{ 
+    list<int> angles;
+    std::replace(str.begin(), str.end(), '_', ' ');
+    std::replace(str.begin(), str.end(), '-', ' ');
+    std::replace(str.begin(), str.end(), '/', ' ');
+    stringstream ss;     
+  
+    /* Storing the whole string into string stream */
+    ss << str; 
+  
+    /* Running loop till the end of the stream */
+    string temp; 
+    int found; 
+    bool flag=false;
+    while (!ss.eof()) { 
+  
+        /* extracting word by word from stream */
+        ss >> temp; 
+  
+        /* Checking the given word is integer or not */
+        if (stringstream(temp) >> found) {
+            angles.push_back(found); 
+            flag=true;
+        }else if(flag==true){
+          stringstream(temp) >> organ_name;
+          //flag=false;
+        }
+  
+        /* To save from space at the end of string */
+        temp = ""; 
+    } 
+    return angles;
+} 
+
 
 vector<Volume> createVolumes (string organ_filename, Collimator& collimator, int max_voxels){
   ifstream organ_file(organ_filename.c_str(), ios::in);
@@ -143,18 +178,30 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator, int
   cout << "##Reading volume files." << endl;
   //getline(organ_file, line); //--> angles
 
-
+  string organ_name = "";
+  bool read=false;
   for(int j=0;j<3;j++){
+    cout << "new organ" << endl;
     Volume v(collimator, "");
-    int k=0;
-    while (k<70) {
-      getline(organ_file, line);
-      if (line.empty()) continue;
+  
+    while (true) {
+      if(!read && !getline(organ_file, line)) break;
+      string tmp;
+      list<int> angles = get_angles(line, tmp);
+      cout << tmp << endl;
       cout << "##  " << line << endl;
-      list<int> angles;
-      for(int i=0;i<350;i+=70) angles.push_back(i+k);
-      v.set_data(line, max_voxels, angles);
-      k+=5;
+
+      if(organ_name=="" || tmp == organ_name){
+        organ_name=tmp;
+        v.set_data(line, max_voxels, angles);
+        read=false;
+      }else {
+        organ_name=tmp;
+        read=true;
+        break;
+      }
+
+
     }
     volumes.push_back(v);
   }
@@ -429,6 +476,30 @@ int main(int argc, char** argv){
     std::streambuf*     oldbuf  = std::cout.rdbuf( response.rdbuf() ); //para retornar cout..
 	  for(int i=0;i<P->getNStations();i++){
 		  P->printIntensity(i, true);
+      cout << endl ; 
+    }
+    std::cout.rdbuf(oldbuf);
+  }else if(instruction == "get_impact_map"){
+    cout << "get_impact_map" << endl;
+    std::streambuf*     oldbuf  = std::cout.rdbuf( response.rdbuf() ); //para retornar cout..
+    multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
+    P->getEvaluationFunction()->best_beamlets(*P, vsize);
+    map < pair<int,int>, double > beam2impact;
+    for( auto b : beamlets)  beam2impact[b.second] = b.first;
+
+	  for(int k=0;k<P->getNStations();k++){
+        for (int i=0; i<collimator.getXdim();i++) {
+			    for (int j=0; j<collimator.getYdim(); j++) {
+            Station* s = P->get_station(k);
+            
+            if (s->pos2beam.find(make_pair(i,j))!=s->pos2beam.end()){
+              int beam = s->pos2beam[make_pair(i,j)];
+              if( beam2impact.find(make_pair(k,beam))!= beam2impact.end()  && beam2impact[make_pair(k,beam)] > abs(min_improvement))
+                cout << beam2impact[make_pair(k,beam)] << " ";
+              else cout << "-1 ";
+            }
+			    }
+		  }
       cout << endl ; 
     }
     std::cout.rdbuf(oldbuf);

@@ -33,6 +33,7 @@ namespace imrt {
     coord_file.close();
     n_angles=coord_files.size();
     initializeCoordinates(coord_files);
+    
     cout << "##  Read " << coord_files.size()<< " files."<< endl;
   }
 
