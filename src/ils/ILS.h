@@ -93,25 +93,17 @@ public:
 
   virtual ~ILS() { };
 
-  virtual double iLocalSearch(Plan& P,double max_time, bool verbose=true) {
-    cout << "Not implemented "<< endl;
-    return 0.0;
-  };
+  #virtual double iLocalSearch(Plan& P,double max_time, bool verbose=true) {
+  #  cout << "Not implemented "<< endl;
+  #  return 0.0;
+  #};
 
-  virtual double aLocalSearch(Plan& P,  double max_time, bool verbose=true) {
-    cout << "Not implemented "<< endl;
-    return 0.0;
-  };
+  #virtual double aLocalSearch(Plan& P,  double max_time, bool verbose=true) {
+  #  cout << "Not implemented "<< endl;
+  #  return 0.0;
+  #};
 
-/*
-  virtual pair<bool, pair<Station*, int>> getLSBeamlet(Plan& P){
-	  return P.getLSBeamlet(bsize, vsize);
-  };
 
-  virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(Plan& P){
-    return P.getBestLSBeamlet(bsize, vsize);
-  };
-*/
   double perturbation(Plan& current_plan, PerturbationType perturbation_type,
                               int perturbation_size, bool verbose=true) {
     vector <NeighborMove> neighborhood;
