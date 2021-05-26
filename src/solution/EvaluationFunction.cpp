@@ -214,7 +214,7 @@ EvaluationFunction::get_sorted_beamlets(Plan& p){
 }
 
 double EvaluationFunction::get_delta_eval(int angle, int b, double delta_intensity,
-	vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,int n_voxels) const{
+	const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax,int n_voxels) const{
 
 	 multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(angle).at(b);
 	 double delta_F=0.0;
@@ -249,8 +249,8 @@ double EvaluationFunction::get_delta_eval(int angle, int b, double delta_intensi
 }
 
 double EvaluationFunction::get_delta_eval(list< pair< int, double > >& diff, double angle,
-                                          vector<double>& w, vector<double>& Zmin,
-                                          vector<double>& Zmax,int n_voxels) const{
+                                          const vector<double>& w, const vector<double>& Zmin,
+                                          const vector<double>& Zmax,int n_voxels) const{
 
   double delta_F=0.0;
   int b;

@@ -29,7 +29,7 @@ ADD_LIBRARY(imrt ${SOURCES})
 
 
 #ADD_EXECUTABLE(TEST src/main/test.cpp)
-ADD_EXECUTABLE(AS src/main/aperture_solver.cpp)
+ADD_EXECUTABLE(AS src/main/solver.cpp)
 ADD_EXECUTABLE(DAO_ILS src/main/daoils.cpp)
 
 #target_link_libraries(TEST imrt)

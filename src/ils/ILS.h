@@ -427,8 +427,8 @@ public:
         //Get the moves in the neighborhood (this is possible because the moves are not that many!)
         neighborhood = getNeighborhood(current_plan, current_neighborhood, ls_target);
         id_neighbor = 0;
-	n_neighbors = 0;
-	generate_neighborhood = false;
+	      n_neighbors = 0;
+	      generate_neighborhood = false;
       }
 
       improvement = false;
@@ -442,24 +442,17 @@ public:
         move = neighborhood[id_neighbor];
 
         //Counter updates
-        n_neighbors++;
-        id_neighbor++;
-        if (id_neighbor >= neighborhood.size())
-          id_neighbor = 0;
-
-//	cout << "    neighbor: " << n_neighbors  << " " << id_neighbor << "(" << move.station_id <<
- //              "," << move.aperture_id << "," <<move.beamlet_id << ","<< move.action << "); ";
-
+        n_neighbors++; id_neighbor++;
+        if (id_neighbor >= neighborhood.size()) id_neighbor = 0;
 
         //Skip neighbor if its marked as tabu
-        if (tabu_size > 0 && isTabu(move, tabu_list)) {
-   //       cout << " tabu" << endl;
-	  continue;
-	}
+        if (tabu_size > 0 && isTabu(move, tabu_list))  continue;
 
-        //calcular delta_eval en vez de aplicar y luego deshacer...
-
+        
         list<pair<int, double> > diff;
+        //list<pair<int, double> > changes = get_changes_in_fm(move); //changes in fluence_map
+        //double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
+
         double delta_eval = get_delta_eval(current_plan, move, diff);
         Station *s = current_plan.get_station(move.station_id);
 

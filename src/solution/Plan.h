@@ -60,11 +60,16 @@ public:
     s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
   }
 
-	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999){
+
+	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999) const{
 	  return ev.get_delta_eval(s.getAngle(), b, intensity, w, Zmin, Zmax, n_voxels);
 	}
 
-	double get_delta_eval (Station& s, list< pair< int, double > >& diff, int n_voxels=999999){
+	double get_delta_eval (int station, list< pair< int, double > >& diff, int n_voxels=999999) const{
+		return get_delta_eval(*get_station(station), diff, n_voxels);
+	};
+
+	double get_delta_eval (Station& s, list< pair< int, double > >& diff, int n_voxels=999999) const{
 	  return ev.get_delta_eval(diff, s.getAngle(), w, Zmin, Zmax, n_voxels);
 	};
 
@@ -138,8 +143,8 @@ public:
 		return &ev;
 	}
 
-	Station* get_station(int i){
-	    list<Station*>::iterator s= stations.begin();
+	Station* get_station(int i) const{
+	    list<Station*>::const_iterator s= stations.begin();
 	    advance(s,i);
 	    return *s;
 	}
