@@ -470,7 +470,7 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
             //apply_move(move);
             current_eval = current_plan.incremental_eval(*s, diff);
             
-            current_plan.clearLast();
+            current_plan.clearLast(); 
 
         if(verbose)
             cout << "    neighbor: " << n_neighbors  << "; "
@@ -510,7 +510,7 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
           s->diff_undo(diff);
 
 
-	  // Add the non-improving movement as tabu
+	        // Add the non-improving movement as tabu
           if (tabu_size > 0)
             addTabu(tabu_list, move, tabu_size);
         }
@@ -523,7 +523,7 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
       }
 
       if (improvement) {
-	time_end = clock();
+	      time_end = clock();
         used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
         if (t_file.is_open())
            t_file << used_evaluations << ";" << used_time << ";" << current_eval << "\n";
@@ -532,10 +532,10 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
 
       //Check if imixed neighborhood
       if (!improvement && ls_neighborhood==NeighborhoodType::imixed &&
-	  current_neighborhood==NeighborhoodType::intensity){
-    	  ls_neighborhood=NeighborhoodType::mixed;
-    	  improvement = true;
-	  generate_neighborhood = true;
+	      current_neighborhood==NeighborhoodType::intensity){
+    	    ls_neighborhood=NeighborhoodType::mixed;
+    	    improvement = true;
+	        generate_neighborhood = true;
       }
 
       // Check sequential neighborhood
