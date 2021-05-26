@@ -167,6 +167,9 @@ public:
 	  return applyMove (current_plan, move);
   }
 
+
+virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move) const = 0;
+
  virtual double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff) = 0;
 
   virtual double applyMove (Plan & current_plan, NeighborMove move) = 0;
@@ -451,7 +454,7 @@ public:
         
         //list<pair<int, double> > changes = get_changes_in_fm(move); //changes in fluence_map
         //double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
-        
+
         list<pair<int, double> > diff;
 
         double delta_eval = get_delta_eval(current_plan, move, diff);
