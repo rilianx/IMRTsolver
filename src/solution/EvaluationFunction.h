@@ -112,17 +112,6 @@ public:
   double get_delta_eval(list< pair< int, double > >& diff, double angle,
                         const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax, int n_voxels=999999) const;
 
-  double get_impact_beamlet(int angle, int b);
-
-  //return a kind of evaluation of the beamlets: (impact o the tumor)/(impact to the organs)
-  //unlike get_impact_beamlet, it is not based on the evaluation function (only Z and constraints)
-  double get_ratio_beamlet(vector<double>& w,
-  	vector<double>& Zmin, vector<double>& Zmax, int angle, int b);
-
-
-
-	void undo_last_eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
-
 	//Update D (partial derivative of F w.r.t. the voxels)
 	//And resorts the set of voxels
 	//Must be called every time that Z[o][k] changes
@@ -137,31 +126,10 @@ public:
 
 	//Return the beamlets sorted by impact on F taking into account the nv worst voxels.
 	//Each returned beamlet is a pair eval,(station, beamlet)
-  multimap < double, pair<int, int>, MagnitudeCompare >
-  best_beamlets(Plan& p, double vsize=0.01);
+  	multimap < double, pair<int, int>, MagnitudeCompare > sorted_beamlets(Plan& p, double vsize=0.01);
 
-  //returns a map of beamlets sorted by their impact in F (derivative, (station, beamlet))
-	multimap < double, pair<Station*, int>, MagnitudeCompare > get_sorted_beamlets(Plan& p);
 
 	void generate_linear_system(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
-
-	//update Z by increasing the intensity of beamlet (angle,b) in delta_intensity
-	//if return_if_unfeasible=true, then it returns when some organ voxel surpasses Zmax
-	//return false if some voxel surpasses Zmax
-	bool Zupdate(int angle, int b, double delta_intensity, bool return_if_unfeasible,
-				 vector<double>& Zmax);
-
-	//regresa al savepoint para Z
-	void Zrollback();
-
-	void Zsavepoint(){
-		Z_diff.clear();
-	}
-
-	pair<double,double> get_value_cost(int angle, int b, vector<double>& Zmin, vector<double>& Zmax);
-
-	void get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, vector<double>& Zmax,
-			multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_set);
 
 	static int n_evaluations;
 
@@ -188,16 +156,10 @@ private:
 
 	double F;
 
-    //Evaluation of F before the last incremental evaluation
-	double prev_F;
-
   //Extra data
 	// all the tumor voxels sorted by derivative (may be useful for algorithms)
+	// TODO:DEBERIA SER MULTISET??
    set< pair< double, pair<int,int> >, MagnitudeCompare >  voxels;
-
-  //Beamlets [angle][b] sorted by impact (partial derivative magnitude)
-  //multimap < double, pair<int, int>, MagnitudeCompare > sorted_beamlets;
-   unordered_map < int, unordered_map <int, double> > beamlet_impact;
 
   //voxels[angle][o,k] --> beamlet list (b)
   unordered_map < int, unordered_map < pair<int, int>, list <int> , pair_hash > > voxel2beamlet_list;
@@ -209,9 +171,7 @@ private:
 	//How much increase/decrease F increasing the voxel in one unity.
 	vector< vector<double> > D;
 
-  //Store the changes in Z (dose distribution) after an incremental evaluation
-	//It is used to undo the changes by using the undo_last_eval function
-	list < pair < pair<int,int>, double > > Z_diff;
+
 
 
 };

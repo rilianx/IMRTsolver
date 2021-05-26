@@ -34,7 +34,7 @@ void EvaluationFunction::create_voxel2beamlet_list(vector<Volume>& volumes, cons
 	cout << "maps created" << endl;
 }
 
-EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator& collimator) : prev_F(0.0), F(0.0),
+EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator& collimator) : F(0.0),
 	volumes(volumes), nb_organs(volumes.size()), nb_voxels(volumes.size()), voxel_dose(volumes.size(), vector<double>(150)) {
   n_volumes =volumes.size();
 	for(int i=0; i<nb_organs; i++){
@@ -136,8 +136,6 @@ double EvaluationFunction::eval(const Plan& p, vector<double>& w, vector<double>
 		F+=pen/nb_voxels[o];
 	}
 
-	//for(auto b:beamlet_impact)
-		//cout << b.first.first << "," << b.first.second << ":" << b.second << " " << endl;
 
 	n_evaluations++;
 	return F;
@@ -158,60 +156,6 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 			voxels.insert(make_pair(D[o][k],make_pair(o,k)));
 }
 
-double EvaluationFunction::get_ratio_beamlet(vector<double>& w,
-	vector<double>& Zmin, vector<double>& Zmax, int angle, int b){
-			double ev=0;
-			multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
-			double T=0.0,O=0.0;
-			for(auto voxel:voxels){
-				int o=voxel.second.first;
-				int k=voxel.second.second;
-				const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
-
-				if(Zmin[o]>0){
-					 T += max(Dep(k,b) * w[o]*(1.0 - Z[o][k]/Zmin[o])/nb_voxels[o],0.0);
-				}else
-					 O += Dep(k,b) * w[o]*(1.0 + Z[o][k]/Zmax[o])/nb_voxels[o];
-
-			}
-			//cout << T << "," << O << endl;
-			return (T/O);
-}
-
-double EvaluationFunction::get_impact_beamlet(int angle, int b){
-			double ev=0;
-			multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
-			for(auto voxel:voxels){
-				int o=voxel.second.first;
-				int k=voxel.second.second;
-				const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
-				ev += D[o][k] * Dep(k,b);
-			}
-			return ev;
-}
-
-multimap < double, pair<Station*, int>, MagnitudeCompare >
-EvaluationFunction::get_sorted_beamlets(Plan& p){
-	//the sorted set of beamlets
-	multimap < double, pair<Station*, int>, MagnitudeCompare > sorted_set;
-
-	double max_ev=0.0;
-	for(auto s:p.get_stations()){
-		for(int b=0; b<s->getNbBeamlets(); b++){
-			double ev=0; int i=0;
-			for(auto voxel:voxels){
-				int o=voxel.second.first;
-				int k=voxel.second.second;
-				const Matrix&  Dep = s->getDepositionMatrix(o);
-				ev += D[o][k] * Dep(k,b);
-			}
-			if(ev==0) continue;
-			sorted_set. insert(make_pair (ev,  make_pair(s,b)));
-		}
-	}
-
-	return sorted_set;
-}
 
 double EvaluationFunction::get_delta_eval(int angle, int b, double delta_intensity,
 	const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax,int n_voxels) const{
@@ -299,7 +243,6 @@ double EvaluationFunction::get_delta_eval(list< pair< int, double > >& diff, dou
 double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
 
-  prev_F=F; Z_diff.clear();
   double delta_F=0.0;
 
   //for each voxel we compute the change produced by the modified beamlets
@@ -343,8 +286,7 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 		double prev_Dok=D[o][k];
 		update_sorted_voxels(w, Zmin, Zmax, o, k);
 
-		//we save the last changes (see undo_last_eval)
-		Z_diff.push_back(make_pair(make_pair(o,k),delta));
+
 	}
   }
 
@@ -354,25 +296,8 @@ double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 
 }
 
-void EvaluationFunction::undo_last_eval(vector<double>& w,
-	vector<double>& Zmin, vector<double>& Zmax){
-
-	for(auto z:Z_diff){
-		int o=z.first.first;
-		int k=z.first.second;
-		Z[o][k]-=z.second;
-
-		double prev_Dok=D[o][k];
-		update_sorted_voxels(w, Zmin, Zmax, o, k);
-	}
-	F=prev_F;
-	prev_F=F; Z_diff.clear();
-}
-
-
-
 multimap < double, pair<int, int>, MagnitudeCompare >
-EvaluationFunction::best_beamlets(Plan& p, double vsize){
+EvaluationFunction::sorted_beamlets(Plan& p, double vsize){
 	int tot_voxels=0;
 	for(int o=0; o<nb_organs; o++) tot_voxels+=nb_voxels[o];
 
@@ -440,71 +365,5 @@ void EvaluationFunction::generate_voxel_dose_functions (){
 	}
 }
 
-bool EvaluationFunction::Zupdate(int angle, int b, double delta_intensity, bool return_if_unfeasible,
-			vector<double>& Zmax){
-
-	multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
-	bool feasible = true;
-	 for(auto voxel:voxels){
-		 int o=voxel.second.first, k=voxel.second.second;
-		 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
-		 double delta = Dep(k,b)*(delta_intensity);
-		 if(delta==0.0) continue;
-
-		 if(Z[o][k] + delta > Zmax[o]){
-			 feasible=false;
-			 if(return_if_unfeasible) return feasible;
-		 }
-
-		 Z[o][k] += delta;
-		 Z_diff.push_back(make_pair(make_pair(o,k),delta));
-	 }
-
-	 return feasible;
-}
-
-void EvaluationFunction::Zrollback(){
-	for(auto z:Z_diff){
-		int o=z.first.first;
-		int k=z.first.second;
-		Z[o][k]-=z.second;
-	}
-	Z_diff.clear();
-}
-
-pair<double,double> EvaluationFunction::get_value_cost(int angle, int b, vector<double>& Zmin, vector<double>& Zmax){
-	multimap<double, pair<int,int> > voxels = beamlet2voxel_list[angle][b];
-	double cost=0.0, value=0.0;
-	 for(auto voxel:voxels){
-		 int o=voxel.second.first, k=voxel.second.second;
-		 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
-		 if(Zmin[o]==0.0){//organ
-			 if(Zmax[o]-Z[o][k] == 0) cost=1e20;
-			 else{
-				 double c=Dep(k,b)/(Zmax[o]-Z[o][k]);
-			 	 if(c>cost) cost=c;
-			 }
-		 }else
-			 if(Z[o][k] < Zmin[o]) value += Dep(k,b);
-	 }
-
-	 return make_pair(value,cost);
-}
-
-void EvaluationFunction::get_vc_sorted_beamlets(Plan& p, vector<double>& Zmin, vector<double>& Zmax,
-		multimap < double, pair<Station*, int>, MagnitudeCompare >& sorted_set){
-	//the sorted set of beamlets
-
-	double max_ev=0.0;
-	for(auto s:p.get_stations()){
-		for(int b=0; b<s->getNbBeamlets(); b++){
-			pair<double,double> value_cost=get_value_cost(s->getAngle(), b, Zmin, Zmax);
-            double ev=value_cost.first/value_cost.second;
-			if(ev==0) continue;
-			sorted_set.insert(make_pair (ev,  make_pair(s,b)));
-		}
-	}
-
-}
 
 } /* namespace imrt */

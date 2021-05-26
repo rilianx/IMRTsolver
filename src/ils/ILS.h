@@ -451,7 +451,6 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list))  continue;
 
-        
         //list<pair<int, double> > changes = get_changes_in_fm(move); //changes in fluence_map
         //double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
 

@@ -483,7 +483,7 @@ int main(int argc, char** argv){
     cout << "get_impact_map" << endl;
     std::streambuf*     oldbuf  = std::cout.rdbuf( response.rdbuf() ); //para retornar cout..
     multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
-    P->getEvaluationFunction()->best_beamlets(*P, vsize);
+    P->getEvaluationFunction()->sorted_beamlets(*P, vsize);
     map < pair<int,int>, double > beam2impact;
     for( auto b : beamlets)  beam2impact[b.second] = b.first;
 

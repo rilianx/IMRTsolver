@@ -286,12 +286,6 @@ double Plan::closeRow(int station, int aperture, int row, bool side,
     last_diff.clear();
   };
 
-  //Lepi's version
-  void Plan::undoLast2() {
-    last_changed->revert(last_diff);
-    ev.undo_last_eval(w,Zmin,Zmax);
-  }
-
   const list<Station*>& Plan::get_stations() const{
     return stations;
   }

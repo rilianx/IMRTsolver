@@ -42,7 +42,7 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan 
   vector < NeighborMove > best_moves;
   vector < NeighborMove > shuffled_moves;
   multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
-    P.getEvaluationFunction()->best_beamlets(P, vsize);
+    P.getEvaluationFunction()->sorted_beamlets(P, vsize);
   bool first=true;
   for(auto b : beamlets){
     Station *s = P.get_station(b.second.first);
