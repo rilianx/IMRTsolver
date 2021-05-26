@@ -7,10 +7,10 @@ project(imrt)
 
 set(SOURCES src/solution/EvaluationFunction.cpp src/solution/Plan.cpp src/solution/Station.cpp
             src/base/Collimator.cpp src/tools/Matrix.cpp src/base/Volume.cpp src/ils/ApertureILS.cpp
-            src/ils/IntensityILS.cpp src/ils/IntensityILS2.cpp src/ils/IntensityGenerator.cpp)
+            src/ils/IntensityILS2.cpp src/ils/IntensityGenerator.cpp)
 set(HEADERS src/solution/EvaluationFunction.h src/solution/Plan.h src/solution/Station.h
             src/base/Collimator.h src/base/Volume.h src/ils/ILS.h src/ils/ApertureILS.h
-            src/ils/IntensityILS.h src/ils/IntensityILS2.h src/ils/IntensityGenerator.h)
+            src/ils/IntensityILS2.h src/ils/IntensityGenerator.h)
 
 INCLUDE_DIRECTORIES(
 src
@@ -28,12 +28,10 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3")
 ADD_LIBRARY(imrt ${SOURCES})
 
 
-#ADD_EXECUTABLE(TEST main/test.cpp)
-ADD_EXECUTABLE(AS main/aperture_solver.cpp)
-ADD_EXECUTABLE(DAO_ILS main/daoils.cpp)
-ADD_EXECUTABLE(LSA main/leaf-sequencing-algorithm.cpp)
+#ADD_EXECUTABLE(TEST src/main/test.cpp)
+ADD_EXECUTABLE(AS src/main/aperture_solver.cpp)
+ADD_EXECUTABLE(DAO_ILS src/main/daoils.cpp)
 
 #target_link_libraries(TEST imrt)
 target_link_libraries(AS imrt)
 target_link_libraries(DAO_ILS imrt)
-target_link_libraries(LSA imrt)
