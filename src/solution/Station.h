@@ -217,10 +217,10 @@ public:
   list< pair< int, double > > increaseIntensity_repair(int beam, double intensity, int ratio=0);
 
   //return the next intensity level of the cell (if it is feasible)
-  double intensityUp(int i, int j);
+  double next_intensity(int i, int j) const;
 
   //return the previous intensity level of the cell (if it is feasible)
-  double intensityDown(int i, int j);
+  double prev_intensity(int i, int j) const;
 
   //increase (or decrease) the intesities equal to intensity to intensity+1
   //return a list with the changes to be used by the incremental evaluation
@@ -265,7 +265,7 @@ public:
   bool canReduceIntensity(int beam);
   void setApertureIntensity(int aperture, double value);
   double getApertureIntensity(int aperture);
-  int getMaxIntensity();
+  int getMaxIntensity() const;
 
   list<pair <int,double>> closeRow(int row, int aperture, bool lside);
   list <pair<int,double>> openRow(int row, int aperture, bool lside);

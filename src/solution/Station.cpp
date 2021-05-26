@@ -490,7 +490,7 @@ namespace imrt {
   }
 
 
-  double Station::intensityUp(int i, int j){
+  double Station::next_intensity(int i, int j) const{
     if(I(i,j)==-1 || I(i,j) == max_intensity) return I(i,j);
     if(int2nb.size()==0) return I(i,j) + 1.0;
     
@@ -502,7 +502,7 @@ namespace imrt {
             double ret = -1.0;
             if(I(i,j)==0) ret= int2nb.begin()->first;
             else{
-              map< int, int >::iterator it = int2nb.find(I(i,j)+0.5); it++;
+              map< int, int >::const_iterator it = int2nb.find(I(i,j)+0.5); it++;
               if(it!=int2nb.end())
                 ret= it->first;
               
@@ -523,12 +523,12 @@ namespace imrt {
     return I(i,j);
   }
 
-  double Station::intensityDown(int i, int j){
+  double Station::prev_intensity(int i, int j) const{
     if(I(i,j)<=0) return I(i,j);
     if(j==0 || j==I.nb_cols()-1 ||
         I(i,j-1)<I(i,j) || I(i,j+1)<I(i,j) ){
             //previous available intensity
-            map< int, int >::iterator it = int2nb.find(I(i,j)+0.5);
+            map< int, int >::const_iterator it = int2nb.find(I(i,j)+0.5);
             if(it!=int2nb.begin()){
               it--; return it->first;
             }else
@@ -620,7 +620,7 @@ namespace imrt {
 	  return diff;
   }
 
-  list< pair< int, double > > Station::get_changes_intensity_move(double intensity, double delta){
+  list< pair< int, double > > Station::get_changes_intensity_move(double intensity, double delta) const{
 	  list< pair< int, double > > changes;
 
     if(intensity==max_intensity) return changes;
@@ -632,7 +632,7 @@ namespace imrt {
           changes.push_back(make_pair(b, delta));
         }
 
-	  return diff;
+	  return changes;
   }
 
   list< pair< int, double > > Station::change_intensity(double intensity, double delta){
@@ -1129,7 +1129,7 @@ namespace imrt {
     return(intensity[aperture]);
   };
 
-  int Station::getMaxIntensity() {
+  int Station::getMaxIntensity() const {
     return(max_intensity);
   };
 

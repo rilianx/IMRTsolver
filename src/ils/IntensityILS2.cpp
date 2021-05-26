@@ -50,7 +50,7 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan 
     int i=ij.first, j=ij.second;
     double intensity=s->I(i,j);
     if(b.first > 0) {
-      intensity=s->intensityUp(i,j);
+      intensity=s->next_intensity(i,j);
         NeighborMove move = {1,b.second.first,0,+1,b.second.second};
         if(b.first>=abs(min_improvement)) best_moves.push_back(move);
         else shuffled_moves.push_back(move);
@@ -58,7 +58,7 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan 
         move = {1,b.second.first,0,-1,b.second.second};
         shuffled_moves.push_back(move);
     }else if(b.first <= 0) {
-      intensity=s->intensityDown(i,j);
+      intensity=s->prev_intensity(i,j);
         NeighborMove move = {1,b.second.first,0,-1,b.second.second};
         if(b.first<=-abs(min_improvement)) best_moves.push_back(move);
         else shuffled_moves.push_back(move);
@@ -86,13 +86,13 @@ vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors(Plan &P){
  	   for (int i=0; i<s->I.nb_rows();i++)
 			 for (int j=0; j<s->I.nb_cols(); j++)
 				 if(s->I(i,j)!=-1){
-					 double intensity=s->intensityUp(i,j);
+					 double intensity=s->next_intensity(i,j);
 					 if(intensity != s->I(i,j)){
 						 NeighborMove move = {1,k,0,+1,s->pos2beam[make_pair(i,j)]};
 						 moves.push_back(move);
 					 }
 
-					 intensity=s->intensityDown(i,j);
+					 intensity=s->prev_intensity(i,j);
 					 if(intensity != s->I(i,j)){
 						 NeighborMove move = {1,k,0,-1,s->pos2beam[make_pair(i,j)]};
 						 moves.push_back(move);
@@ -239,7 +239,7 @@ struct NeighborMove {
 };*/
 
 
-list<pair<int, double> > IntensityILS2::get_changes_in_fm(Plan &current_plan, NeighborMove move){
+list<pair<int, double> > IntensityILS2::get_changes_in_fm(Plan &current_plan, NeighborMove move) const{
   int type            = move.type;
   Station* s          = current_plan.get_station(move.station_id);
   int beamlet         = move.beamlet_id;
@@ -256,28 +256,29 @@ list<pair<int, double> > IntensityILS2::get_changes_in_fm(Plan &current_plan, Ne
     double intensity;
 
     if (action < 0) // decrease intensity
-      intensity=s->intensityDown(i,j);
+      intensity=s->prev_intensity(i,j);
      else // Increase intensity
-      intensity=s->intensityUp(i,j);
-     if(intensity == s->I(i,j)) return diff; //the move is not valid
-     changes.push_back(make_pair(pos2beam[make_pair(i,j)], intensity-s->I(i,j)));
+      intensity=s->next_intensity(i,j);
+     if(intensity == s->I(i,j)) return changes; //the move is not valid
+     changes.push_back(make_pair(s->pos2beam[make_pair(i,j)], intensity-s->I(i,j)));
 
   } else {
     // change intensity
     if((int)intens > s->int2nb.size() || (intens == 0.0 && s->int2nb.size()==s->getNbApertures()) )
-        return -1.0;
+        return changes;
+    
     if(intens != 0.0){
        map< int, int >::iterator iter=s->int2nb.begin();
        std::advance( iter, ((int) intens-1) );
        intens = iter->first;
      }
 
-    if (action < 0)  diff = s->get_changes_intensity_move(intens, -1.0);
-    else diff = s->get_changes_intensity_move(intens, +1.0);
+    if (action < 0)  changes = s->get_changes_intensity_move(intens, -1.0);
+    else changes = s->get_changes_intensity_move(intens, +1.0);
 
   }
 
-  return diff;   
+  return changes;   
 
 }
 
@@ -300,9 +301,9 @@ double IntensityILS2::get_delta_eval(Plan &current_plan, NeighborMove move, list
     double intensity;
 
     if (action < 0) // decrease intensity
-      intensity=s->intensityDown(i,j);
+      intensity=s->prev_intensity(i,j);
      else // Increase intensity
-      intensity=s->intensityUp(i,j);
+      intensity=s->next_intensity(i,j);
 
      if(intensity == s->I(i,j)) return -1.0; //the move is not valid
 
