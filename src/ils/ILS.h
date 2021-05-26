@@ -168,7 +168,7 @@ public:
   }
 
 
-virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move) const = 0;
+virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move) { };
 
  virtual double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff) = 0;
 
@@ -466,9 +466,10 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
         used_evaluations++;
 
         // Check if there is an improvement
-        //if (current_plan.getEvaluation() < (current_eval-0.001)) {
         if (delta_eval < -0.001) {
+            //apply_move(move);
             current_eval = current_plan.incremental_eval(*s, diff);
+            
             current_plan.clearLast();
 
         if(verbose)
