@@ -113,6 +113,7 @@ public:
 
 
   void change_intensity(int i, int j, double intensity, list< pair< int, double > >* diff=NULL );
+  list< pair< int, double > > get_changes_intensity_move(double intensity, double delta) const;
 
  // intensity of an aperture i
   vector<double> intensity;

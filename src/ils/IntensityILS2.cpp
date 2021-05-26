@@ -239,6 +239,48 @@ struct NeighborMove {
 };*/
 
 
+list<pair<int, double> > IntensityILS2::get_changes_in_fm(Plan &current_plan, NeighborMove move){
+  int type            = move.type;
+  Station* s          = current_plan.get_station(move.station_id);
+  int beamlet         = move.beamlet_id;
+  int action          = move.action;
+  double intens	      = move.aperture_id;
+
+  int i = s->beam2pos[beamlet].first;
+  int j = s->beam2pos[beamlet].second;
+
+  list<pair<int, double> > changes;
+
+  if (type == 1) {
+    // single beam
+    double intensity;
+
+    if (action < 0) // decrease intensity
+      intensity=s->intensityDown(i,j);
+     else // Increase intensity
+      intensity=s->intensityUp(i,j);
+     if(intensity == s->I(i,j)) return diff; //the move is not valid
+     changes.push_back(make_pair(pos2beam[make_pair(i,j)], intensity-s->I(i,j)));
+
+  } else {
+    // change intensity
+    if((int)intens > s->int2nb.size() || (intens == 0.0 && s->int2nb.size()==s->getNbApertures()) )
+        return -1.0;
+    if(intens != 0.0){
+       map< int, int >::iterator iter=s->int2nb.begin();
+       std::advance( iter, ((int) intens-1) );
+       intens = iter->first;
+     }
+
+    if (action < 0)  diff = s->get_changes_intensity_move(intens, -1.0);
+    else diff = s->get_changes_intensity_move(intens, +1.0);
+
+  }
+
+  return diff;   
+
+}
+
 double IntensityILS2::get_delta_eval(Plan &current_plan, NeighborMove move, list<pair<int, double> >& diff){
   double current_eval = current_plan.getEvaluation();
 

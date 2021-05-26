@@ -534,12 +534,6 @@ namespace imrt {
             }else
               return (int2nb.size() < max_apertures)? int2nb.begin()->first /2 : 0.0;
      }
-
-
-//    if(int2nb.size() < max_apertures && (j==0 || j==I.nb_cols()-1))
-  //  	return I(i,j) - 1.0;
-
-
     return I(i,j);
   }
 
@@ -622,6 +616,21 @@ namespace imrt {
 		  cout << endl;*/
 
 	  }
+
+	  return diff;
+  }
+
+  list< pair< int, double > > Station::get_changes_intensity_move(double intensity, double delta){
+	  list< pair< int, double > > changes;
+
+    if(intensity==max_intensity) return changes;
+
+	  for (int i=0; i<collimator.getXdim();i++)
+		  for (int j=0; j<collimator.getYdim(); j++)
+			  if(I(i,j)==intensity){
+          int b = pos2beam[make_pair(i,j)];
+          changes.push_back(make_pair(b, delta));
+        }
 
 	  return diff;
   }
