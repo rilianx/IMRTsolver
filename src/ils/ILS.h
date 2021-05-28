@@ -130,22 +130,23 @@ public:
                                          ls_target);
     	  move = neighborhood[i];
 
-        list<pair<int, double> > diff;
-        double delta_eval = get_delta_eval(current_plan, move, diff);
-        Station *s = current_plan.get_station(move.station_id);
+        //Update delta_eval
+        list<pair<int, double> > changes = get_changes_in_fm(current_plan, move); //changes in fluence_map
+        double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
+        //list<pair<int, double> > diff;
+        //double delta_eval = get_delta_eval(current_plan, move, diff);
+        //Station *s = current_plan.get_station(move.station_id);
 
-        if(diff.empty()){i--; continue;}
+        if(changes.empty()){i--; continue;}
 
-        current_plan.incremental_eval(*s, diff);
+        //Update delta_eval
+        applyMove(current_plan, move);
+        //current_plan.incremental_eval(*s, diff);
 
       if(verbose)
     	  cout << " -move type " << move.type << ", s:" <<
                move.station_id << ", a:" << move.aperture_id <<
                ", r:" << move.beamlet_id << ", action:"<< move.action << endl;
-
-
-
-		    //applyMoveP(current_plan, move);
       }
     }
     return(current_plan.getEvaluation());
@@ -155,23 +156,19 @@ public:
     return(false);
   };
 
-  virtual void undoLast(Plan& p){
-	  p.undoLast();
-  }
+  //virtual void undoLast(Plan& p){
+	//  p.undoLast();
+  //}
 
   virtual vector <NeighborMove> getNeighborhood(Plan & current_plan,
                                                 NeighborhoodType ls_neighborhood,
                                                 LSTarget ls_target) = 0;
 
-  virtual double applyMoveP (Plan & current_plan, NeighborMove move){
-	  return applyMove (current_plan, move);
-  }
+  //Update delta_eval
+  virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move) = 0;
+  //virtual double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff) = 0;
 
-
-virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move) { };
-
- virtual double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff) = 0;
-
+  //debería llamar a incremental_eval
   virtual double applyMove (Plan & current_plan, NeighborMove move) = 0;
 
   virtual string planToString(Plan & current_plan) = 0;
@@ -450,26 +447,27 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
 
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list))  continue;
+        
+        list<pair<int, double> > changes = get_changes_in_fm(current_plan,move); //changes in fluence_map
+        double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
 
-        //list<pair<int, double> > changes = get_changes_in_fm(move); //changes in fluence_map
-        //double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
+        //Update delta_eval (eliminar 3 lineas)
+        //list<pair<int, double> > diff;
+        //double delta_eval = get_delta_eval(current_plan, move, diff);
+        //Station *s = current_plan.get_station(move.station_id);
 
-        list<pair<int, double> > diff;
-
-        double delta_eval = get_delta_eval(current_plan, move, diff);
-        Station *s = current_plan.get_station(move.station_id);
-
-        if(diff.empty()) continue;
+        if(changes.empty()) continue;
 
         //Evaluation updates
         used_evaluations++;
 
         // Check if there is an improvement
         if (delta_eval < -0.001) {
-            //apply_move(move);
-            current_eval = current_plan.incremental_eval(*s, diff);
+            current_eval = applyMove(current_plan, move); //debería llamar a incremental_eval
+            //current_eval = current_plan.incremental_eval(*s, diff);
             
-            current_plan.clearLast(); 
+            //Update delta_eval (eliminar)
+            //current_plan.clearLast(); 
 
         if(verbose)
             cout << "    neighbor: " << n_neighbors  << "; "
@@ -504,9 +502,11 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
             break;
 
         } else {
-          //No improvement
-          s->undoLast();
-          s->diff_undo(diff);
+          //no improvement
+
+          //Update delta_eval (eliminar)
+          //s->undoLast();
+          //s->diff_undo(diff);
 
 
 	        // Add the non-improving movement as tabu
@@ -658,13 +658,13 @@ virtual list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborM
           // Best improvement
           current_eval = current_plan.getEvaluation();
           best_move = move;
-          current_plan.undoLast(); //TODO: ignacio revisame!.
+          //current_plan.undoLast(); //TODO: ignacio revisame!.
           ls_target.target_type = ls_target_type;
           ls_target.target_move = move;
 
         } else {
           //No improvement
-          current_plan.undoLast();
+          //current_plan.undoLast();
           // Add the non-improving movement as tabu
           if (tabu_size > 0)
             addTabu(tabu_list, move, tabu_size);
