@@ -48,8 +48,7 @@ bool ApertureILS::isBeamletModifiable (int beamlet, Station* station, bool open_
 // side=1 left
 // side=2 right
 // other will check both
-double ApertureILS::closeBeamlet(int beamlet, int side, int aperture,
-                                 Station& station, double c_eval, Plan& P) {
+/*double ApertureILS::closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval, Plan& P) {
   double aux_eval, l_eval, r_eval;
   list <pair<int, double> > diff;
 
@@ -102,10 +101,10 @@ double ApertureILS::closeBeamlet(int beamlet, int side, int aperture,
     }
   }
   return(c_eval);
-};
+};*/
 
 
-double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P) {
+/*double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P) {
   double aux_eval=0;
   list<pair<int, double> > diff;
 
@@ -123,16 +122,16 @@ double ApertureILS::openBeamlet(int beamlet, int aperture, Station& station, dou
   c_eval = P.incremental_eval(station, diff);
 
   return(c_eval);
-}
+}*/
 
-bool ApertureILS::perturbate(int no_improvement, int iteration) {
+/*bool ApertureILS::perturbate(int no_improvement, int iteration) {
   if (!do_perturbate) return(false);
   //if (no_improvement >= ((double) iteration)*0.3) {
   //  return(true);
   //}
   if (no_improvement==100) return(true);
     return(false);
-};
+};*/
 
 vector < NeighborMove > ApertureILS::getShuffledIntensityNeighbors(Plan &P){
   list<Station*> stations = P.get_stations();
@@ -543,7 +542,7 @@ vector < NeighborMove> ApertureILS::getNeighborhood(Plan& current_plan,
 
 };*/
 
-double ApertureILS::get_delta_eval(Plan &current_plan, NeighborMove move, list<pair<int, double> >& diff){
+/*double ApertureILS::get_delta_eval(Plan &current_plan, NeighborMove move, list<pair<int, double> >& diff) {
   double delta_eval = 0.0;
   int type            = move.type;
   int station_id      = move.station_id;
@@ -581,9 +580,51 @@ double ApertureILS::get_delta_eval(Plan &current_plan, NeighborMove move, list<p
     }
 
   return delta_eval;
-}
+}*/
 
-double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
+
+list<pair<int, double> > ApertureILS::get_changes_in_fm(Plan &current_plan, NeighborMove move) const {
+  double delta_eval = 0.0;
+  int type            = move.type;
+  int station_id      = move.station_id;
+  Station * s         = current_plan.get_station(move.station_id);
+  int aperture        = move.aperture_id;
+  int row             = move.beamlet_id;
+  int beamlet         = move.beamlet_id;
+  int action          = move.action;
+  list <pair< int,double> > diff;
+  
+  if (!checkMove(current_plan, move))
+    return (diff);
+  
+  if (type == 1) {
+    // Intensity move
+    if (action < 0) {
+      // Reduce intensity
+      diff = current_plan.getModifyIntensityDiff(station_id, aperture, -step_intensity);
+    } else {
+      // Increase intensity
+      diff = current_plan.getModifyIntensityDiff(station_id, aperture, step_intensity);
+    }
+  } else {
+    // Aperture move
+    if (action < 0) {
+      if (action == -1)
+        diff = current_plan.getCloseRowDiff(station_id, aperture, row, true);
+      else
+        diff = current_plan.getCloseRowDiff(station_id, aperture, row, false);
+    } else {
+      if (action == 1)
+        diff = current_plan.getOpenRowDiff(station_id, aperture, row, true);
+      else
+        diff = current_plan.getOpenRowDiff(station_id, aperture, row, false);
+    }
+  }
+  
+  return diff;
+};
+
+/*double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
   list<pair<int, double> > diff;
   double delta_eval = get_delta_eval(current_plan, move, diff);
   double current_eval = 0.0;
@@ -593,10 +634,18 @@ double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
 
 
   return(current_eval);
+}*/
+
+double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
+  list<pair<int, double> > diff = get_changes_in_fm(current_plan, move);
+  Station *s = current_plan.get_station(move.station_id);
+  
+  double current_eval = current_plan.incremental_eval(*s, diff);
+  return(current_eval);
 }
 
 
-bool ApertureILS::checkMove (Plan & current_plan, NeighborMove move) {
+bool ApertureILS::checkMove (Plan & current_plan, NeighborMove move) const {
   int type            = move.type;
   int station_id      = move.station_id;
   Station * s         = current_plan.get_station(move.station_id);
@@ -660,7 +709,7 @@ string ApertureILS::planToString(Plan &P) {
 
 // This function performs a local search over all the
 // aperture intensities in a treatment plan.
-double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
+/*double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
     list<Station*> stations = P.get_stations();
     list<Station*>::iterator s;
 
@@ -814,11 +863,11 @@ double ApertureILS::iLocalSearch (Plan& P,  double max_time, bool verbose) {
     used_time = double(time_end- time_begin) / CLOCKS_PER_SEC;
     cout << max_time << " :" << used_time << endl;
     return(local_best_eval);
-};
+};*/
 
 // This function performs a local search over all the
 // aperture patterns in a treatment plan.
-double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
+/*double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
   Station *s;
   std::clock_t time_end, time_begin;
   double used_time;
@@ -930,9 +979,9 @@ double ApertureILS::aLocalSearch(Plan& P, double max_time, bool verbose) {
   cout << max_time << " :" << used_time << endl;
 
   return(local_best_eval);
-};
+};*/
 
-double ApertureILS::simpleLocalSearch(Plan& P, bool verbose) {
+/*double ApertureILS::simpleLocalSearch(Plan& P, bool verbose) {
   bool improvement=true;
   double local_best=P.getEvaluation(), aux_best;
   while (improvement) {
@@ -950,7 +999,7 @@ double ApertureILS::simpleLocalSearch(Plan& P, bool verbose) {
   cout << "Local search finished with: " << local_best << " evaluation "
        << P.getEvaluation()<< endl;
   return(P.getEvaluation());
-};
+};*/
 
 int ApertureILS::getStepIntensity () {
   return(step_intensity);

@@ -976,6 +976,50 @@ namespace imrt {
 
     return(diff);
   };
+  
+  /* Function that closes a row from the left, if lside is true, or
+   from the right size otherwise. Return diff if the closing was performed.*/
+  list<pair <int,double> > Station::getCloseRowDiff(int row, int aperture, bool lside) {
+    
+    list<pair <int, double> > diff;
+    int beam;
+    pair <int,int> pattern;
+
+    pattern = getApertureShape(aperture, row);
+    
+    if (pattern.first == -1) return(diff);
+    
+    if (lside) {
+      beam = pattern.first;
+    } else {
+      beam = pattern.second;
+    }
+    
+    if (isActiveBeamlet(beam) && isOpenBeamlet(beam, aperture)) {
+      auto coord = beam2pos[beam];
+      int row = coord.first;
+      
+      last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
+      
+      if (lside) {
+        // Close from the left side
+        for (int i=0; i<=coord.second-A[aperture][row].first; i++) {
+          auto coord2 = beam2pos[beam-(coord.second-A[aperture][row].first)+i];
+          diff.push_back(make_pair(beam-(coord.second-A[aperture][row].first)+i, -intensity[aperture]));;
+        }
+        
+      } else {
+        // Close from the right side
+        
+        for (int i=0;i<=A[aperture][row].second-coord.second;i++) {
+          auto coord2 = beam2pos[beam+i];
+          diff.push_back(make_pair(beam+i, -intensity[aperture]));
+        }
+      }
+    }
+    
+    return(diff);
+  };
 
   /* Function that opens a row from the left, if lside is true, or
    from the right size otherwise. Return true if the closing was performed.*/
@@ -1001,37 +1045,54 @@ namespace imrt {
     return(diff);
   };
 
-  list <pair< int,double> > Station::getModifyIntensityApertureDiff (int aperture, double size) {
-    list < pair <int, double > > diff;
-    if ((intensity[aperture]+size) < 0 || (intensity[aperture]+size) > max_intensity) {
-      if (intensity[aperture]+size < 0) {
-        // Too low intensity
-        if (intensity[aperture]>0)
-          size = intensity[aperture];
-        else
-          return(diff);
-      } else if ((intensity[aperture]+size) > max_intensity) {
-        // Too high intensity
-        if (intensity[aperture] < max_intensity)
-          size = max_intensity - intensity[aperture];
-        else
-          return(diff);
+  
+  /* Function that opens a row from the left, if lside is true, or
+   from the right size otherwise. Return true if the closing was performed.*/
+  list <pair<int,double> > Station::getOpenRowDiff(int row, int aperture, bool lside) {
+    list<pair<int, double>> diff;
+    int beam;
+    pair <int,int> pattern;
+    pair <int,int> active;
+    
+    pattern = getApertureShape(aperture, row);
+    active = collimator.getActiveRange(row, getAngle());
+    if (lside){
+      if (pattern.first == active.first) return(diff);
+      beam = pattern.first;
+    } else {
+      if (pattern.second == active.second) return(diff);
+      beam = pattern.second;
+    }
+    
+    if (isActiveBeamlet(beam) && !isOpenBeamlet(beam, aperture)) {
+      auto coord = beam2pos[beam];;
+      int row = coord.first;
+      
+      // Record the configuration of the row to be open
+      last_mem = make_pair(make_pair(aperture,row), A[aperture][row]);
+      
+      if (A[aperture][row].first < 0) {
+        //When the row is completely closed
+        diff.push_back(make_pair(beam, intensity[aperture]));
       } else {
-        return (diff);
+        // Row has open beamlets
+        if (A[aperture][row].first > coord.second) {
+          for (int i=0;i<(A[aperture][row].first-coord.second);i++) {
+            auto coord2 = beam2pos[beam+i];
+            diff.push_back(make_pair(beam+i, intensity[aperture]));
+          }
+        } else {
+          for (int i=0;i<(coord.second-A[aperture][row].second);i++) {
+            auto coord2 = beam2pos[beam-(coord.second-A[aperture][row].second)+1+i];
+            diff.push_back(make_pair(beam-(coord.second-A[aperture][row].second)+1+i, intensity[aperture]));
+          }
+        }
       }
     }
-    for (int i=0; i<collimator.getXdim(); i++) {
-      if (A[aperture][i].first<0 || A[aperture][i].second<0)
-        continue;
-      int beamlet = pos2beam[make_pair(i, A[aperture][i].first)];
-      for(int j=A[aperture][i].first; j<=A[aperture][i].second; j++){
-        diff.push_back(make_pair(beamlet, size));
-        beamlet++;
-      }
-    }
+    
     return(diff);
-
-  }
+  };
+  
 
   list <pair< int,double> > Station::modifyIntensityAperture(int aperture, double size) {
     list < pair <int, double > > diff;
@@ -1088,6 +1149,40 @@ namespace imrt {
     return (diff);
   }
 
+  
+  list <pair< int,double> > Station::getModifyIntensityApertureDiff (int aperture, double size) {
+    list < pair <int, double > > diff;
+    if ((intensity[aperture]+size) < 0 || (intensity[aperture]+size) > max_intensity) {
+      if (intensity[aperture]+size < 0) {
+        // Too low intensity
+        if (intensity[aperture]>0)
+          size = intensity[aperture];
+        else
+          return(diff);
+      } else if ((intensity[aperture]+size) > max_intensity) {
+        // Too high intensity
+        if (intensity[aperture] < max_intensity)
+          size = max_intensity - intensity[aperture];
+        else
+          return(diff);
+      } else {
+        return (diff);
+      }
+    }
+    for (int i=0; i<collimator.getXdim(); i++) {
+      if (A[aperture][i].first<0 || A[aperture][i].second<0)
+        continue;
+      int beamlet = pos2beam[make_pair(i, A[aperture][i].first)];
+      for(int j=A[aperture][i].first; j<=A[aperture][i].second; j++){
+        diff.push_back(make_pair(beamlet, size));
+        beamlet++;
+      }
+    }
+    return(diff);
+    
+  }
+  
+  
   void Station::updateIntensity(list<pair<int,double> > diff) {
     pair<int,int> coord;
     if (diff.size()<1){

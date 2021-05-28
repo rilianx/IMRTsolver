@@ -268,7 +268,9 @@ public:
   int getMaxIntensity() const;
 
   list<pair <int,double>> closeRow(int row, int aperture, bool lside);
+  list<pair <int,double>> getCloseRowDiff(int row, int aperture, bool lside);
   list <pair<int,double>> openRow(int row, int aperture, bool lside);
+  list <pair<int,double>> getOpenRowDiff(int row, int aperture, bool lside);
 
   list <pair<int,double>> undoLast ();
 

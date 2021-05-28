@@ -39,18 +39,18 @@ public:
 
   bool isBeamletModifiable(int beamlet, Station* station, bool open_flag) ;
 
-  double openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P);
+  //double openBeamlet(int beamlet, int aperture, Station& station, double c_eval, Plan& P);
 
-  double closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval,  Plan& P);
+  //double closeBeamlet(int beamlet, int side, int aperture, Station& station, double c_eval,  Plan& P);
 
-  double iLocalSearch(Plan& P, double max_time, bool verbose=true);
-  double aLocalSearch(Plan& P, double max_time, bool verbose=true);
+  //double iLocalSearch(Plan& P, double max_time, bool verbose=true);
+  //double aLocalSearch(Plan& P, double max_time, bool verbose=true);
 
-  double simpleLocalSearch(Plan& P, bool verbose=true);
+  //double simpleLocalSearch(Plan& P, bool verbose=true);
 
   //double perturbation (Plan& P);
 
-  bool perturbate(int no_improvement, int iteration);
+  //bool perturbate(int no_improvement, int iteration);
 
 
   vector <NeighborMove> getNeighborhood(Plan& current_plan,
@@ -64,9 +64,10 @@ public:
   pair <vector < NeighborMove >, vector < NeighborMove >> getFriendsApertureNeighbors (Plan &P, NeighborMove target);
   vector < NeighborMove > getFriendsNeighbors(Plan &P, NeighborMove target);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
-  double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff);
+  //double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff);
+  list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move) const;
   double applyMove (Plan &P, NeighborMove move);
-  bool checkMove (Plan &P, NeighborMove move);
+  bool checkMove (Plan &P, NeighborMove move) const;
   string planToString(Plan &P);
 
   int getStepIntensity ();

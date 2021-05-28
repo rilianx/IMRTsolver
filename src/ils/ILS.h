@@ -152,9 +152,9 @@ public:
     return(current_plan.getEvaluation());
   };
 
-  virtual bool perturbate(int no_improvement, int iteration) {
+ /* virtual bool perturbate(int no_improvement, int iteration) {
     return(false);
-  };
+ };*/
 
   //virtual void undoLast(Plan& p){
 	//  p.undoLast();
@@ -212,7 +212,7 @@ public:
        if (ls_type == LSType::first) {
          aux_eval = FILocalSearch(current_plan, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
-		    tabu_size, trajectory_file, continuous, verbose);
+		                tabu_size, trajectory_file, continuous, verbose);
        } else {
          aux_eval = BILocalSearch(current_plan, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
@@ -223,10 +223,7 @@ public:
          best_eval = aux_eval;
          delete best_plan;
 
-
-
          best_plan = new Plan(current_plan);
-
          
          //cout << best_plan->eval()  << endl;
        }

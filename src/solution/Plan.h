@@ -54,12 +54,9 @@ public:
 	double incremental_eval (Station& station, list< pair< int, double > >& diff);
 
 	double get_delta_eval (Station& s, int i, int j, double intensity, int n_voxels=999999){
-	if (intensity == 0) return getEvaluation();
-
-    return ev.get_delta_eval(s.getAngle(),
-    s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
+	  if (intensity == 0) return getEvaluation();
+    return ev.get_delta_eval(s.getAngle(), s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
   }
-
 
 	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999) const{
 	  return ev.get_delta_eval(s.getAngle(), b, intensity, w, Zmin, Zmax, n_voxels);
@@ -72,7 +69,7 @@ public:
 	double get_delta_eval (Station& s, list< pair< int, double > >& diff, int n_voxels=999999) const{
 	  return ev.get_delta_eval(diff, s.getAngle(), w, Zmin, Zmax, n_voxels);
 	};
-
+	
 	// This function assumes that there are no changes made without evaluation
 	// performed with eval or incrementalEval
 	double getEvaluation();
@@ -115,12 +112,18 @@ public:
 
   double openRow(int station, int aperture, int row, bool side,
 		 bool delta_eval=false, list<pair<int, double> >* diff=NULL);
+  
+  list<pair<int, double> > getOpenRowDiff(int station, int aperture, int row, bool side);
 
   double closeRow(int station, int aperture, int row, bool side,
 		 bool delta_eval=false, list<pair<int, double> >* diff=NULL);
+  
+  list<pair<int, double> > getCloseRowDiff(int station, int aperture, int row, bool side);
 
   double modifyIntensityAperture (int station, int aperture, int delta,
 		bool delta_eval=false, list<pair<int, double> >* diff=NULL);
+  
+  list<pair<int, double> > getModifyIntensityDiff(int station, int aperture, int delta);
 
 	void undoLast();
 

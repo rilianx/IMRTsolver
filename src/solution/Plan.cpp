@@ -222,9 +222,14 @@ namespace imrt {
   }else
     return get_delta_eval(*s, *diff);
 };
+  
+  list<pair<int, double> > Plan::getOpenRowDiff(int station, int aperture, int row, bool side) {
+    list<pair<int, double> > diff;
+    Station * s = get_station(station);
+    return(s->getOpenRowDiff(row, aperture, side));
+  };
 
-double Plan::closeRow(int station, int aperture, int row, bool side,
-   bool delta_eval, list<pair<int, double> >* diff){
+  double Plan::closeRow(int station, int aperture, int row, bool side, bool delta_eval, list<pair<int, double> >* diff){
   Station * s = get_station(station);
   pair <int, int> pattern = s->getApertureShape(aperture, row);
   int beamlet;
@@ -248,8 +253,12 @@ double Plan::closeRow(int station, int aperture, int row, bool side,
     return get_delta_eval(*s, *diff);
 };
 
-  double Plan::modifyIntensityAperture (int station, int aperture, int delta, bool delta_eval,
-      list<pair<int, double> >* diff) {
+  list<pair<int, double> > Plan::getCloseRowDiff(int station, int aperture, int row, bool side) {
+    Station * s = get_station(station);
+    return(s->getCloseRowDiff(row, aperture, side));
+  };
+  
+  double Plan::modifyIntensityAperture (int station, int aperture, int delta, bool delta_eval, list<pair<int, double> >* diff) {
     Station * s = get_station(station);
     if(!delta_eval) diff = new list<pair<int, double> >;
 
@@ -266,7 +275,12 @@ double Plan::closeRow(int station, int aperture, int row, bool side,
     }else
       return get_delta_eval (*s, *diff);
   }
-
+  
+  list<pair<int, double> > Plan::getModifyIntensityDiff(int station, int aperture, int delta){
+    Station * s = get_station(station);
+    return(s->getModifyIntensityApertureDiff (aperture, delta));
+  }
+  
   void Plan::undoLast() {
     if (last_changed==NULL) return;
 
