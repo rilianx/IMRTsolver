@@ -65,7 +65,7 @@ public:
   vector < NeighborMove > getFriendsNeighbors(Plan &P, NeighborMove target);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   //double get_delta_eval(Plan &P, NeighborMove move, list<pair<int, double> >& diff);
-  list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move) const;
+  list<pair<int, double> > get_changes_in_fm(Plan &current_plan, NeighborMove move);
   double applyMove (Plan &P, NeighborMove move);
   bool checkMove (Plan &P, NeighborMove move) const;
   string planToString(Plan &P);

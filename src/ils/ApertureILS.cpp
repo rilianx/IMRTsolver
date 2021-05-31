@@ -583,7 +583,7 @@ vector < NeighborMove> ApertureILS::getNeighborhood(Plan& current_plan,
 }*/
 
 
-list<pair<int, double> > ApertureILS::get_changes_in_fm(Plan &current_plan, NeighborMove move) const {
+list<pair<int, double> > ApertureILS::get_changes_in_fm(Plan &current_plan, NeighborMove move)  {
   double delta_eval = 0.0;
   int type            = move.type;
   int station_id      = move.station_id;
