@@ -239,7 +239,7 @@ struct NeighborMove {
 };*/
 
 
-list<pair<int, double> > IntensityILS2::get_changes_in_fm(Plan &current_plan, NeighborMove move) const{
+list<pair<int, double> > IntensityILS2::get_changes_in_fm(Plan &current_plan, NeighborMove move){
   int type            = move.type;
   Station* s          = current_plan.get_station(move.station_id);
   int beamlet         = move.beamlet_id;
