@@ -93,7 +93,7 @@ public:
 		return *instance;
 	}
 
-  void create_voxel2beamlet_list(vector<Volume>& volumes, const Collimator& collimator);
+    void create_voxel2beamlet_list(vector<Volume>& volumes, const Collimator& collimator);
 
 	virtual ~EvaluationFunction();
 
