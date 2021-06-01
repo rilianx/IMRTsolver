@@ -23,7 +23,7 @@
 #include <string.h>
 
 #include "IntensityGenerator.h"
-#include "EvaluationFunction.h"
+#include "Evaluator.h"
 #include "Plan.h"
 #include "Collimator.h"
 #include "Volume.h"
@@ -377,7 +377,7 @@ int main(int argc, char** argv){
   //cout << volumes[0].get_n_matrices() << endl;
 
   cout << "creating evaluation function" << endl;
-  EvaluationFunction& ev = EvaluationFunction::getInstance(volumes, collimator);
+  //EvaluationFunction& ev = EvaluationFunction::getInstance(volumes, collimator);
 
 
   /**************** UNTIL HERE: INIT INSTANCE ****************/
@@ -399,6 +399,8 @@ int main(int argc, char** argv){
   istringstream message_stream(message.first);
   string instruction; message_stream >> instruction;
   
+  FluenceMap* fm ;
+  EvaluatorF* evaluator;
 
   if(instruction == "get_info"){
     for (auto v : volumes)
@@ -441,13 +443,17 @@ int main(int argc, char** argv){
        int angle; message_stream >> angle; bac[i] = angle;
     }
 
+    fm = new FluenceMap(volumes, collimator);
+    evaluator = new EvaluatorF(*fm,w,Zmin,Zmax);
+    evaluator->eval(*P);
+
     istringstream* fluence_map = &message_stream;
     if(P!= NULL) delete P;
-    P = new Plan (w, Zmin, Zmax, collimator, volumes, max_apertures,
+    P = new Plan (*evaluator, collimator, volumes, max_apertures,
             max_intensity, I_0, step_intensity,
             initial_setup, fluence_map, bac);
-
-    response << P->getEvaluation();
+ 
+    response << evaluator->get_evaluation();
 
   }else if(instruction == "local_search"){
     /** local_search neigh maxeval **/
@@ -459,8 +465,10 @@ int main(int argc, char** argv){
     else if(neigh=="mixed") n_type=NeighborhoodType::mixed;
     int maxeval; message_stream >> maxeval;
 
+
+
     IntensityILS2 ibo;
-    cost = ibo.iteratedLocalSearch(*P, maxtime, maxeval, LSType::first, false /*continuous*/,
+    cost = ibo.iteratedLocalSearch(*P, *evaluator, maxtime, maxeval, LSType::first, false /*continuous*/,
               n_type, LSTargetType::target_friends, PerturbationType::none, 
               0 /*perturbation_size*/, tabu_size, convergence_file, 0, begin_time, true /*verbose*/);
     used_evaluations=ibo.used_evaluations;
@@ -469,7 +477,7 @@ int main(int argc, char** argv){
 
   }else if(instruction == "perturbation"){
     IntensityILS2 ibo;
-    ibo.perturbation(*P, PerturbationType::p_mixed, 3, false /*verbose*/);
+    ibo.perturbation(*P, *evaluator, PerturbationType::p_mixed, 3, false /*verbose*/);
     response << "perturbation ready" << endl;
   }else if(instruction == "get_fluence_map"){
     cout << "get_fluence_map" << endl;
@@ -482,8 +490,7 @@ int main(int argc, char** argv){
   }else if(instruction == "get_impact_map"){
     cout << "get_impact_map" << endl;
     std::streambuf*     oldbuf  = std::cout.rdbuf( response.rdbuf() ); //para retornar cout..
-    multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
-    P->getEvaluationFunction()->sorted_beamlets(*P, vsize);
+    multimap < double, pair<int, int>, MagnitudeCompare2> beamlets = evaluator->sorted_beamlets(*P, vsize);
     map < pair<int,int>, double > beam2impact;
     for( auto b : beamlets)  beam2impact[b.second] = b.first;
 
@@ -504,7 +511,7 @@ int main(int argc, char** argv){
     }
     std::cout.rdbuf(oldbuf);
   }else if(instruction == "get_dose_vector"){
-    vector<vector<double>> Z = ev.get_Z();
+    const vector<vector<double>>& Z = evaluator->get_FM();
     for(vector<double> organZ : Z){
       for(double z : organZ)
         response << z << " ";

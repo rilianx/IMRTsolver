@@ -8,8 +8,8 @@
 #ifndef PLAN_H_
 #define PLAN_H_
 
-#include "EvaluationFunction.h"
 #include "Station.h"
+#include "Evaluator.h"
 #include <float.h>
 
 namespace imrt {
@@ -23,12 +23,8 @@ namespace imrt {
 
 class Plan {
 public:
-	Plan(EvaluationFunction &ev);
 
-  Plan(EvaluationFunction &ev, vector<double> w, vector<double> Zmin, vector<double> Zmax);
-
-  Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax,
-       Collimator& collimator, vector<Volume>& volumes, int max_apertures,
+  Plan(Evaluator& ev, Collimator& collimator, vector<Volume>& volumes, int max_apertures,
        int max_intensity, int initial_intensity, int step_intensity=2,
        StationSetup setup = open_all_min, istringstream* fm_stream=NULL, vector<int> bac = vector<int>());
 
@@ -41,38 +37,6 @@ public:
 	// Adds a new station to the plan
 	void add_station(Station& s);
 
-	double eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
-
-	double eval();
-
-	double incremental_eval (Station& station, int i, int j, double intensity){
-		list< pair< int, double > > diff;
-		diff.push_back(make_pair(station.pos2beam[make_pair(i,j)],intensity));
-		return incremental_eval (station, diff);
-	}
-
-	double incremental_eval (Station& station, list< pair< int, double > >& diff);
-
-	double get_delta_eval (Station& s, int i, int j, double intensity, int n_voxels=999999){
-	  if (intensity == 0) return getEvaluation();
-    return ev.get_delta_eval(s.getAngle(), s.pos2beam.at(make_pair(i,j)), intensity, w, Zmin, Zmax, n_voxels);
-  }
-
-	double get_delta_eval (Station& s, int b, double intensity, int n_voxels=999999) const{
-	  return ev.get_delta_eval(s.getAngle(), b, intensity, w, Zmin, Zmax, n_voxels);
-	}
-
-	double get_delta_eval (int station, list< pair< int, double > >& diff, int n_voxels=999999) const{
-		return get_delta_eval(*get_station(station), diff, n_voxels);
-	};
-
-	double get_delta_eval (Station& s, list< pair< int, double > >& diff, int n_voxels=999999) const{
-	  return ev.get_delta_eval(diff, s.getAngle(), w, Zmin, Zmax, n_voxels);
-	};
-	
-	// This function assumes that there are no changes made without evaluation
-	// performed with eval or incrementalEval
-	double getEvaluation();
 
 	 // Generate apertures from the intensity matrices
 	void generateApertures();
@@ -81,29 +45,6 @@ public:
 
 	void write_open_beamlets();
 
-/*
-	set < pair< pair<double,bool>, pair<Station*, int> >,
-       std::greater < pair< pair<double,bool>, pair<Station*, int> > > >
-	  best_beamlets(int n, int nv, int mode=0);
-*/
-
-  /*
-	virtual pair<bool, pair<Station*, int>> getLSBeamlet(int bsize, int vsize){
-		  auto sb=ev.best_beamlets(*this, bsize, vsize);
-		  auto it=sb.begin();
-		  std::advance(it,rand()%sb.size());
-		  return make_pair(it->first.second, it->second);
-	}
-	*/
-
-  /*
-	virtual pair<bool, pair<Station*, int>> getBestLSBeamlet(int bsize, int vsize){
-	  auto sb=ev.best_beamlets(*this, bsize, vsize);
-	  auto it=sb.begin();
-	  //std::advance(it,rand()%sb.size());
-	  return make_pair(it->first.second, it->second);
-	}
-  */
   double openBeamlet(int station, int aperture, int beamlet,
 		bool delta_eval=false, list<pair<int, double> >* diff=NULL);
 
@@ -129,8 +70,8 @@ public:
 
   void clearLast();
 
-	//Lepi's version
-	void undoLast2();
+  //Lepi's version
+  void undoLast2();
 
   void printSolution ();
 
@@ -140,11 +81,9 @@ public:
 
   void printIntensity(int station, bool vector_form=false);
 
-	void writeIntensities(string file, int n);
+  void writeIntensities(string file, int n);
 
-	EvaluationFunction* getEvaluationFunction(){
-		return &ev;
-	}
+
 
 	Station* get_station(int i) const{
 	    list<Station*>::const_iterator s= stations.begin();
@@ -156,6 +95,7 @@ public:
      return(stations.size()) ;
   }
 
+  Evaluator& get_evaluator(){return ev;}
 
 
   map<int, Station*> angle2station;
@@ -169,13 +109,10 @@ private:
   Station* last_changed;
 	list< pair< int, double > > last_diff;
 
-	EvaluationFunction& ev;
 
-	vector<double> w;
-	vector<double> Zmin;
-	vector<double> Zmax;
 
-	double evaluation_fx;
+	Evaluator& ev;
+	
 };
 
 } /* namespace imrt */

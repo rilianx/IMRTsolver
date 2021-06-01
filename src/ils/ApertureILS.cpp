@@ -637,11 +637,45 @@ list<pair<int, double> > ApertureILS::get_changes_in_fm(Plan &current_plan, Neig
 }*/
 
 double ApertureILS::applyMove (Plan & current_plan, NeighborMove move) {
-  list<pair<int, double> > diff = get_changes_in_fm(current_plan, move);
-  Station *s = current_plan.get_station(move.station_id);
+  double delta_eval = 0.0;
+  int type            = move.type;
+  int station_id      = move.station_id;
+  Station * s         = current_plan.get_station(move.station_id);
+  int aperture        = move.aperture_id;
+  int row             = move.beamlet_id;
+  int beamlet         = move.beamlet_id;
+  int action          = move.action;
   
-  double current_eval = current_plan.incremental_eval(*s, diff);
-  return(current_eval);
+  list<pair<int, double> > diff;
+
+  //es necesario?
+  if (!checkMove(current_plan, move))
+    return (-1);
+
+    if (type == 1) {
+      // Intensity move
+      if (action < 0) {
+        // Reduce intensity
+        current_plan.modifyIntensityAperture(station_id, aperture, -step_intensity, true, &diff);
+      } else {
+        // Increase intensity
+        current_plan.modifyIntensityAperture(station_id, aperture, step_intensity, true, &diff);
+      }
+    } else {
+      // Aperture move
+      if (action < 0) {
+        if (action == -1)
+          current_plan.closeRow(station_id, aperture, row, true, true, &diff);
+        else
+          current_plan.closeRow(station_id, aperture, row, false, true, &diff);
+      } else {
+        if (action == 1)
+          current_plan.openRow(station_id, aperture, row, true, true, &diff);
+        else
+          current_plan.openRow(station_id, aperture, row, false, true, &diff);
+      }
+    }
+    return 0.0;
 }
 
 

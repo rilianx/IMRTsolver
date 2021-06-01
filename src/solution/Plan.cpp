@@ -6,23 +6,14 @@
  */
 
 #include "Plan.h"
-#include "EvaluatorF.h"
+#include "Evaluator.h"
 
 namespace imrt {
 
-  Plan::Plan (EvaluationFunction &ev) : ev(ev), last_changed(NULL) {};
 
-  Plan::Plan (EvaluationFunction &ev, vector<double> w, vector<double> Zmin,
-              vector<double> Zmax): ev(ev), w(w), Zmin(Zmin), Zmax(Zmax) {
-    last_changed=NULL;
-  }
-
-  Plan::Plan(vector<double> w, vector<double> Zmin, vector<double> Zmax,
-             Collimator& collimator, vector<Volume>& volumes, int max_apertures,
+  Plan::Plan(Evaluator& ev, Collimator& collimator, vector<Volume>& volumes, int max_apertures,
              int max_intensity, int initial_intensity,
-             int step_intensity, StationSetup setup, istringstream* fm_stream, vector<int> bac) :
-             ev(EvaluationFunction::getInstance(volumes, collimator)),
-             w(w), Zmin(Zmin), Zmax(Zmax) {
+             int step_intensity, StationSetup setup, istringstream* fm_stream, vector<int> bac) : ev(ev){
 
       cout << "##Initilizing plan."<< endl;
 
@@ -40,18 +31,9 @@ namespace imrt {
         angle2station[angle] = station;
       }
 
-
-      cout << "##  Created " << stations.size() << " stations."<< endl;
-      eval();
-      cout << "##  Initial evaluation: " << evaluation_fx << "."<< endl;
-      last_changed=NULL;
-
-      //ev.create_beam2voxel_list(*this);
   };
 
-  Plan::Plan(const Plan &p): ev(p.ev), w(p.w), Zmin(p.Zmin), Zmax(p.Zmax), last_changed(NULL) {
-    //EvaluationFunction aux_ev(p.ev);
-    //ev=aux_ev;
+  Plan::Plan(const Plan &p) : ev(p.ev) {
 
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
       Station* aux = new Station(**it);
@@ -61,16 +43,9 @@ namespace imrt {
       //real_stations.push_back(*aux);
     }
     n_stations= stations.size();
-    evaluation_fx=p.evaluation_fx;
   }
 
   void Plan::newCopy(Plan& p) {
-    last_changed=NULL;
-    //ev= EvaluationFunction::getInstance();
-
-    w=p.w;
-    Zmin=p.Zmin;
-    Zmax=p.Zmax;
     for( auto station :stations ) delete station;
 
     stations.clear();
@@ -83,37 +58,10 @@ namespace imrt {
       //real_stations.push_back(*aux);
     }
     n_stations= stations.size();
-    evaluation_fx=p.evaluation_fx;
   }
 
   void Plan::add_station(Station& s){
     stations.push_back(&s);
-  }
-
-  double Plan::eval(vector<double>& w, vector<double>& Zmin, vector<double>& Zmax) {
-    double eval=ev.eval(*this,w,Zmin,Zmax);
-    ev.generate_voxel_dose_functions ();
-    evaluation_fx=eval;
-    return eval;
-  };
-
-  double Plan::eval() {
-    double eval=ev.eval(*this,w,Zmin,Zmax);
-    ev.generate_voxel_dose_functions ();
-    evaluation_fx=eval;
-    return eval;
-  };
-
-  double Plan::incremental_eval (Station& station, list< pair< int, double > >& diff) {
-    //evaluation_fx = ev.incremental_eval(station, w, Zmin, Zmax, diff);
-    evaluation_fx = EvaluatorF::getInstance().incremental_eval (diff, station.getAngle());
-    last_changed = &station;
-    last_diff = diff;
-    return(evaluation_fx);
-  };
-
-  double Plan::getEvaluation(){
-    return(evaluation_fx);
   }
 
   double Plan::openBeamlet(int station, int aperture, int beamlet, bool delta_eval,
@@ -122,24 +70,16 @@ namespace imrt {
     double aux_eval=0;
     if(!delta_eval) diff = new list<pair<int, double> >;
 
-    /*
-    if (get_delta_eval(*s, beamlet, s->getApertureIntensity(aperture)) > evaluation_fx){
-			clearLast();
-      return(evaluation_fx);
-    }*/
-
     *diff = s->openBeamlet(beamlet, aperture);
 
     if(!delta_eval){
-      if (diff->size() > 0)
-        incremental_eval(*s, *diff);
-       else
-        clearLast();
+      if (diff->size() <= 0)
+         clearLast();
       delete diff;
-      return(evaluation_fx);
+      return(0.0);
 
-    }else
-      return get_delta_eval(*s, *diff);
+    }
+    return 0.0;
   };
 
   double Plan::closeBeamlet(int station, int aperture, int beamlet, int side, bool delta_eval,
@@ -150,12 +90,6 @@ namespace imrt {
     if(!delta_eval) diff = new list<pair<int, double> >;
     double l_eval, r_eval;
 
-    /*
-    if (get_delta_eval(*s, beamlet, -(s)->getApertureIntensity(aperture)) > evaluation_fx){
-      clearLast();
-      return(evaluation_fx);
-    }
-    */
 
     if (side == 1) {
       *diff = s->closeBeamlet(beamlet, aperture, true);
@@ -168,18 +102,17 @@ namespace imrt {
     }
 
     if(!delta_eval){
-      if (diff->size() > 0)
-        incremental_eval(*s, *diff);
-       else
+      if (diff->size() <= 0)
         clearLast();
       delete diff;
-      return(evaluation_fx);
+      return(0.0);
+    }
+    return 0.0;
+    }
+    
 
-    }else
-      return get_delta_eval(*s, *diff);
 
-
-  };
+  
 
   double Plan::openRow(int station, int aperture, int row, bool side,
 		 bool delta_eval, list<pair<int, double> >* diff){
@@ -190,39 +123,39 @@ namespace imrt {
   int beamlet;
   double min_new_eval = DBL_MAX;
 
-  if (active.first == -1) return (evaluation_fx);
+  if (active.first == -1) return (0.0);
 
   if (pattern.first == -1) {
+    beamlet = active.first + rand()%(active.second-active.first+1);
     //All row are closed find best opening beamlet
-    for (int i=active.first; i<=active.second; i++) {
+    /*for (int i=active.first; i<=active.second; i++) {
       aux_eval= get_delta_eval(*s, i, s->getApertureIntensity(aperture));
       if (aux_eval < min_new_eval){
         beamlet = i;
         min_new_eval = aux_eval;
       };
-    }
+    }*/
   } else {
     if (side) {
       beamlet = pattern.first - 1;
-      if (active.first > beamlet) return(evaluation_fx);
+      if (active.first > beamlet) return(0.0);
     } else {
       beamlet = pattern.second + 1;
-      if (active.second < beamlet) return(evaluation_fx);
+      if (active.second < beamlet) return(0.0);
     }
   }
 
   *diff = s->openBeamlet(beamlet, aperture);
 
   if(!delta_eval){
-    if (diff->size() > 0)
-      incremental_eval(*s, *diff);
-     else
+    if (diff->size() ==0)
       clearLast();
     delete diff;
-    return(evaluation_fx);
+    return(0.0);
 
-  }else
-    return get_delta_eval(*s, *diff);
+  }//else
+    //return get_delta_eval(*s, *diff);
+  return 0.0;
 };
   
   list<pair<int, double> > Plan::getOpenRowDiff(int station, int aperture, int row, bool side) {
@@ -241,18 +174,16 @@ namespace imrt {
   else
     beamlet = pattern.second;
 
-
   *diff = s->closeRow(row, aperture, side);
   if(!delta_eval){
-    if (diff->size() > 0)
-      incremental_eval(*s, *diff);
-     else
+    if (diff->size() == 0)
       clearLast();
     delete diff;
-    return(evaluation_fx);
+    return(0.0);
 
-  }else
-    return get_delta_eval(*s, *diff);
+  }//else
+    //return get_delta_eval(*s, *diff);
+  return 0.0;
 };
 
   list<pair<int, double> > Plan::getCloseRowDiff(int station, int aperture, int row, bool side) {
@@ -267,15 +198,14 @@ namespace imrt {
 
     *diff = s->modifyIntensityAperture(aperture, delta);
     if(!delta_eval){
-      if (diff->size() > 0) {
-        incremental_eval(*s, *diff);
-      } else {
+      if (diff->size() == 0)
         clearLast();
-      }
+      
       delete diff;
-      return(evaluation_fx);
-    }else
-      return get_delta_eval (*s, *diff);
+      return(0.0);
+    }//else
+      //return get_delta_eval (*s, *diff);
+    return 0.0;
   }
   
   list<pair<int, double> > Plan::getModifyIntensityDiff(int station, int aperture, int delta){

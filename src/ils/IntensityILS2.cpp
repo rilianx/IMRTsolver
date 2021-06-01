@@ -6,7 +6,7 @@
  */
 
 #include "IntensityILS2.h"
-#include "EvaluatorF.h"
+#include "Evaluator.h"
 
 
 
@@ -44,8 +44,8 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
 vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan &P, double vsize){
   vector < NeighborMove > best_moves;
   vector < NeighborMove > shuffled_moves;
-  multimap < double, pair<int, int>, MagnitudeCompare> beamlets =
-    P.getEvaluationFunction()->sorted_beamlets(P, vsize);
+  multimap < double, pair<int, int>, MagnitudeCompare2> beamlets =
+    P.get_evaluator().sorted_beamlets(P, vsize);
   bool first=true;
   for(auto b : beamlets){
     Station *s = P.get_station(b.second.first);
@@ -283,57 +283,6 @@ list<pair<int, double> > IntensityILS2::get_changes_in_fm(Plan &current_plan, Ne
 
   return changes;   
 
-}
-
-double IntensityILS2::get_delta_eval(Plan &current_plan, NeighborMove move, list<pair<int, double> >& diff){
-  double current_eval = current_plan.getEvaluation();
-
-  int type            = move.type;
-  Station* s          = current_plan.get_station(move.station_id);
-  int beamlet         = move.beamlet_id;
-  int action          = move.action;
-  double intens	  = move.aperture_id;
-
-  int i = s->beam2pos[beamlet].first;
-  int j = s->beam2pos[beamlet].second;
-
-  double delta_eval= -1.0;
-
-  if (type == 1) {
-    // single beam
-    double intensity;
-
-    if (action < 0) // decrease intensity
-      intensity=s->prev_intensity(i,j);
-     else // Increase intensity
-      intensity=s->next_intensity(i,j);
-
-     if(intensity == s->I(i,j)) return -1.0; //the move is not valid
-
-  	 delta_eval = current_plan.get_delta_eval (*s, i, j, intensity-s->I(i,j));
-     s->change_intensity(i, j, intensity, &diff);
-
-  } else {
-    // change intensity
-    if((int)intens > s->int2nb.size() || (intens == 0.0 && s->int2nb.size()==s->getNbApertures()) )
-        return -1.0;
-    if(intens != 0.0){
-       map< int, int >::iterator iter=s->int2nb.begin();
-       std::advance( iter, ((int) intens-1) );
-       intens = iter->first;
-     }
-
-    if (action < 0)  diff = s->change_intensity(intens, -1.0);
-    else diff = s->change_intensity(intens, +1.0);
-
-
-    if(!diff.empty()){
-        delta_eval = current_plan.get_delta_eval (*s, diff);
-    }else return -1.0;
-
-  }
-
-  return delta_eval;
 }
 
 double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p) {

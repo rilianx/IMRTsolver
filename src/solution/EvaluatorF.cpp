@@ -12,27 +12,24 @@
 
 namespace imrt {
 
-EvaluatorF* EvaluatorF::instance = NULL;
-
 int EvaluatorF::n_evaluations=0;
 
 double EvaluatorF::eval(const Plan& p){
 	voxels.clear();
-    cout << 1 << endl;
-	z_structure.generate_Z(p);
+	fm_structure.computeFM(p);
 	F=0.0;
-	for(int o=0; o<Z.size(); o++){
+	for(int o=0; o<FM.size(); o++){
 		double pen=0.0;
-		for(int k=0; k<Z[o].size(); k++){
-			if(Z[o][k] < Zmin[o] )
-				 pen += w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
+		for(int k=0; k<FM[o].size(); k++){
+			if(FM[o][k] < Zmin[o] )
+				 pen += w[o] * ( pow(Zmin[o]-FM[o][k], 2) );
 
-			if(Z[o][k] > Zmax[o] )
-				 pen += w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
+			if(FM[o][k] > Zmax[o] )
+				 pen += w[o] * ( pow(FM[o][k]-Zmax[o], 2) );
 
 			update_sorted_voxels(o, k);
 		}
-		F+=pen/Z[o].size();
+		F+=pen/FM[o].size();
 	}
     
 	n_evaluations++;
@@ -41,32 +38,32 @@ double EvaluatorF::eval(const Plan& p){
 
 double EvaluatorF::get_delta_eval(list< pair< int, double > >& changes, double angle) const{
 
-  std::vector<list < pair<int, double>>>& deltaZ = z_structure.compute_deltaZ(changes,angle);
+  std::vector<list < pair<int, double>>>& deltaFM = fm_structure.compute_deltaFM(changes,angle);
 
   double delta_F=0.0;
 
-  for(int o=0; o<deltaZ.size(); o++){
+  for(int o=0; o<deltaFM.size(); o++){
       double pen=0.0;
-    for(auto kk:deltaZ[o]){
+    for(auto kk:deltaFM[o]){
         int k=kk.first;
         double delta = kk.second;
         //with the change in the dose of a voxel we can incrementally modify the value of F
-        if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
-            pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
-        else if(Z[o][k] < Zmin[o]) //the penalty disappears
-            pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
-        else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
-            pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
+        if(FM[o][k] < Zmin[o] && FM[o][k] + delta < Zmin[o]) //update the penalty
+            pen += w[o]*delta*(delta+2*(FM[o][k]-Zmin[o]));
+        else if(FM[o][k] < Zmin[o]) //the penalty disappears
+            pen -=  w[o] * ( pow(Zmin[o]-FM[o][k], 2) );
+        else if(FM[o][k] + delta < Zmin[o]) //the penalty appears
+            pen +=  w[o] * ( pow(Zmin[o]-(FM[o][k]+delta), 2) );
 
-        if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
-            pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
-        else if(Z[o][k] > Zmax[o]) //the penalty disappears
-            pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
-        else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
-            pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
+        if(FM[o][k] > Zmax[o] && FM[o][k] + delta > Zmax[o]) //update the penalty
+            pen += w[o]*delta*(delta+2*(-Zmax[o] + FM[o][k]));
+        else if(FM[o][k] > Zmax[o]) //the penalty disappears
+            pen -=  w[o] * ( pow(FM[o][k]-Zmax[o], 2) );
+        else if(FM[o][k] + delta > Zmax[o]) //the penalty appears
+            pen +=  w[o] * ( pow(FM[o][k]+delta - Zmax[o], 2) );
 
     }
-    delta_F += pen/(double) Z[o].size();
+    delta_F += pen/(double) FM[o].size();
   }
 
   return delta_F;
@@ -77,12 +74,12 @@ double EvaluatorF::incremental_eval(list< pair< int, double > >& changes, double
 
 	
 	double deltaF = get_delta_eval(changes, angle);
-    std::vector<list < pair<int, double>>>& deltaZ = z_structure.get_deltaZ();
+    std::vector<list < pair<int, double>>>& deltaFM = fm_structure.get_deltaFM();
 
-    z_structure.apply_deltaZ(changes, angle, deltaZ);
+    fm_structure.updateFM(changes, angle, deltaFM);
 
-    for(int o=0; o<deltaZ.size(); o++){
-    for(auto kk:deltaZ[o]){
+    for(int o=0; o<deltaFM.size(); o++){
+    for(auto kk:deltaFM[o]){
         int k=kk.first;
         double delta = kk.second;
 		update_sorted_voxels(o, k);
@@ -99,7 +96,7 @@ double EvaluatorF::incremental_eval(list< pair< int, double > >& changes, double
 //Each returned beamlet is a pair eval,(station, beamlet)
 multimap < double, pair<int, int>, MagnitudeCompare2 > EvaluatorF::sorted_beamlets(const Plan& p, double vsize){
 	int tot_voxels=0;
-	for(int o=0; o<Z.size(); o++) tot_voxels+=Z[o].size();
+	for(int o=0; o<FM.size(); o++) tot_voxels+=FM[o].size();
 
 	int nv = (double) tot_voxels*vsize;
 
@@ -133,9 +130,9 @@ multimap < double, pair<int, int>, MagnitudeCompare2 > EvaluatorF::sorted_beamle
 		voxels.erase(make_pair(D[o][k],make_pair(o,k)));
         D[o][k] = 0.0;
 
-		if(Zmin[o]>0 && Z[o][k] < Zmin[o]) D[o][k]=-w[o]*(Z[o][k]-Zmin[o])/Z[o].size();
+		if(Zmin[o]>0 && FM[o][k] < Zmin[o]) D[o][k]=-w[o]*(FM[o][k]-Zmin[o])/FM[o].size();
 
-		else if(Z[o][k] >= Zmax[o]) D[o][k]=w[o]*(Z[o][k]-Zmax[o])/Z[o].size();
+		else if(FM[o][k] >= Zmax[o]) D[o][k]=w[o]*(FM[o][k]-Zmax[o])/FM[o].size();
 
 		if(D[o][k]!=0.0)
 			voxels.insert(make_pair(D[o][k],make_pair(o,k)));

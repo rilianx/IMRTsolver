@@ -104,7 +104,7 @@ public:
     return 0.0;
   };*/
 
-  double perturbation(Plan& current_plan, PerturbationType perturbation_type,
+  double perturbation(Plan& current_plan, Evaluator& evaluator, PerturbationType perturbation_type,
                               int perturbation_size, bool verbose=true) {
     vector <NeighborMove> neighborhood;
     bool is_move = false;
@@ -133,7 +133,7 @@ public:
 
         //Update delta_eval
         list<pair<int, double> > changes = get_changes_in_fm(current_plan, move); //changes in fluence_map
-        double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
+        double delta_eval = evaluator.get_delta_eval (changes, current_plan.get_station(move.station_id)->getAngle());
        
 
         //list<pair<int, double> > diff;
@@ -144,7 +144,7 @@ public:
 
         //Update delta_eval
         applyMove(current_plan, move);
-        //current_plan.incremental_eval(*s, diff);
+        evaluator.incremental_eval(changes, current_plan.get_station(move.station_id)->getAngle());
 
       if(verbose)
     	  cout << " -move type " << move.type << ", s:" <<
@@ -152,7 +152,7 @@ public:
                ", r:" << move.beamlet_id << ", action:"<< move.action << endl;
       }
     }
-    return(current_plan.getEvaluation());
+    return(evaluator.get_evaluation());
   };
 
   virtual bool perturbate(int no_improvement, int iteration) {
@@ -178,14 +178,14 @@ public:
 
   int used_evaluations;
 
-  double iteratedLocalSearch (Plan& current_plan, int max_time, int max_evaluations,
+  double iteratedLocalSearch (Plan& current_plan, Evaluator& evaluator, int max_time, int max_evaluations,
                               LSType ls_type, bool continuous, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
                               int perturbation_size, int tabu_size, string convergence_file,
 			      int evaluations=0, std::clock_t begin = clock(), bool verbose=false) {
      int current_iteration = 0;
-     double aux_eval = current_plan.getEvaluation();
-     double best_eval = current_plan.getEvaluation();
+     double aux_eval = evaluator.get_evaluation();
+     double best_eval = aux_eval;
      double used_time = 0;
      used_evaluations = evaluations;
      Plan* best_plan=new Plan(current_plan);
@@ -213,22 +213,21 @@ public:
      while (true) {
        // Apply local search
        if (ls_type == LSType::first) {
-         aux_eval = FILocalSearch(current_plan, max_time, max_evaluations,
+         aux_eval = FILocalSearch(current_plan, evaluator, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
 		    tabu_size, trajectory_file, continuous, verbose);
        } else {
-         aux_eval = BILocalSearch(current_plan, max_time, max_evaluations,
+         aux_eval = BILocalSearch(current_plan, evaluator, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
                     tabu_size, trajectory_file, verbose);
        }
 
        if (aux_eval < best_eval) {
+         
          best_eval = aux_eval;
          delete best_plan;
-
-
-
          best_plan = new Plan(current_plan);
+         
 
          
          //cout << best_plan->eval()  << endl;
@@ -241,9 +240,11 @@ public:
 
        // Print convergence information
        if (convergence_file!="") {
+
          c_file << used_evaluations << ";" << current_iteration <<
                    ";" << aux_eval << ";" << best_eval <<
                     planToString(current_plan) << endl;
+
        }
 
        // Termination criterion
@@ -253,15 +254,18 @@ public:
        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
        if (perturbation_size == 0)  break;
 
+      cout << 0 << endl;
        //Perturbation
-       perturbation(current_plan, perturbation_type, perturbation_size, verbose);
+       perturbation(current_plan, evaluator, perturbation_type, perturbation_size, verbose);
 
      }
 
      if (c_file.is_open()) {
        c_file.close();
      }
+     cout << 1 << endl;
      current_plan.newCopy(*best_plan);
+     cout << 2 << endl;
      delete best_plan;
      return(best_eval);
   };
@@ -378,13 +382,13 @@ public:
     return(false);
   };
 
-  double FILocalSearch (Plan& current_plan, int max_time, int max_evaluations,
+  double FILocalSearch (Plan& current_plan, Evaluator& evaluator, int max_time, int max_evaluations,
                         int& used_evaluations, NeighborhoodType ls_neighborhood,
                         LSTargetType ls_target_type, int tabu_size,
                         string trajectory_file, bool continuous, bool verbose=false) {
 
     vector <NeighborMove> neighborhood;
-    double current_eval = current_plan.getEvaluation();
+    double current_eval = evaluator.get_evaluation();
     NeighborMove best_move = {0,0,0,0,0};
     NeighborhoodType current_neighborhood;
     LSTarget ls_target = {ls_target_type, best_move};
@@ -453,7 +457,7 @@ public:
         
         list<pair<int, double> > changes = get_changes_in_fm(current_plan,move); //changes in fluence_map
         //double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
-        double delta_eval = EvaluatorF::getInstance().get_delta_eval (changes, current_plan.get_station(move.station_id)->getAngle());
+        double delta_eval = evaluator.get_delta_eval (changes, current_plan.get_station(move.station_id)->getAngle());
 
         //Update delta_eval (eliminar 3 lineas)
         //list<pair<int, double> > diff;
@@ -468,12 +472,12 @@ public:
         // Check if there is an improvement
         if (delta_eval < -0.001) {
             applyMove(current_plan, move); //NO llama a incremental_eval
-            current_eval = EvaluatorF::getInstance().incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
+            current_eval = evaluator.incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
 
         if(1)
             cout << "    neighbor: " << n_neighbors  << "; "
               << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
-              << "); improvement: " << EvaluatorF::getInstance().get_evaluation() << endl;
+              << "); improvement: " << evaluator.get_evaluation() << endl;
 
             improvement = true;
 
@@ -564,16 +568,17 @@ public:
     if(verbose)
       cout << endl;
 
+
     return(current_eval);
   };
 
-  double BILocalSearch (Plan& current_plan, int max_time, int max_evaluations,
+  double BILocalSearch (Plan& current_plan, Evaluator& evaluator, int max_time, int max_evaluations,
                       int& used_evaluations,  NeighborhoodType ls_neighborhood,
                       LSTargetType ls_target_type, int tabu_size,
                       string trajectory_file, bool verbose=true) {
 
     vector <NeighborMove> neighborhood;
-    double current_eval = current_plan.getEvaluation();
+    double current_eval = evaluator.get_evaluation();
     NeighborMove best_move = {0,0,0,0,0};
     NeighborhoodType current_neighborhood;
     LSTarget ls_target = {LSTargetType::target_none, best_move};
@@ -641,11 +646,11 @@ public:
         used_evaluations++;
 
         // Check if there is an improvement
-        if (current_plan.getEvaluation() < (current_eval-0.001)) {
+        if ( evaluator.get_evaluation() < (current_eval-0.001)) {
           if(verbose)
             cout << "; neighbor: " << n_neighbors  << "(" << move.station_id <<
               "," << move.aperture_id << "," << move.action << "); Improvement: " <<
-              current_plan.getEvaluation() << endl;
+               evaluator.get_evaluation() << endl;
 
           improvement = true;
 
@@ -655,7 +660,7 @@ public:
             ls_neighborhood=NeighborhoodType::smixed_i;
 
           // Best improvement
-          current_eval = current_plan.getEvaluation();
+          current_eval =  evaluator.get_evaluation();
           best_move = move;
           //current_plan.undoLast(); //TODO: ignacio revisame!.
           ls_target.target_type = ls_target_type;
@@ -679,7 +684,7 @@ public:
       // Apply best improvement move
       if (improvement) {
         applyMove(current_plan, best_move);
-        current_eval = current_plan.getEvaluation();
+        current_eval =  evaluator.get_evaluation();
         current_plan.clearLast();
         // Add the undo movements as tabu
         if (tabu_size > 0)

@@ -23,7 +23,7 @@ public:
     MixedILS(int bsize, int vsize, double prob_intensity,
                 int step_intensity) : dao(bsize, vsize, prob_intensity, step_intensity) { }
 
-    double iteratedLocalSearch (Plan& P, int max_time, int max_evaluations,
+    double iteratedLocalSearch (Plan& P, Evaluator& evaluator, int max_time, int max_evaluations,
                                 LSType ls_type_IBO, LSType ls_type_DAO,
 				bool continuous,
                                 NeighborhoodType ls_neighborhood_IBO,
@@ -34,14 +34,14 @@ public:
                                 int perturbation_size, int tabu_size, string convergence_file,
                                 int evaluations=0, std::clock_t begin_time = clock(), bool verbose=false) {
 
-        double F =P.getEvaluation();
+        double F =evaluator.get_evaluation();
         double bestF = F;
         total_evals = 0;
 
         Plan* best_plan=new Plan(P);
 
         while(true){
-          F = ibo.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_IBO, continuous,
+          F = ibo.iteratedLocalSearch(P, evaluator, max_time, max_evaluations, ls_type_IBO, continuous,
             ls_neighborhood_IBO, ls_target_type_IBO, perturbation_type,
             0, tabu_size, convergence_file, total_evals, begin_time, verbose);
           total_evals=ibo.used_evaluations;
@@ -52,7 +52,7 @@ public:
 
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
 
-          F = dao.iteratedLocalSearch(P, max_time, max_evaluations, ls_type_DAO, continuous,
+          F = dao.iteratedLocalSearch(P, evaluator, max_time, max_evaluations, ls_type_DAO, continuous,
             ls_neighborhood_DAO, ls_target_type_DAO, perturbation_type,
       			  0, tabu_size, convergence_file, total_evals, begin_time, verbose);
           total_evals=dao.used_evaluations;
@@ -63,7 +63,7 @@ public:
             //P.get_station(i)->printApertures();
             //P.printIntensity(i, false);
           }
-          P.eval();
+          evaluator.eval(P);
 
           //TODO: save best plan
           if(F<bestF){
@@ -82,11 +82,11 @@ public:
 
           //Perturbation
           //cout << "pert" << endl;
-          ibo.perturbation(P_pert, perturbation_type, perturbation_size, verbose);
+          ibo.perturbation(P_pert, evaluator, perturbation_type, perturbation_size, verbose);
           //cout << "Ppert:" << P_pert.eval() << endl;
           P.newCopy(P_pert);
           //cout << "P:" << P.eval() << endl;
-          P.eval();
+          evaluator.eval(P);
         }
         P.newCopy(*best_plan);
         delete best_plan;

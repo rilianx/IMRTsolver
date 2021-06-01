@@ -22,7 +22,6 @@
 #include "Volume.h"
 #include "Matrix.h"
 #include "Station.h"
-#include "EvaluationFunction.h"
 
 #ifndef Evaluator_H_
 #define Evaluator_H_
@@ -33,9 +32,21 @@ using namespace maths;
 
 namespace imrt {
 
+class Plan; 
+
+struct pair_hash
+{
+  template <typename T, typename U>
+  std::size_t operator()(const std::pair<T, U> &x) const
+  {
+    return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+  }
+};
+
 
 class FluenceMap{
 
+public:
 	FluenceMap(vector<Volume>& volumes, const Collimator& collimator);
 	virtual ~FluenceMap();
 	void create_voxel2beamlet_list(vector<Volume>& volumes, const Collimator& collimator);
@@ -43,10 +54,12 @@ class FluenceMap{
 	// Generate the dose distribution matrices Z for each organ
 	void computeFM(const Plan& p);
 
-	//Get deltaZ related to the list of changes
+	//Get deltaFM related to the list of changes
 	std::vector<list < pair<int, double>>>& compute_deltaFM(list< pair< int, double > >& changes, double angle) const;
 	std::vector<list < pair<int, double>>>& get_deltaFM() const {return deltaFM;}
 	void updateFM(list< pair< int, double > >& changes, double angle, std::vector<list < pair<int, double>>>& deltaFM);
+	
+	const vector< vector<double> >& getFM() {return FM;}
 
 private:
 	//dose distribution vectors for each organ
@@ -73,6 +86,25 @@ private:
 };
 
 
+ struct MagnitudeCompare2
+ {
+     bool operator()(const double& lhs, const double& rhs) const
+     {
+         return abs(lhs) > abs(rhs);
+     }
+
+     bool operator()(const pair< double, pair<int,int> >& lhs, const pair< double, pair<int,int> >& rhs) const
+     {
+    	 if(abs(lhs.first) > abs(rhs.first)) return true;
+    	 if(abs(lhs.first) == abs(rhs.first)){
+    		 //if(pair_hash()(lhs.second)< pair_hash()(rhs.second)) return true;
+    		 if(lhs.second.first < rhs.second.first) return true;
+    		 if(lhs.second.first == rhs.second.first &&  lhs.second.second < rhs.second.second) return true;
+    	 }
+         return false;
+     }
+};
+
 /* Abstract Evaluator
  */
 
@@ -83,12 +115,13 @@ class Evaluator{
 public:
 
 	//Constructor of the evaluator.
-	Evaluator(EvaluationFunction& z_structure, vector<double>& w, vector<double>& Zmin, 
-    vector<double>& Zmax) : z_structure(z_structure), Zmin(Zmin), Zmax(Zmax), w(w), Z(z_structure.get_Z()) { };
+	Evaluator(FluenceMap& fm_structure, vector<double>& w, vector<double>& Zmin, 
+    vector<double>& Zmax) : fm_structure(fm_structure), Zmin(Zmin), Zmax(Zmax), w(w), FM(fm_structure.getFM()) { };
 
 
-    EvaluationFunction& z_structure;
-    vector< vector<double> >& Z;
+    FluenceMap& fm_structure;
+    const vector< vector<double> >& FM;
+
     vector<double>& w;
     vector<double>& Zmin;
     vector<double>& Zmax;
@@ -109,9 +142,13 @@ public:
 
     virtual double get_delta_eval(list< pair< int, double > >& changes, double angle) const=0;
 
-	vector< vector<double> >& get_Z(){
-		return Z;
-	};
+	virtual double get_evaluation()=0;
+
+	const vector< vector<double> >& get_FM(){return FM;}
+
+	virtual multimap < double, pair<int, int>, MagnitudeCompare2 > sorted_beamlets(const Plan& p, double vsize)=0;
+
+
 
 
 };
