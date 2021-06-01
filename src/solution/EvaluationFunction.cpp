@@ -43,6 +43,8 @@ EvaluationFunction::EvaluationFunction(vector<Volume>& volumes, const Collimator
 		D.insert(D.end(), vector<double>(nb_voxels[i]));
 	}
 
+	deltaZ.resize(nb_organs);
+
 	create_voxel2beamlet_list(volumes, collimator);
 
 }
@@ -156,45 +158,43 @@ void EvaluationFunction::update_sorted_voxels(vector<double>& w,
 			voxels.insert(make_pair(D[o][k],make_pair(o,k)));
 }
 
+std::vector<list < pair<int, double>>>& EvaluationFunction::compute_deltaZ(list< pair< int, double > >& changes, double angle) const{
 
-double EvaluationFunction::get_delta_eval(int angle, int b, double delta_intensity,
-	const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax,int n_voxels) const{
 
-	 multimap<double, pair<int,int> > voxels = beamlet2voxel_list.at(angle).at(b);
-	 double delta_F=0.0;
+	for(int o=0; o<nb_organs; o++){
+		deltaZ[o].clear();
+		const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+		for(int k=0; k<nb_voxels[o]; k++){
+			double delta = 0;
+			for (auto let:changes){
+				int b=let.first;
+				if(Dep(k,b)==0.0) continue;
+				delta+= Dep(k,b)*let.second;
+			}
+			if(delta==0.0) continue;
+			deltaZ[o].push_back(make_pair(k,delta));	
+		}
+	}
 
-	 int i=0;
-	 for(auto voxel:voxels){
-		 int o=voxel.second.first, k=voxel.second.second;
-		 const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
-		 double delta = Dep(k,b)*(delta_intensity);
-		 if(delta==0.0) continue;
-
-		 double pen=0.0;
- 		 //with the change in the dose of a voxel we can incrementally modify the value of F
- 		 if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
- 			pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
- 		 else if(Z[o][k] < Zmin[o]) //the penalty disappears
- 			pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
- 		 else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
- 			pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
-
- 		 if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
- 			 pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
- 		 else if(Z[o][k] > Zmax[o]) //the penalty disappears
- 			 pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
- 		 else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
- 			 pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
-
- 		 delta_F += pen/nb_voxels[o];
-		 i++; if(i>n_voxels) break;
-	 }
-	 return delta_F;
+	return deltaZ;	
 }
+
+void EvaluationFunction::apply_deltaZ(list< pair< int, double > >& changes, double angle, std::vector<list < pair<int, double>>>& deltaZ){
+  for(int o=0; o<deltaZ.size(); o++){
+    for(auto kk:deltaZ[o]){
+        int k=kk.first;
+        double delta = kk.second;
+		Z[o][k] += delta;
+	}
+	}
+}
+
+
+
 
 double EvaluationFunction::get_delta_eval(list< pair< int, double > >& diff, double angle,
                                           const vector<double>& w, const vector<double>& Zmin,
-                                          const vector<double>& Zmax,int n_voxels) const{
+                                          const vector<double>& Zmax,int n_voxels, map< pair< int, int >, double >* Z_diff  ) const{
 
   double delta_F=0.0;
   int b;
@@ -202,11 +202,9 @@ double EvaluationFunction::get_delta_eval(list< pair< int, double > >& diff, dou
 
   int i=0;
   for(int o=0; o<nb_organs; o++){
-		for(int k=0; k<nb_voxels[o]; k++){
-  //for(auto voxel:voxels){
-    //int o=voxel.second.first;
-    //int k=voxel.second.second;
-    const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+	const Matrix&  Dep = volumes[o].getDepositionMatrix(angle);
+	for(int k=0; k<nb_voxels[o]; k++){
+   
 
     delta = 0;
 	for (auto let:diff){
@@ -233,6 +231,11 @@ double EvaluationFunction::get_delta_eval(list< pair< int, double > >& diff, dou
 		pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
 
     delta_F += pen/nb_voxels[o];
+
+	if(Z_diff)
+		(*Z_diff)[make_pair(o,k)] = delta;
+	
+
     i++; if(i>n_voxels){break;}
   }
   }
@@ -243,56 +246,20 @@ double EvaluationFunction::get_delta_eval(list< pair< int, double > >& diff, dou
 double EvaluationFunction::incremental_eval(Station& station, vector<double>& w,
 	vector<double>& Zmin, vector<double>& Zmax, list< pair< int, double > >& diff){
 
-  double delta_F=0.0;
+	map< pair <int,int>, double> Z_diff;
+	double delta_F = get_delta_eval(diff, station.getAngle(), w, Zmin, Zmax, 999999, &Z_diff  );
 
-  //for each voxel we compute the change produced by the modified beamlets
-  //while at the same time we compute the variation in the function F produced by all these changes
-
-  for(int o=0; o<nb_organs; o++){
-		const Matrix&  Dep = station.getDepositionMatrix(o);
-		for(int k=0; k<nb_voxels[o]; k++){
-
-		//we compute the change in the delivered dose in voxel k of the organ o
-		double delta=0.0;
-
-		//cout << station.changed_lets.size() << endl;
-		for (auto let:diff){
-		    int b=let.first;
-			if(Dep(k,b)==0.0) continue;
-		    delta+= Dep(k,b)*let.second;
-		}
-		if(delta==0.0) continue; //no change in the voxel
-
-
-		double pen=0.0;
-		//with the change in the dose of a voxel we can incrementally modify the value of F
-		if(Z[o][k] < Zmin[o] && Z[o][k] + delta < Zmin[o]) //update the penalty
-			pen += w[o]*delta*(delta+2*(Z[o][k]-Zmin[o]));
-		else if(Z[o][k] < Zmin[o]) //the penalty disappears
-			pen -=  w[o] * ( pow(Zmin[o]-Z[o][k], 2) );
-		else if(Z[o][k] + delta < Zmin[o]) //the penalty appears
-			pen +=  w[o] * ( pow(Zmin[o]-(Z[o][k]+delta), 2) );
-
-		if(Z[o][k] > Zmax[o] && Z[o][k] + delta > Zmax[o]) //update the penalty
-			pen += w[o]*delta*(delta+2*(-Zmax[o] + Z[o][k]));
-		else if(Z[o][k] > Zmax[o]) //the penalty disappears
-			pen -=  w[o] * ( pow(Z[o][k]-Zmax[o], 2) );
-		else if(Z[o][k] + delta > Zmax[o]) //the penalty appears
-			pen +=  w[o] * ( pow(Z[o][k]+delta - Zmax[o], 2) );
-
-		delta_F += pen/nb_voxels[o];
-		Z[o][k] += delta;
-
+	for (auto diff:Z_diff){
+		int o= diff.first.first;
+		int k= diff.first.second;
+		Z[o][k] += diff.second;
 		double prev_Dok=D[o][k];
 		update_sorted_voxels(w, Zmin, Zmax, o, k);
-
-
 	}
-  }
 
-  F+=delta_F;
-  n_evaluations++;
-  return F;
+	F+=delta_F;
+	n_evaluations++;
+  	return F;
 
 }
 

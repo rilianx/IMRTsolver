@@ -14,6 +14,7 @@
 
 #include "IntensityGenerator.h"
 #include "EvaluationFunction.h"
+#include "EvaluatorF.h"
 #include "Plan.h"
 #include "Collimator.h"
 #include "Volume.h"
@@ -486,6 +487,10 @@ int main(int argc, char** argv){
   Plan P (w, Zmin, Zmax, collimator, volumes, max_apertures,
           max_intensity, initial_intensity, step_intensity,
           initial_setup);
+
+  EvaluationFunction& ev = EvaluationFunction::getInstance();
+  EvaluatorF::getInstance(ev, w, Zmin, Zmax);
+  EvaluatorF::getInstance().eval(P);
 
   double best_eval = P.getEvaluation();
 

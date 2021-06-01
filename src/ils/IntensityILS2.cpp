@@ -6,6 +6,9 @@
  */
 
 #include "IntensityILS2.h"
+#include "EvaluatorF.h"
+
+
 
 namespace imrt {
 
@@ -286,7 +289,7 @@ double IntensityILS2::get_delta_eval(Plan &current_plan, NeighborMove move, list
   double current_eval = current_plan.getEvaluation();
 
   int type            = move.type;
-  Station* s                   = current_plan.get_station(move.station_id);
+  Station* s          = current_plan.get_station(move.station_id);
   int beamlet         = move.beamlet_id;
   int action          = move.action;
   double intens	  = move.aperture_id;
@@ -334,18 +337,45 @@ double IntensityILS2::get_delta_eval(Plan &current_plan, NeighborMove move, list
 }
 
 double IntensityILS2::applyMove (Plan & current_plan, NeighborMove move, bool p) {
-  list<pair<int, double> > diff;
-  double delta_eval = get_delta_eval(current_plan, move, diff);
-  double current_eval = 0.0;
-  Station *s = current_plan.get_station(move.station_id);
 
-  if(delta_eval == -1.0) return 1.0;
-  if(p || delta_eval < -0.001)
-	   current_eval = current_plan.incremental_eval(*s, diff);
-  else
-     s->diff_undo(diff);
+  int type            = move.type;
+  Station* s          = current_plan.get_station(move.station_id);
+  int beamlet         = move.beamlet_id;
+  int action          = move.action;
+  double intens	  = move.aperture_id;
+  
 
-  return(current_eval);
+  int i = s->beam2pos[beamlet].first;
+  int j = s->beam2pos[beamlet].second;
+
+  double delta_eval= -1.0;
+
+  if (type == 1) {
+    // single beam
+    double intensity;
+
+    if (action < 0) // decrease intensity
+      intensity=s->prev_intensity(i,j);
+     else // Increase intensity
+      intensity=s->next_intensity(i,j);
+
+     s->change_intensity(i, j, intensity);
+
+  } else {
+    // change intensity
+    if(intens != 0.0){
+       map< int, int >::iterator iter=s->int2nb.begin();
+       std::advance( iter, ((int) intens-1) );
+       intens = iter->first;
+     }
+
+    if (action < 0)  s->change_intensity(intens, -1.0);
+    else s->change_intensity(intens, +1.0);
+
+  }
+
+
+  return(0.0);
 }
 
 string IntensityILS2::planToString(Plan &P) {

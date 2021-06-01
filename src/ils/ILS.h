@@ -13,6 +13,7 @@
 #include <fstream>
 #include <algorithm>
 #include "Plan.h"
+#include "EvaluatorF.h"
 
 namespace imrt {
 
@@ -133,6 +134,8 @@ public:
         //Update delta_eval
         list<pair<int, double> > changes = get_changes_in_fm(current_plan, move); //changes in fluence_map
         double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
+       
+
         //list<pair<int, double> > diff;
         //double delta_eval = get_delta_eval(current_plan, move, diff);
         //Station *s = current_plan.get_station(move.station_id);
@@ -152,9 +155,9 @@ public:
     return(current_plan.getEvaluation());
   };
 
- /* virtual bool perturbate(int no_improvement, int iteration) {
+  virtual bool perturbate(int no_improvement, int iteration) {
     return(false);
- };*/
+  };
 
   //virtual void undoLast(Plan& p){
 	//  p.undoLast();
@@ -212,7 +215,7 @@ public:
        if (ls_type == LSType::first) {
          aux_eval = FILocalSearch(current_plan, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
-		                tabu_size, trajectory_file, continuous, verbose);
+		    tabu_size, trajectory_file, continuous, verbose);
        } else {
          aux_eval = BILocalSearch(current_plan, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
@@ -223,7 +226,10 @@ public:
          best_eval = aux_eval;
          delete best_plan;
 
+
+
          best_plan = new Plan(current_plan);
+
          
          //cout << best_plan->eval()  << endl;
        }
@@ -446,7 +452,8 @@ public:
         if (tabu_size > 0 && isTabu(move, tabu_list))  continue;
         
         list<pair<int, double> > changes = get_changes_in_fm(current_plan,move); //changes in fluence_map
-        double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
+        //double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
+        double delta_eval = EvaluatorF::getInstance().get_delta_eval (changes, current_plan.get_station(move.station_id)->getAngle());
 
         //Update delta_eval (eliminar 3 lineas)
         //list<pair<int, double> > diff;
@@ -460,18 +467,13 @@ public:
 
         // Check if there is an improvement
         if (delta_eval < -0.001) {
-            current_eval = applyMove(current_plan, move); //debería llamar a incremental_eval
-            //current_eval = current_plan.incremental_eval(*s, diff);
-            
-            //Update delta_eval (eliminar)
-            //current_plan.clearLast(); 
+            applyMove(current_plan, move); //NO llama a incremental_eval
+            current_eval = EvaluatorF::getInstance().incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
 
-        if(verbose)
+        if(1)
             cout << "    neighbor: " << n_neighbors  << "; "
               << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
-              << "); improvement: " << current_plan.getEvaluation() << endl;
-
-
+              << "); improvement: " << EvaluatorF::getInstance().get_evaluation() << endl;
 
             improvement = true;
 

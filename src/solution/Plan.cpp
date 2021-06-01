@@ -6,6 +6,7 @@
  */
 
 #include "Plan.h"
+#include "EvaluatorF.h"
 
 namespace imrt {
 
@@ -104,7 +105,8 @@ namespace imrt {
   };
 
   double Plan::incremental_eval (Station& station, list< pair< int, double > >& diff) {
-    evaluation_fx = ev.incremental_eval(station, w, Zmin, Zmax, diff);
+    //evaluation_fx = ev.incremental_eval(station, w, Zmin, Zmax, diff);
+    evaluation_fx = EvaluatorF::getInstance().incremental_eval (diff, station.getAngle());
     last_changed = &station;
     last_diff = diff;
     return(evaluation_fx);

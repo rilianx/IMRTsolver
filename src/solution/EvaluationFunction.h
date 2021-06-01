@@ -100,17 +100,27 @@ public:
 	// Generate the dose distribution matrices Z for each organ
 	void generate_Z(const Plan& p);
 
-	// Eval the cost F based on the dose deposition matrix Z
-	double eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
+	//Get deltaZ related to the list of changes
+	std::vector<list < pair<int, double>>>& compute_deltaZ(list< pair< int, double > >& changes, double angle) const;
+	std::vector<list < pair<int, double>>>& get_deltaZ() const {return deltaZ;}
+	void apply_deltaZ(list< pair< int, double > >& changes, double angle, std::vector<list < pair<int, double>>>& deltaZ);
 
-	double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
+	// Eval the cost F based on the dose deposition matrix Z
+	virtual double eval(const Plan& p, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax);
+
+	virtual double incremental_eval(Station& station, vector<double>& w, vector<double>& Zmin, vector<double>& Zmax,
 			list< pair< int, double > >& diff);
 
-  double get_delta_eval(int angle, int b, double delta_intensity,
-      	const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax, int n_voxels=999999) const;
+    double get_delta_eval(int angle, int b, double delta_intensity,
+    const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax, int n_voxels=999999) const{
+			  list< pair< int, double > > diff;
+			  diff.push_back(make_pair(b,delta_intensity));
+			  return  get_delta_eval(diff, angle, w, Zmin, Zmax, n_voxels);
+	}
 
-  double get_delta_eval(list< pair< int, double > >& diff, double angle,
-                        const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax, int n_voxels=999999) const;
+    virtual double get_delta_eval(list< pair< int, double > >& diff, double angle,
+                        const vector<double>& w, const vector<double>& Zmin, const vector<double>& Zmax, 
+						int n_voxels=999999, map< pair< int, int >, double >* Z_diff=NULL) const;
 
 	//Update D (partial derivative of F w.r.t. the voxels)
 	//And resorts the set of voxels
@@ -142,6 +152,7 @@ public:
 private:
 	//dose distribution vectors for each organ
 	vector< vector<double> > Z;
+	mutable std::vector<list < pair<int, double>>> deltaZ;
 
 	//voxel_dose[o][d] indicates the number of voxels in organ o with a dose between d and d+1
 	vector<vector<double> > voxel_dose;
