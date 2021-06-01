@@ -14,6 +14,7 @@
 
 #include "IntensityGenerator.h"
 #include "Evaluator.h"
+#include "EvaluatorGScore.h"
 #include "Plan.h"
 #include "Collimator.h"
 #include "Volume.h"
@@ -651,6 +652,10 @@ int main(int argc, char** argv){
 					 tabu_size, convergence_file, 0, clock(), _verbose);
     used_evaluations = mixed_ils.total_evals;
   }
+
+  EvaluatorGS evGS(fm,w,Zmin,Zmax);
+  cout << "GS:" << evGS.eval(P) << endl;;
+
 
 
 

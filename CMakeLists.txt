@@ -10,7 +10,7 @@ set(SOURCES src/solution/Plan.cpp src/solution/Station.cpp
             src/ils/IntensityILS2.cpp src/ils/IntensityGenerator.cpp src/solution/EvaluatorF.cpp src/solution/FluenceMap.cpp)
 set(HEADERS src/solution/Plan.h src/solution/Station.h
             src/base/Collimator.h src/base/Volume.h src/ils/ILS.h src/ils/ApertureILS.h
-            src/ils/IntensityILS2.h src/ils/IntensityGenerator.h src/solution/EvaluatorF.h src/solution/Evaluator.h )
+            src/ils/IntensityILS2.h src/ils/IntensityGenerator.h src/solution/EvaluatorF.h src/solution/Evaluator.h src/solution/EvaluatorGScore.h)
 
 INCLUDE_DIRECTORIES(
 src
