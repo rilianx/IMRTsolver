@@ -125,7 +125,7 @@ public:
     }
 
     if (is_move ){
-      if(verbose) cout << "ILS perturbation:" << endl;
+      if(verbose) cout << "ILS perturbation current:" << evaluator.eval(current_plan)  << endl;
       for (int i=0; i < perturbation_size; i++) {
           neighborhood = getNeighborhood(current_plan, neighborhood_type,
                                          ls_target);
@@ -188,7 +188,7 @@ public:
      double best_eval = aux_eval;
      double used_time = 0;
      used_evaluations = evaluations;
-     Plan* best_plan=new Plan(current_plan);
+     Plan* best_plan = new Plan(current_plan);
 
      //Start time
      std::clock_t time_end;
@@ -227,9 +227,7 @@ public:
          best_eval = aux_eval;
          delete best_plan;
          best_plan = new Plan(current_plan);
-         
-
-         
+                  
          //cout << best_plan->eval()  << endl;
        }
 
@@ -254,7 +252,8 @@ public:
        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
        if (perturbation_size == 0)  break;
 
-      cout << 0 << endl;
+       cout << 0 << endl;
+       current_plan.newCopy(*best_plan);
        //Perturbation
        perturbation(current_plan, evaluator, perturbation_type, perturbation_size, verbose);
 

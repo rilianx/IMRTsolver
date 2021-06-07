@@ -37,7 +37,7 @@ namespace imrt {
 
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
       Station* aux = new Station(**it);
-      if (p.last_changed && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
+      //if (p.last_changed && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
       add_station(*aux);
       angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
@@ -47,13 +47,15 @@ namespace imrt {
 
   void Plan::newCopy(Plan& p) {
     for( auto station :stations ) delete station;
-
     stations.clear();
     //real_stations.clear();
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
+      
       Station* aux = new Station (**it);
-      if (p.last_changed!=NULL && p.last_changed->getAngle()==aux->getAngle()) last_changed=aux;
-      stations.push_back(aux);
+      //if (p.last_changed && p.last_changed->getAngle()==aux->getAngle()) 
+      //  last_changed=aux;
+      add_station(*aux);
+      //stations.push_back(aux);
       angle2station[aux->getAngle()]=aux;
       //real_stations.push_back(*aux);
     }

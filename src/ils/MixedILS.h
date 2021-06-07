@@ -39,6 +39,8 @@ public:
         total_evals = 0;
 
         Plan* best_plan=new Plan(P);
+        Plan* best_ibo_plan=new Plan(P);
+        double bestIBOF = F;
 
         while(true){
           F = ibo.iteratedLocalSearch(P, evaluator, max_time, max_evaluations, ls_type_IBO, continuous,
@@ -48,10 +50,20 @@ public:
           //plan for perturbations
 
           Plan P_pert(P);
+          
+          //TODO: save best ibo plan
+          if(F<bestIBOF){
+            bestIBOF=F;
+            delete best_ibo_plan;
+            best_ibo_plan = new Plan(P);
+            cout << "New best ibo" << bestIBOF<< endl;
+          }
+
+
           P.generateApertures();
 
           for(auto s:P.get_stations()) s->generateIntensityMatrix();
-
+          
           F = dao.iteratedLocalSearch(P, evaluator, max_time, max_evaluations, ls_type_DAO, continuous,
             ls_neighborhood_DAO, ls_target_type_DAO, perturbation_type,
       			  0, tabu_size, convergence_file, total_evals, begin_time, verbose);
@@ -82,6 +94,7 @@ public:
 
           //Perturbation
           //cout << "pert" << endl;
+          P_pert.newCopy(*best_ibo_plan);
           ibo.perturbation(P_pert, evaluator, perturbation_type, perturbation_size, verbose);
           //cout << "Ppert:" << P_pert.eval() << endl;
           P.newCopy(P_pert);
