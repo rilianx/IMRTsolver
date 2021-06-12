@@ -97,51 +97,50 @@ public:
 
 	virtual ~EvaluatorGS() { }
 
+    mutable double D10_0, D20_0, D25_0, D30_0, D50_0, Dmax_1, D20_1, D30_1, D50_1, Dmax_2, D80_2, D95_2, D99_2;
+
+    void print(){
+        cout << (D10_0/75) << "," << (D20_0/70) << "," << (D25_0/65) << "," << (D30_0/60) << "," << (D50_0/50) <<
+        "," << (Dmax_1/77.5) << "," << (D20_1/75) << "," << (D30_1/65) << "," << (D50_1/50) <<
+        "," << (76/D95_2) << "," << (69.9/D99_2) << "," << (Dmax_2/85.8);// << "," << (max(76/D80_2-1,0.0));
+    }
+
     double eval(vector< vector<double> >& sortedFM, bool verbose=false) const{
         for(int i=0; i<sortedFM.size();i++)
             std::sort(sortedFM[i].begin(), sortedFM[i].end());
 
 
-        double Dmax_0 = computeD(sortedFM[0],vector<double>({1.0})).front();
-
         std::list<double> D2 = computeD(sortedFM[2],vector<double>({0.20, 0.05, 0.01, 1.0}));
         auto D2_it = D2.begin();
-        double D80_2 = *D2_it; D2_it++; //  >76 ** auxiliar
-        double D95_2 = *D2_it; D2_it++; //  >76
-        double D99_2 = *D2_it; D2_it++; //  >69.9
-        double Dmax_2 = *D2_it;         //  <85.8
+        D80_2 = *D2_it; D2_it++; //  >76 ** auxiliar
+        D95_2 = *D2_it; D2_it++; //  >76
+        D99_2 = *D2_it; D2_it++; //  >69.9
+        Dmax_2 = *D2_it;         //  <85.8
 
         std::list<double> D0 = computeD(sortedFM[0],vector<double>({0.90,0.80,0.75,0.70,0.50}));
         auto D0_it = D0.begin();
-        double D10_0 = *D0_it; D0_it++; //75
-        double D20_0 = *D0_it; D0_it++; //70
-        double D25_0 = *D0_it; D0_it++; //65
-        double D30_0 = *D0_it; D0_it++; //60
-        double D50_0 = *D0_it;          //50
-
+        D10_0 = *D0_it; D0_it++; //75
+        D20_0 = *D0_it; D0_it++; //70
+        D25_0 = *D0_it; D0_it++; //65
+        D30_0 = *D0_it; D0_it++; //60
+        D50_0 = *D0_it;          //50
 
         std::list<double> D1 = computeD(sortedFM[1],vector<double>({1.0,0.80,0.70,0.5}));
         auto D1_it = D1.begin();
-        double Dmax_1 = *D1_it; D1_it++; //77.5
-        double D20_1 = *D1_it; D1_it++; //75
-        double D30_1 = *D1_it; D1_it++; //65
-        double D50_1 = *D1_it;          //50
+        Dmax_1 = *D1_it; D1_it++; //77.5
+        D20_1 = *D1_it; D1_it++; //75
+        D30_1 = *D1_it; D1_it++; //65
+        D50_1 = *D1_it;          //50
 
         if(verbose) cout << D10_0 <<"," << D20_0 <<"," << D25_0 <<"," << D30_0 << ","<< D50_0 << "," << 
         Dmax_1 << "," << D20_1 << "," << D30_1 << "," << D50_1 << "," << Dmax_2 << "," << D95_2 << "," << D99_2 << endl;
 
         return 0.05*(max(D10_0/75,1.0)) + 0.05*(max(D20_0/70,1.0)) + 0.05*(max(D25_0/65,1.0)) + 0.05*(max(D30_0/60,1.0)) + 0.05*(max(D50_0/50,1.0)) + 
-        0.0825*(max(Dmax_1/77.5,1.0)) + 0.0825*(max(D20_1/75,1.0)) + 0.0825*(max(D30_1/65,1.0)) + 0.0825*(max(D50_1/50,1.0)) + 0.05*(max(D50_0/50,1.0)) + 
+        0.0625*(max(Dmax_1/77.5,1.0)) + 0.0625*(max(D20_1/75,1.0)) + 0.0625*(max(D30_1/65,1.0)) + 0.0625*(max(D50_1/50,1.0)) + 
         0.1666*(max(76/D95_2,1.0)) + 0.1666*(max(69.9/D99_2,1.0)) + 0.1666*(max(Dmax_2/85.8,1.0)) + 0.5*(max(76/D80_2-1,0.0)) ;
         
         //0.125*(max(V65_0/0.25-1,0.0)) + 0.125*(max(V40_1/0.35-1,0.0)) + 0.125*(max(V65_1/0.17-1,0.0)) + 0.5*(max(Zmin[2]/D98_2-1,0.0)) + 0.5*(max(Zmin[2]/D80_2-1,0.0)) );
    
-
-
-        if(verbose){
-         }
-
-
 
         //if(!gs2)
         //    return (0.125*(V40_0/0.50) + 0.125*(V65_0/0.25) + 0.125*(V40_1/0.35) + 0.125*(V65_1/0.17) + 0.5*(Zmin[2]/D98_2) );

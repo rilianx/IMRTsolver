@@ -483,7 +483,9 @@ public:
         //these evals compute the evaluation using the already updated z structure
         cout << used_evaluations <<",";
         cout << evalF.incremental_eval() << ",";
-        cout << evalGS.incremental_eval() <<endl;
+        cout << evalGS.incremental_eval() << ",";
+        //evalGS.print();
+        cout <<current_neighborhood << endl;
 
         if(false)
             cout << "    neighbor: " << n_neighbors  << "; "

@@ -69,6 +69,6 @@ print(tabulate(table, headers=['D10(75)', 'D20(70)', 'D25(65)', 'D30(60)', 'D50(
 show_dvh(dose_vectors)
 
 gs = 0.05*(np.maximum(D10_0/75,1)) + 0.05*(np.maximum(D20_0/70,1)) + 0.05*(np.maximum(D25_0/65,1)) + 0.05*(np.maximum(D30_0/60,1)) + 0.05*(np.maximum(D50_0/50,1)) + \
-    0.0825*(np.maximum(Dmax_1/77.5,1)) + 0.0825*(np.maximum(D20_1/75,1)) + 0.0825*(np.maximum(D30_1/65,1)) + 0.0825*(np.maximum(D50_1/50,1)) + 0.05*(np.maximum(D50_0/50,1)) + \
+    0.0625*(np.maximum(Dmax_1/77.5,1)) + 0.0625*(np.maximum(D20_1/75,1)) + 0.0625*(np.maximum(D30_1/65,1)) + 0.0625*(np.maximum(D50_1/50,1)) + \
     0.1666*(np.maximum(76/D95_2,1)) + 0.1666*(np.maximum(69.9/D99_2,1)) + 0.1666*(np.maximum(Dmax_2/85.8,1))-1
 print("gs:",gs)
