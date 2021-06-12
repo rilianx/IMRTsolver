@@ -70,9 +70,27 @@ double EvaluatorF::get_delta_eval(list< pair< int, double > >& changes, double a
 }
 
 
-double EvaluatorF::incremental_eval(list< pair< int, double > >& changes, double angle){
+double EvaluatorF::incremental_eval(){
+	F=0.0;
+	for(int o=0; o<FM.size(); o++){
+		double pen=0.0;
+		for(int k=0; k<FM[o].size(); k++){
+			if(FM[o][k] < Zmin[o] )
+				 pen += w[o] * ( pow(Zmin[o]-FM[o][k], 2) );
 
-	
+			if(FM[o][k] > Zmax[o] )
+				 pen += w[o] * ( pow(FM[o][k]-Zmax[o], 2) );
+
+			update_sorted_voxels(o, k);
+		}
+		F+=pen/FM[o].size();
+	}
+    
+	n_evaluations++;
+	return F;
+}
+
+double EvaluatorF::incremental_eval(list< pair< int, double > >& changes, double angle){
 	double deltaF = get_delta_eval(changes, angle);
     std::vector<list < pair<int, double>>>& deltaFM = fm_structure.get_deltaFM();
 

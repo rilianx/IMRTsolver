@@ -6,7 +6,19 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 30
 min_seeds = 30
-algo_names = ibo_setup_bi-li dao_setup_in-ap
+algo_names = mixedILS2
+
+[ibo_bi-li-openmin]
+exec = "../AS"
+params = --file-dep=_INSTANCE --setup=open_min --convergence=ibo_ls --ls_sequential=aperture -s mixedILS  --maxeval=25000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5 --targeted --min_impr=0.05 --vsize=0.002 --tabu-size=200
+outputpos_times = 0
+outputpos_boxes = 0
+
+[mixedILS2]
+exec = "../AS"
+params = --file-dep=_INSTANCE --setup=open_min --convergence=mixedILS2 --ls_sequential=aperture -s mixedILS  --maxeval=25000 --ls=first --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=..  --initial-intensity=5 --targeted --min_impr=0.05 --vsize=0.002 --tabu-size=200
+outputpos_times = 0
+outputpos_boxes = 0
 
 [ibo_setup_mixed]
 exec = "../AS"

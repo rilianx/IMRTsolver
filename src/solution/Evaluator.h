@@ -146,7 +146,31 @@ public:
 
 	const vector< vector<double> >& get_FM(){return FM;}
 
+
+	void save_sorted_FMs(string filename){
+		vector< vector<double> > sortedFM=FM;
+		for(int i=0; i<sortedFM.size();i++)
+            std::sort(sortedFM[i].begin(), sortedFM[i].end());
+
+		ofstream myfile;
+  		myfile.open (filename);
+  		myfile << "{ \"fmos\":\n[";
+		for(int i=0;i<sortedFM.size();i++){
+			myfile << "[";
+			for(int j=0;j<sortedFM[i].size();j++){
+				myfile << sortedFM[i][j];
+				if(j!=sortedFM[i].size()-1) myfile << ",";
+			}
+			if(i!=sortedFM.size()-1) myfile << "]," << endl;
+			else myfile << "]" << endl;
+		}
+		myfile << "]}\n";
+		myfile.close();	
+	}
+
 	virtual multimap < double, pair<int, int>, MagnitudeCompare2 > sorted_beamlets(const Plan& p, double vsize)=0;
+
+
 
 
 

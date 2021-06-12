@@ -14,6 +14,7 @@
 #include <algorithm>
 #include "Plan.h"
 #include "EvaluatorF.h"
+#include "EvaluatorGScore.h"
 
 namespace imrt {
 
@@ -386,6 +387,12 @@ public:
                         LSTargetType ls_target_type, int tabu_size,
                         string trajectory_file, bool continuous, bool verbose=false) {
 
+    EvaluatorGS evalGS(evaluator);
+    evalGS.eval(current_plan);
+
+    EvaluatorF evalF(evaluator);
+    evalF.eval(current_plan);
+
     vector <NeighborMove> neighborhood;
     double current_eval = evaluator.get_evaluation();
     NeighborMove best_move = {0,0,0,0,0};
@@ -472,11 +479,17 @@ public:
         if (delta_eval < -0.001) {
             applyMove(current_plan, move); //NO llama a incremental_eval
             current_eval = evaluator.incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
+            
+        //these evals compute the evaluation using the already updated z structure
+        cout << used_evaluations <<",";
+        cout << evalF.incremental_eval() << ",";
+        cout << evalGS.incremental_eval() <<endl;
 
-        if(1)
+        if(false)
             cout << "    neighbor: " << n_neighbors  << "; "
               << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
-              << "); improvement: " << evaluator.get_evaluation() << endl;
+              << "); improvement: " << evaluator.get_evaluation() << ";" << endl;
+              //<< evalGS.incremental_eval(changes,current_plan.get_station(move.station_id)->getAngle()) <<endl;
 
             improvement = true;
 

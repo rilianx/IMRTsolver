@@ -55,12 +55,19 @@ public:
 			D.insert(D.end(), vector<double>(FM[i].size()));
 	 };
 
+	EvaluatorF(Evaluator& ev) : Evaluator(ev.fm_structure,ev.w,ev.Zmin,ev.Zmax), F(0.0){
+		for(int i=0; i<FM.size(); i++)
+			D.insert(D.end(), vector<double>(FM[i].size()));
+	}
+
 
 	virtual ~EvaluatorF() { }
 
 
 	// Eval the cost F based on the dose deposition matrix Z
 	virtual double eval(const Plan& p);
+
+	virtual double incremental_eval();
 
 	virtual double incremental_eval(list< pair< int, double > >& changes, double angle);
 

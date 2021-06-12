@@ -156,6 +156,10 @@ int main(int argc, char** argv){
   args::ValueFlag<int>    _tabu_size (strat, "int",
                                     "Tabu list size(" +
                                      to_string(tabu_size)+")", {"tabu-size"});
+  args::Flag              _global_score   (strat, "bool",
+                                 "Global Score", {"gs"});
+  args::Flag              _global_score2   (strat, "bool",
+                                 "Global Score ++", {"gs2"});
 
 
   // Execution parameters
@@ -169,6 +173,7 @@ int main(int argc, char** argv){
   args::ValueFlag<int>    _maxeval  (budget, "int",
                                     "Number of evaluations (" +
                                      to_string(maxiter)+ ")", {"maxeval"});
+
 
 
   // Initial collimator setup (initial solution: aperture, intensity)
@@ -484,15 +489,23 @@ int main(int argc, char** argv){
   vector<Volume> volumes = createVolumes (file, collimator);
 
   FluenceMap fm(volumes, collimator);
-  EvaluatorF evaluator(fm,w,Zmin,Zmax);
+  Evaluator* evaluator=NULL;
+  if(_global_score){
+      evaluator = new EvaluatorGS(fm,w,Zmin,Zmax);
+  }else if(_global_score2){
+      evaluator = new EvaluatorGS(fm,w,Zmin,Zmax);
+      EvaluatorGS::gs2=true;
+  }else
+      evaluator = new EvaluatorF(fm,w,Zmin,Zmax);
+
  
 
   // Create an initial plan
-  Plan P (evaluator, collimator, volumes, max_apertures,
+  Plan P (*evaluator, collimator, volumes, max_apertures,
           max_intensity, initial_intensity, step_intensity,
           initial_setup);
 
-  double best_eval = evaluator.eval(P);
+  double best_eval = evaluator->eval(P);
 
   cout << "##" << endl
        << "##**************************************************************************"
@@ -611,27 +624,29 @@ int main(int argc, char** argv){
    std::clock_t begin_time = clock();
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, 0, prob_intensity, step_intensity);
-    cost = ils->iteratedLocalSearch(P, evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
+    cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="ibo_ls") {
+    //EvaluatorGS evaluatorGS(fm,w,Zmin,Zmax);
+    //evaluatorGS.eval(P);
     ils = new IntensityILS2();
-    cost = ils->iteratedLocalSearch(P, evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
+    cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file, 0, clock(), _verbose);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="ibo+dao") {
     ils = new IntensityILS2();
-    cost = ils->iteratedLocalSearch(P, evaluator, maxtime, ibo_evals, ls_type, continuous, neighborhood,
+    cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, ibo_evals, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file, 0, clock(), _verbose);
-    cout << "eval:" << evaluator.eval(P) << endl;
+    cout << "eval:" << evaluator->eval(P) << endl;
     P.generateApertures();
 
     for(auto s:P.get_stations()) s->generateIntensityMatrix();
 
-    cout << "eval2:" << evaluator.eval(P) << endl;
+    cout << "eval2:" << evaluator->eval(P) << endl;
 
     int evals=ils->used_evaluations;
     std::clock_t begin=ils->time_begin;
@@ -639,14 +654,14 @@ int main(int argc, char** argv){
     ils = new ApertureILS(bsize, 0, prob_intensity, step_intensity);
     neighborhood = NeighborhoodType::sequential_i;
     //if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
-    cost = ils->iteratedLocalSearch(P, evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
+    cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file, evals, begin);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="mixedILS") {
     MixedILS mixed_ils(bsize, 0, prob_intensity, step_intensity);
     NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;
-    cost = mixed_ils.iteratedLocalSearch(P, evaluator, maxtime, maxeval, ls_type, ls_type, continuous,
+    cost = mixed_ils.iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, ls_type, continuous,
 					 neighborhood, neighborhood_DAO, target_type,
 					 LSTargetType::target_none, perturbation_type, perturbation_size,
 					 tabu_size, convergence_file, 0, clock(), _verbose);
@@ -654,7 +669,9 @@ int main(int argc, char** argv){
   }
 
   EvaluatorGS evGS(fm,w,Zmin,Zmax);
-  cout << "GS:" << evGS.eval(P) << endl;;
+  EvaluatorF ev(fm,w,Zmin,Zmax);
+  cout << "Global Score:" << evGS.eval(P, true) << endl;;
+  cout << "FMO:" << ev.eval(P) << endl;;
 
 
 
@@ -723,12 +740,12 @@ int main(int argc, char** argv){
   if(convergence_file!="") o_file.close();
 
   set<int> l = get_angles(file, 5);
-  if(_plot){
+  /*if(_plot){
 	  std::stringstream ss;
 	  ss << "python plotter/plot.py " << *l.begin()/5 << "_" << strategy << "_" << initial_intensity << "_" << initial_setup << "_" << maxtime << "_" << seed <<".pdf";
 	  std::string s = ss.str();
 	  system(s.c_str());
-  }
+  }*/
 
   if(convergence_file!=""){
     bool flag=false;
@@ -740,6 +757,12 @@ int main(int argc, char** argv){
     }
     j_file << endl << "}" << endl;
     j_file.close();
+  }
+
+
+  if(_plot){
+    evGS.save_sorted_FMs("output.json");
+    system("python extras/dvh/dvh.py");
   }
   return 0;
 
