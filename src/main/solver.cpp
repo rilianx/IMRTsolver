@@ -265,6 +265,8 @@ int main(int argc, char** argv){
                                  "File with the deposition matrix", {"file-dep"});
   args::ValueFlag<string> _file2 (io_opt, "string",
                                  "File with the beam coordinates", {"file-coord"});
+    args::ValueFlag<string> _scores (io_opt, "string",
+                                 "File with the scores (global score)", {"file-scores"});
   args::ValueFlag<string> _path  (io_opt, "string",
                                  string("Absolute path of the executable ") +
                                  "(if it is executed from other directory)", {"path"});
@@ -490,11 +492,30 @@ int main(int argc, char** argv){
 
   FluenceMap fm(volumes, collimator);
   Evaluator* evaluator=NULL;
-  if(_global_score){
-      evaluator = new EvaluatorGS(fm,w,Zmin,Zmax);
-  }else if(_global_score2){
-      evaluator = new EvaluatorGS(fm,w,Zmin,Zmax);
-      EvaluatorGS::gs2=true;
+
+  list<Score>* scores=NULL;
+
+  if(_scores){
+    scores = new list<Score>;
+    ifstream indata; // indata is like cin
+    indata.open(_scores.Get()); 
+
+    while ( !indata.eof() ) {
+      char type;
+      double x, min_value, max_value, weight;
+      int organ;
+      Score::Type t;
+      indata >> type >> x >> organ >> min_value >> max_value >> weight;
+      cout <<  type << " " << x  << " "<< organ << " " << min_value <<  " " << max_value << " " <<  weight << endl;
+      if (type=='D') t = Score::D; 
+      else t=Score::V;
+
+      scores->push_back(Score(t,x,organ,min_value,max_value,weight));     
+  }
+}
+
+  if(_scores && _global_score) {
+    evaluator = new EvaluatorGS(fm,w,Zmin,Zmax, *scores);
   }else
       evaluator = new EvaluatorF(fm,w,Zmin,Zmax);
 
@@ -668,10 +689,23 @@ int main(int argc, char** argv){
     used_evaluations = mixed_ils.total_evals;
   }
 
-  EvaluatorGS evGS(fm,w,Zmin,Zmax);
   EvaluatorF ev(fm,w,Zmin,Zmax);
-  cout << "Global Score:" << evGS.eval(P, true) << endl;;
   cout << "FMO:" << ev.eval(P) << endl;;
+
+  if (scores){
+     EvaluatorGS evGS(fm,w,Zmin,Zmax, *scores);
+     cout << "Global Score:" << evGS.eval(P, true) << endl;
+     for (auto score:evGS.scores)
+       cout << score.value << "," ;
+     
+     cout << endl;
+     if(_plot && _scores){
+        evGS.save_sorted_FMs("output.json");
+        system("python extras/dvh/dvh.py");
+    }
+  }
+
+  
 
 
 
@@ -760,10 +794,7 @@ int main(int argc, char** argv){
   }
 
 
-  if(_plot){
-    evGS.save_sorted_FMs("output.json");
-    system("python extras/dvh/dvh.py");
-  }
+
   return 0;
 
 

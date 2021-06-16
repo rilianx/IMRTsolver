@@ -387,8 +387,8 @@ public:
                         LSTargetType ls_target_type, int tabu_size,
                         string trajectory_file, bool continuous, bool verbose=false) {
 
-    EvaluatorGS evalGS(evaluator);
-    evalGS.eval(current_plan);
+    //EvaluatorGS evalGS(evaluator);
+    //evalGS.eval(current_plan);
 
     EvaluatorF evalF(evaluator);
     evalF.eval(current_plan);
@@ -483,15 +483,15 @@ public:
         //these evals compute the evaluation using the already updated z structure
         cout << used_evaluations <<",";
         cout << evalF.incremental_eval() << ",";
-        cout << evalGS.incremental_eval() << ",";
+        cout <<current_eval << ",";
         //evalGS.print();
         cout <<current_neighborhood << endl;
 
         if(false)
             cout << "    neighbor: " << n_neighbors  << "; "
               << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
-              << "); improvement: " << evaluator.get_evaluation() << ";" << endl;
-              //<< evalGS.incremental_eval(changes,current_plan.get_station(move.station_id)->getAngle()) <<endl;
+              << "); improvement: " << evaluator.get_evaluation() << ";";
+            // cout  << current_eval << endl; //evalGS.incremental_eval(changes,current_plan.get_station(move.station_id)->getAngle()) <<endl;
 
             improvement = true;
 
