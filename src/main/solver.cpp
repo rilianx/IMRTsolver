@@ -158,8 +158,6 @@ int main(int argc, char** argv){
                                      to_string(tabu_size)+")", {"tabu-size"});
   args::Flag              _global_score   (strat, "bool",
                                  "Global Score", {"gs"});
-  args::Flag              _global_score2   (strat, "bool",
-                                 "Global Score ++", {"gs2"});
 
 
   // Execution parameters
@@ -267,6 +265,8 @@ int main(int argc, char** argv){
                                  "File with the beam coordinates", {"file-coord"});
     args::ValueFlag<string> _scores (io_opt, "string",
                                  "File with the scores (global score)", {"file-scores"});
+    args::ValueFlag<string> _obj_scores (io_opt, "string",
+                                 "File with the scores (global score)", {"obj-scores"});
   args::ValueFlag<string> _path  (io_opt, "string",
                                  string("Absolute path of the executable ") +
                                  "(if it is executed from other directory)", {"path"});
@@ -494,6 +494,7 @@ int main(int argc, char** argv){
   Evaluator* evaluator=NULL;
 
   list<Score>* scores=NULL;
+  list<Score>* obj_scores=NULL;
 
   if(_scores){
     scores = new list<Score>;
@@ -514,8 +515,32 @@ int main(int argc, char** argv){
   }
 }
 
+  if(_obj_scores){
+    obj_scores = new list<Score>;
+    ifstream indata; // indata is like cin
+    indata.open(_scores.Get()); 
+
+    while ( !indata.eof() ) {
+      char type;
+      double x, min_value, max_value, weight;
+      int organ;
+      Score::Type t;
+      indata >> type >> x >> organ >> min_value >> max_value >> weight;
+      cout <<  type << " " << x  << " "<< organ << " " << min_value <<  " " << max_value << " " <<  weight << endl;
+      if (type=='D') t = Score::D; 
+      else t=Score::V;
+
+      obj_scores->push_back(Score(t,x,organ,min_value,max_value,weight));     
+  }
+}
+
+  list<Evaluator*> evaluators;
   if(_scores && _global_score) {
     evaluator = new EvaluatorGS(fm,w,Zmin,Zmax, *scores);
+    evaluators.push_back(new EvaluatorF(fm,w,Zmin,Zmax));
+    if(_obj_scores)
+      evaluators.push_back(new EvaluatorGS(*evaluator, *obj_scores,false)); //RELU GS
+
   }else
       evaluator = new EvaluatorF(fm,w,Zmin,Zmax);
 
@@ -655,7 +680,7 @@ int main(int argc, char** argv){
     ils = new IntensityILS2();
     cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
-				    tabu_size, convergence_file, 0, clock(), _verbose);
+				    tabu_size, convergence_file, 0, clock(), _verbose, evaluators);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="ibo+dao") {
     ils = new IntensityILS2();
@@ -738,6 +763,9 @@ int main(int argc, char** argv){
 
 
   cout <<  cost << " ";
+  for(auto ev:evaluators) cout << ev->eval(P) << " ";
+
+
   if(convergence_file!="") o_file  <<  cost << " ";
 
   std::clock_t time_end = clock();

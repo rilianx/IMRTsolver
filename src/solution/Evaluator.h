@@ -132,6 +132,8 @@ public:
 	// Eval the cost F based on the dose deposition matrix Z
 	virtual double eval(const Plan& p)=0;
 
+	virtual double incremental_eval()=0;
+
 	virtual double incremental_eval(list< pair< int, double > >& changes, double angle)=0;
 
     double get_delta_eval(int angle, int b, double delta_intensity) const{

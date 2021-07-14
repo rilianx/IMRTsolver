@@ -183,7 +183,7 @@ public:
                               LSType ls_type, bool continuous, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
                               int perturbation_size, int tabu_size, string convergence_file,
-			      int evaluations=0, std::clock_t begin = clock(), bool verbose=false) {
+			      int evaluations=0, std::clock_t begin = clock(), bool verbose=false, list<Evaluator*> evaluators= list<Evaluator*>()) {
      int current_iteration = 0;
      double aux_eval = evaluator.get_evaluation();
      double best_eval = aux_eval;
@@ -216,7 +216,7 @@ public:
        if (ls_type == LSType::first) {
          aux_eval = FILocalSearch(current_plan, evaluator, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
-		    tabu_size, trajectory_file, continuous, verbose);
+		    tabu_size, trajectory_file, continuous, verbose, evaluators);
        } else {
          aux_eval = BILocalSearch(current_plan, evaluator, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
@@ -385,13 +385,7 @@ public:
   double FILocalSearch (Plan& current_plan, Evaluator& evaluator, int max_time, int max_evaluations,
                         int& used_evaluations, NeighborhoodType ls_neighborhood,
                         LSTargetType ls_target_type, int tabu_size,
-                        string trajectory_file, bool continuous, bool verbose=false) {
-
-    //EvaluatorGS evalGS(evaluator);
-    //evalGS.eval(current_plan);
-
-    EvaluatorF evalF(evaluator);
-    evalF.eval(current_plan);
+                        string trajectory_file, bool continuous, bool verbose=false, list<Evaluator*> evaluators=list<Evaluator*>()) {
 
     vector <NeighborMove> neighborhood;
     double current_eval = evaluator.get_evaluation();
@@ -482,8 +476,11 @@ public:
             
         //these evals compute the evaluation using the already updated z structure
         cout << used_evaluations <<",";
-        cout << evalF.incremental_eval() << ",";
-        cout <<current_eval << ",";
+        for(auto ev:evaluators){
+           cout << ev->incremental_eval() << ",";
+        }
+
+        cout << current_eval << ",";
         //evalGS.print();
         cout <<current_neighborhood << endl;
 

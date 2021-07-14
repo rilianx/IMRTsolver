@@ -12,6 +12,5 @@
 
 namespace imrt {
 
-bool EvaluatorGS::gs2=false;
 
 };

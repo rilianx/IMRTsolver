@@ -91,9 +91,11 @@ public:
             if(score.t == Score::D){
                 score.value= computeD(sortedFM[score.organ], score.x);
                 if(score.max_value>0.0){
-                    s+=score.weight *  max(score.value/score.max_value-1.0,0.0);
+                    if(original_gs) s+=score.weight *  score.value/score.max_value;
+                    else s+=score.weight *  max(score.value/score.max_value-1.0,0.0);
                 }else{
-                    s+=score.weight * max(score.min_value/score.value-1.0,0.0);
+                    if(original_gs) s+=score.weight *  score.min_value/score.value;
+                    else s+=score.weight * max(score.min_value/score.value-1.0,0.0);
                 }
             }
         }
@@ -102,11 +104,13 @@ public:
 
 	//Constructor of the evaluator.
 	EvaluatorGS(FluenceMap& fm_structure, vector<double>& w, 
-    vector<double>& Zmin, vector<double>& Zmax, list<Score>& scores) : Evaluator(fm_structure,w,Zmin,Zmax), GS(0.0), scores(scores){
+    vector<double>& Zmin, vector<double>& Zmax, list<Score>& scores, bool original_gs=true) : Evaluator(fm_structure,w,Zmin,Zmax), 
+        GS(0.0), scores(scores), original_gs(original_gs) {
 
 	}
 
-    EvaluatorGS(Evaluator& ev, list<Score>& scores) : Evaluator(ev.fm_structure,ev.w,ev.Zmin,ev.Zmax), GS(0.0), scores(scores){
+    EvaluatorGS(Evaluator& ev, list<Score>& scores, bool original_gs=true) :   Evaluator(ev.fm_structure,ev.w,ev.Zmin,ev.Zmax), 
+    GS(0.0), scores(scores), original_gs(original_gs){
 		
 	}
 
@@ -170,9 +174,9 @@ public:
         return multimap < double, pair<int, int>, MagnitudeCompare2 >();
     }
 
+    
+    bool original_gs;
     double GS;
-
-    static bool gs2;
 
 };
 
