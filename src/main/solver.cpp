@@ -24,64 +24,11 @@
 #include "args.hxx"
 
 
+
+#include "solver_extra.cpp"
+
 using namespace std;
 using namespace imrt;
-
-set<int> get_angles(string file, int n){
-  ifstream _file(file.c_str(), ios::in);
-  string line;
-
-  if (! _file)
-    cerr << "ERROR: unable to open instance file: " << file << ", stopping! \n";
-
-  //cout << "##Reading volume files." << endl;
-  getline(_file, line);
-  _file.close();
-
-  set<int> angles;
-  stack<string> q;
-  char delim=' ';
-  std::size_t current, previous = 0;
-  current = line.find(delim);
-  //cout << line << endl;
-  while (current != std::string::npos) {
-    angles.insert(atoi(line.substr(previous, current - previous).c_str()));
-    previous = current + 1;
-    current = line.find(delim, previous);
-  }
-  angles.insert(atoi(line.substr(previous, current - previous).c_str()));
-
-  return angles;
-}
-
-
-vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
-  ifstream organ_file(organ_filename.c_str(), ios::in);
-  vector<string> organ_files;
-  vector<Volume> volumes;
-  string line;
-
-  if (! organ_file)
-    cerr << "ERROR: unable to open instance file: " <<
-             organ_filename << ", stopping! \n";
-
-  cout << "##Reading volume files." << endl;
-  getline(organ_file, line);
-  while (organ_file) {
-    getline(organ_file, line);
-    if (line.empty()) continue;
-    cout << "##  " << line << endl;
-    //Assuming one data point
-    organ_files.push_back(line);
-  }
-  organ_file.close();
-  cout << "##  Read " << organ_files.size() << " files"<< endl;
-
-  for (int i=0; i<organ_files.size(); i++)
-    volumes.push_back(Volume(collimator, organ_files[i]));
-
-  return(volumes);
-}
 
 
 int main(int argc, char** argv){
@@ -89,16 +36,9 @@ int main(int argc, char** argv){
   int seed = time(NULL);
 
   // Budget and execution variables
-  int maxiter = 5000;
-  int ibo_evals = 2500;
   int maxtime = 0;
   int maxeval = 0;
 
-  // Intensity local search parameters
-  double maxdelta = 5.0;
-  double maxratio = 3.0;
-  double alpha = 1.0;
-  double beta = 1.0;
 
   // Aperture and intensity configuration
   StationSetup initial_setup = StationSetup::open_all_min;
@@ -108,9 +48,9 @@ int main(int argc, char** argv){
   int step_intensity = 1;
 
   // Type of local search
-  string strategy = "dao_ls";
+  string strategy = "ibo_ls";
   LSType ls_type = LSType::first;
-  bool continuous = true;
+  bool continuous = false; // Do not regenerate neighborhood each localsearch step
   NeighborhoodType neighborhood = NeighborhoodType::mixed;
   double prob_intensity = 0.2;
   int tabu_size = 0;
@@ -137,7 +77,7 @@ int main(int argc, char** argv){
 
 
   args::ArgumentParser parser("********* IMRT-Solver (Aperture solver) *********",
-                             "Example.\n../AS -s ibo_ls --maxeval=4000 --ls_sequential=intensity --setup=open_min --seed=2 --ls=first  --max-intensity=20");
+                             "Example.\n ./AS -s ibo_ls --setup=open_min --ls_sequential=aperture -s ibo_ls --maxeval=15000 --ls=first --perturbation-size=5 --seed=1 --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --initial-intensity=5");
 
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
   args::ValueFlag<int>    _seed     (parser, "int", "Seed  (" +
@@ -146,32 +86,23 @@ int main(int argc, char** argv){
   // Search strategies
   args::Group strat (parser, "Strategy options:");
   args::ValueFlag<string> _strategy (strat, "string",
-                                     "Strategy  (dao_ls|ibo_ls|ibo+dao)",
+                                     "Strategy  (dao_ls|ibo_ls|mixedILS)",
                                      {'s', "strategy"});
   args::ValueFlag<string> _ls (strat, "string",
                                "Local search strategy (best|first)",
                                {'l', "ls"});
-  args::Flag _continuous (strat, "bool",
-                                "Do not regenerate neighborhood each localsearch step", {"continuous"});
   args::ValueFlag<int>    _tabu_size (strat, "int",
                                     "Tabu list size(" +
                                      to_string(tabu_size)+")", {"tabu-size"});
-  args::Flag              _global_score   (strat, "bool",
-                                 "Global Score", {"gs"});
-
 
   // Execution parameters
   args::Group budget (parser, "Budget options:");
-  args::ValueFlag<int>    _maxiter  (budget, "int",
-                                    "Number of iterations (" +
-                                     to_string(maxiter)+ ")", {"maxiter"});
   args::ValueFlag<int>    _maxtime  (budget, "int",
                                     "Maximum time in seconds (" +
                                      to_string(maxtime)+")", {"maxtime"});
   args::ValueFlag<int>    _maxeval  (budget, "int",
                                     "Number of evaluations (" +
-                                     to_string(maxiter)+ ")", {"maxeval"});
-
+                                     to_string(maxeval)+ ")", {"maxeval"});
 
 
   // Initial collimator setup (initial solution: aperture, intensity)
@@ -235,27 +166,21 @@ int main(int argc, char** argv){
                                           to_string(perturbation_size)+")",
                                           {"perturbation-size"});
 
-  // Intensity matrix representation ls parameters
-  // Aperture representation local search parameters
-  args::Group ibo_ls (parser, "Intensity matrix local search:");
-  args::ValueFlag<int>    _maxdelta (ibo_ls, "int",
-                                    "Max delta  (" +
-                                     to_string(maxdelta)+")", {"maxdelta"});
-  args::ValueFlag<int>    _maxratio (ibo_ls, "int",
-                                    "Max ratio  (" +
-                                     to_string(maxratio)+")", {"maxratio"});
-  args::ValueFlag<double> _alpha    (ibo_ls, "double",
-                                    "Initial temperature for intensities  (" +
-                                     to_string(alpha)+")", {"alpha"});
-  args::ValueFlag<double> _beta     (ibo_ls, "double",
-                                    "Initial temperature for ratio  (" +
-                                     to_string(beta)+")", {"beta"});
+  // Objective function
+  args::Group objfunct (parser, "Objective function:");
+  args::ValueFlag<string> _objective (objfunct , "string",
+                                      "Objective function used in the search (mpse: mean positive square error|gs: global score|relu_gs: gs with relu activation)",
+                                      {"obj"});
+  args::ValueFlag<string> _scores (objfunct, "string",
+                                 "Scores for the global score objective function (only if obj in {gs|relu_gs})", 
+                                 {"scores-file"});
+  args::ValueFlag<string> _objective2 (objfunct , "string",
+                                      "Secondary objective function (just for information) (mpse|gs|relu_gs)",
+                                      {"obj2"});
+  args::ValueFlag<string> _scores2 (objfunct, "string",
+                                 "Scores for the secondary objective function (only if sec-obj in {gs|relu_gs})", 
+                                 {"scores2-file"});
 
-  // ibo+dao parameter
-  args::Group ibo_dao (parser, "IBO+DAO options:");
-  args::ValueFlag<int>    _ibo_evals  (ibo_dao, "int",
-                                    "Number of iterations ibo (" +
-                                     to_string(maxiter)+ ")", {"ibo_evals"});
 
   // Problem file parameters
   args::Group io_opt (parser, "Input output options:");
@@ -263,10 +188,6 @@ int main(int argc, char** argv){
                                  "File with the deposition matrix", {"file-dep"});
   args::ValueFlag<string> _file2 (io_opt, "string",
                                  "File with the beam coordinates", {"file-coord"});
-    args::ValueFlag<string> _scores (io_opt, "string",
-                                 "File with the scores (global score)", {"file-scores"});
-    args::ValueFlag<string> _obj_scores (io_opt, "string",
-                                 "File with the scores (global score)", {"obj-scores"});
   args::ValueFlag<string> _path  (io_opt, "string",
                                  string("Absolute path of the executable ") +
                                  "(if it is executed from other directory)", {"path"});
@@ -281,6 +202,8 @@ int main(int argc, char** argv){
 
   args::ValueFlag<string> _convergence_file (io_opt, "string",
                                  "File to output convergence", {"convergence"});
+
+
 
                                  
 
@@ -309,15 +232,9 @@ int main(int argc, char** argv){
 
 	if(_strategy) strategy = _strategy.Get();
 
-	if(_maxiter) maxiter = _maxiter.Get();
 	if(_maxtime) maxtime = _maxtime.Get();
   if(_maxeval) maxeval = _maxeval.Get();
 	if(_seed) seed = _seed.Get();
-
-	if(_maxdelta) maxdelta = _maxdelta.Get();
-	if(_maxratio) maxratio = _maxratio.Get();
-	if(_alpha) alpha = _alpha.Get();
-	if(_beta) beta = _beta.Get();
 
 	if(_bsize) bsize = _bsize.Get();
 	if(_vsize) vsize = _vsize.Get();
@@ -330,7 +247,6 @@ int main(int argc, char** argv){
   if(_max_intensity) max_intensity=_max_intensity.Get();
   if(_step_intensity) step_intensity=_step_intensity.Get();
 
-  if(_ibo_evals) ibo_evals = _ibo_evals.Get();
 
   // Initial collimator setup
   if (_setup) {
@@ -356,7 +272,7 @@ int main(int argc, char** argv){
       //TODO: Why these ones are different??
       if(strategy=="dao_ls")
         initial_setup = StationSetup::rand_all_rand;
-      else if (strategy=="ibo_ls" || strategy=="ibo+dao" || strategy == "mixedILS")
+      else if (strategy=="ibo_ls" || strategy == "mixedILS")
         initial_setup = StationSetup::rand_int;
     } else if (setup == "manual") {
       initial_setup = StationSetup::manual_all_manual;
@@ -376,8 +292,6 @@ int main(int argc, char** argv){
     }
   }
 
-  if (_continuous) continuous = true;
-  else continuous = false;
 
   if(_tabu_size) tabu_size = _tabu_size.Get();
 
@@ -448,8 +362,7 @@ int main(int argc, char** argv){
           + strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)
           + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
           + "_"+to_string(targeted_search)+"_"+to_string(initial_intensity)+"_"+to_string(max_apertures)
-          + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size)
-  				+ "_"+to_string(ibo_evals);
+          + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size);
 
 
    base_name = base_name + "/" + basename(file.c_str()) + "_" + to_string(seed);
@@ -457,8 +370,6 @@ int main(int argc, char** argv){
    convergence_file = base_name + ".conv";
    output_file = base_name+".out";
    json_file = base_name+".json";
-
-
 
   cout << "##**************************************************************************"
        << endl;
@@ -470,8 +381,8 @@ int main(int argc, char** argv){
   } else if(strategy=="ibo_ls") {
     cout << "##******** IMRT-Solver (Intensity-based Optimization Local Search) *********"
          << endl;
-  } else if(strategy=="ibo+dao") {
-    cout << "##******** IMRT-Solver (IBO + DAO Local Search) *********"
+  } else if(strategy=="mixedILS") {
+    cout << "##******** IMRT-Solver (MIXED ILS) *********"
          << endl;
   }
   cout << "##**************************************************************************"
@@ -491,59 +402,26 @@ int main(int argc, char** argv){
   vector<Volume> volumes = createVolumes (file, collimator);
 
   FluenceMap fm(volumes, collimator);
-  Evaluator* evaluator=NULL;
 
-  list<Score>* scores=NULL;
-  list<Score>* obj_scores=NULL;
+  list<Score> scores;
+  list<Score> scores2;
+
+  if(_scores) load_scores(scores, _scores.Get());
+  if(_scores2) load_scores(scores2, _scores2.Get());
+
+
+  Evaluator* evaluator=NULL; //guides the search
+  list<Evaluator*> evaluators; //just for information
 
   if(_scores){
-    scores = new list<Score>;
-    ifstream indata; // indata is like cin
-    indata.open(_scores.Get()); 
-
-    while ( !indata.eof() ) {
-      char type;
-      double x, min_value, max_value, weight;
-      int organ;
-      Score::Type t;
-      indata >> type >> x >> organ >> min_value >> max_value >> weight;
-      cout <<  type << " " << x  << " "<< organ << " " << min_value <<  " " << max_value << " " <<  weight << endl;
-      if (type=='D') t = Score::D; 
-      else t=Score::V;
-
-      scores->push_back(Score(t,x,organ,min_value,max_value,weight));     
-  }
-}
-
-  if(_obj_scores){
-    obj_scores = new list<Score>;
-    ifstream indata; // indata is like cin
-    indata.open(_scores.Get()); 
-
-    while ( !indata.eof() ) {
-      char type;
-      double x, min_value, max_value, weight;
-      int organ;
-      Score::Type t;
-      indata >> type >> x >> organ >> min_value >> max_value >> weight;
-      cout <<  type << " " << x  << " "<< organ << " " << min_value <<  " " << max_value << " " <<  weight << endl;
-      if (type=='D') t = Score::D; 
-      else t=Score::V;
-
-      obj_scores->push_back(Score(t,x,organ,min_value,max_value,weight));     
-  }
-}
-
-  list<Evaluator*> evaluators;
-  if(_scores && _global_score) {
-    evaluator = new EvaluatorGS(fm,w,Zmin,Zmax, *scores);
+    evaluator = new EvaluatorGS(fm,w,Zmin,Zmax, scores, _objective.Get()!="gs_relu");
     evaluators.push_back(new EvaluatorF(fm,w,Zmin,Zmax));
-    if(_obj_scores)
-      evaluators.push_back(new EvaluatorGS(*evaluator, *obj_scores,false)); //RELU GS
+  }else 
+    evaluator = new EvaluatorF(fm,w,Zmin,Zmax);
 
-  }else
-      evaluator = new EvaluatorF(fm,w,Zmin,Zmax);
-
+  if(_scores2)
+    evaluators.push_back(new EvaluatorGS(*evaluator, scores2,  _objective2.Get()!="gs_relu" )); //RELU GS
+  
  
 
   // Create an initial plan
@@ -561,7 +439,6 @@ int main(int argc, char** argv){
   cout << "##**************************************************************************"
        << endl;
   cout << "##" << endl << "## Solver: "<< endl;
-  cout << "##   Iterations: " << maxiter << endl;
   cout << "##   Time: " << maxtime << endl;
   cout << "##   Evaluations: " << maxeval << endl;
   cout << "##   Seed: " << seed << endl;
@@ -590,11 +467,9 @@ int main(int argc, char** argv){
   cout << "##   Max intensity: " << max_intensity << endl;
   cout << "##   Step intensity: " << step_intensity << endl;
 
-  if (ls_type == LSType::first) {
+  if (ls_type == LSType::first) 
     cout << "##   Local search: first improvement"  << endl;
-    if (continuous)
-      cout << "##                 continuous neighborhood" << endl;
-  }
+  
   if (ls_type==LSType::best)
     cout << "##   Local search: best improvement"  << endl;
 
@@ -668,6 +543,8 @@ int main(int argc, char** argv){
   double cost;
   double used_evaluations = 0;
    std::clock_t begin_time = clock();
+  
+  
   if (strategy=="dao_ls") {
     ils = new ApertureILS(bsize, 0, prob_intensity, step_intensity);
     cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
@@ -675,34 +552,10 @@ int main(int argc, char** argv){
 				    tabu_size, convergence_file);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="ibo_ls") {
-    //EvaluatorGS evaluatorGS(fm,w,Zmin,Zmax);
-    //evaluatorGS.eval(P);
     ils = new IntensityILS2();
     cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file, 0, clock(), _verbose, evaluators);
-    used_evaluations =  ils->used_evaluations;
-  } else if(strategy=="ibo+dao") {
-    ils = new IntensityILS2();
-    cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, ibo_evals, ls_type, continuous, neighborhood,
-				    target_type, perturbation_type, perturbation_size,
-				    tabu_size, convergence_file, 0, clock(), _verbose);
-    cout << "eval:" << evaluator->eval(P) << endl;
-    P.generateApertures();
-
-    for(auto s:P.get_stations()) s->generateIntensityMatrix();
-
-    cout << "eval2:" << evaluator->eval(P) << endl;
-
-    int evals=ils->used_evaluations;
-    std::clock_t begin=ils->time_begin;
-
-    ils = new ApertureILS(bsize, 0, prob_intensity, step_intensity);
-    neighborhood = NeighborhoodType::sequential_i;
-    //if(neighborhood == NeighborhoodType::imixed) neighborhood=NeighborhoodType::mixed;
-    cost = ils->iteratedLocalSearch(P, *evaluator, maxtime, maxeval, ls_type, continuous, neighborhood,
-				    target_type, perturbation_type, perturbation_size,
-				    tabu_size, convergence_file, evals, begin);
     used_evaluations =  ils->used_evaluations;
   } else if(strategy=="mixedILS") {
     MixedILS mixed_ils(bsize, 0, prob_intensity, step_intensity);
@@ -716,24 +569,6 @@ int main(int argc, char** argv){
 
   EvaluatorF ev(fm,w,Zmin,Zmax);
   cout << "FMO:" << ev.eval(P) << endl;;
-
-  if (scores){
-     EvaluatorGS evGS(fm,w,Zmin,Zmax, *scores);
-     cout << "Global Score:" << evGS.eval(P, true) << endl;
-     for (auto score:evGS.scores)
-       cout << score.value << "," ;
-     
-     cout << endl;
-     if(_plot && _scores){
-        evGS.save_sorted_FMs("output.json");
-        system("python extras/dvh/dvh.py");
-    }
-  }
-
-  
-
-
-
 
 
 
@@ -780,7 +615,7 @@ int main(int argc, char** argv){
 
   int tot_alpha=0;
   for(auto s:stations){
-    string str=(strategy=="ibo+dao" || strategy=="mixedILS")? "dao_ls":strategy;
+    string str=(strategy=="mixedILS")? "dao_ls":strategy;
     int alpha=s->get_sum_alpha(str);
     cout << alpha << " " ;
     //if(convergence_file!="") o_file  << alpha << " " ;
@@ -791,7 +626,7 @@ int main(int argc, char** argv){
 
   int nb_apertures=0;
   for(auto s:stations){
-    string str=(strategy=="ibo+dao" || strategy=="mixedILS")? "dao_ls":strategy;
+    string str=(strategy=="mixedILS")? "dao_ls":strategy;
     int ap=s->get_nb_apertures(str);
     cout << ap << " " ;
     //if(convergence_file!="") o_file << ap << " " ;

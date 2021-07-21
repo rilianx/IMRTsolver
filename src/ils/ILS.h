@@ -422,7 +422,11 @@ public:
     std::clock_t time_end;
     double used_time;
 
-    cout << "Local search" << endl;
+    
+    if(verbose){
+      cout << "Local search" << endl;
+      cout << "evals, obj, fmo, obj2, neigh_id" << endl;
+    }
 
     while (improvement) {
       if (generate_neighborhood){
@@ -440,9 +444,9 @@ public:
 
       improvement = false;
 
-      if(verbose)
-        cout << " -neighborhood: " << current_neighborhood << "; size: " <<
-             neighborhood.size() << "; curren best: " << current_eval << endl;;
+      //if(verbose)
+      //  cout << " -neighborhood: " << current_neighborhood << "; size: " <<
+      //       neighborhood.size() << "; curren best: " << current_eval << endl;;
 
       while (n_neighbors < neighborhood.size()) {
 
@@ -474,15 +478,16 @@ public:
             applyMove(current_plan, move); //NO llama a incremental_eval
             current_eval = evaluator.incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
             
-        //these evals compute the evaluation using the already updated z structure
-        cout << used_evaluations <<",";
-        for(auto ev:evaluators){
-           cout << ev->incremental_eval() << ",";
+        
+        if(verbose){
+          cout << used_evaluations <<",";
+          cout << current_eval << ",";
+          //these evalutaors compute the evaluation using the already updated z structure
+          for(auto ev:evaluators){
+            cout << ev->incremental_eval() << ",";
+          }
+          cout <<current_neighborhood << endl;
         }
-
-        cout << current_eval << ",";
-        //evalGS.print();
-        cout <<current_neighborhood << endl;
 
         if(false)
             cout << "    neighbor: " << n_neighbors  << "; "
