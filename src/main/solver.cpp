@@ -178,7 +178,7 @@ int main(int argc, char** argv){
                                       "Secondary objective function (just for information) (mpse|gs|relu_gs)",
                                       {"obj2"});
   args::ValueFlag<string> _scores2 (objfunct, "string",
-                                 "Scores for the secondary objective function (only if sec-obj in {gs|relu_gs})", 
+                                 "Scores for the secondary objective function (only if obj2 in {gs|relu_gs})", 
                                  {"scores2-file"});
 
 
