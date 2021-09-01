@@ -91,11 +91,13 @@ public:
             if(score.t == Score::D){
                 score.value= computeD(sortedFM[score.organ], score.x);
                 if(score.max_value>0.0){
-                    if(original_gs) s+=score.weight *  score.value/score.max_value;
-                    else s+=score.weight *  max(score.value/score.max_value-1.0,0.0);
+                    if(type==GS) s+=score.weight *  score.value/score.max_value;
+                    else if(type==GS_SQUARED) s+=score.weight *  pow(score.value/score.max_value,2);
+                    else if (type==GS_RELU) s+=score.weight *  max(score.value/score.max_value-1.0,0.0);
                 }else{
-                    if(original_gs) s+=score.weight *  score.min_value/score.value;
-                    else s+=score.weight * max(score.min_value/score.value-1.0,0.0);
+                    if(type==GS) s+=score.weight *  score.min_value/score.value;
+                    else if(type==GS_SQUARED) s+=score.weight *  pow(score.min_value/score.value,2);
+                    else if (type==GS_RELU) s+=score.weight * max(score.min_value/score.value-1.0,0.0);
                 }
             }
         }
@@ -103,14 +105,17 @@ public:
     }
 
 	//Constructor of the evaluator.
+    enum Type{GS, GS_RELU, GS_SQUARED};
+    Type type;
+
 	EvaluatorGS(FluenceMap& fm_structure, vector<double>& w, 
-    vector<double>& Zmin, vector<double>& Zmax, list<Score>& scores, bool original_gs=true) : Evaluator(fm_structure,w,Zmin,Zmax), 
-        GS(0.0), scores(scores), original_gs(original_gs) {
+    vector<double>& Zmin, vector<double>& Zmax, list<Score>& scores, Type t) : Evaluator(fm_structure,w,Zmin,Zmax), 
+        gs(0.0), scores(scores), type(t) {
 
 	}
 
-    EvaluatorGS(Evaluator& ev, list<Score>& scores, bool original_gs=true) :   Evaluator(ev.fm_structure,ev.w,ev.Zmin,ev.Zmax), 
-    GS(0.0), scores(scores), original_gs(original_gs){
+    EvaluatorGS(Evaluator& ev, list<Score>& scores, Type t) :   Evaluator(ev.fm_structure,ev.w,ev.Zmin,ev.Zmax), 
+    gs(0.0), scores(scores), type(t){
 		
 	}
 
@@ -130,14 +135,14 @@ public:
 	virtual double eval(const Plan& p, bool verbose){
 	    fm_structure.computeFM(p);
         vector< vector<double> > FMM = FM;
-        GS =  eval(FMM, verbose);   
-        return GS;   
+        gs =  eval(FMM, verbose);   
+        return gs;   
     }
 
     virtual double incremental_eval(){
         vector< vector<double> > FMM = FM;
-        GS=eval(FMM);   
-        return GS;           
+        gs=eval(FMM);   
+        return gs;           
     }
 
 	virtual double incremental_eval(list< pair< int, double > >& changes, double angle){
@@ -145,8 +150,8 @@ public:
         fm_structure.updateFM(changes, angle, deltaFM);
 
         vector< vector<double> > FMM = FM;
-        GS=eval(FMM);   
-        return GS;   
+        gs=eval(FMM);   
+        return gs;   
     }
 
     virtual double get_delta_eval(list< pair< int, double > >& changes, double angle) const { 
@@ -159,10 +164,10 @@ public:
             for(auto p : deltaFM[i])
                 FMM[i][p.first]+=p.second;
         }
-        return eval(FMM)-GS;        
+        return eval(FMM)-gs;        
     }
 
-	virtual double get_evaluation(){ return GS; }
+	virtual double get_evaluation(){ return gs; }
 
 
 
@@ -174,9 +179,7 @@ public:
         return multimap < double, pair<int, int>, MagnitudeCompare2 >();
     }
 
-    
-    bool original_gs;
-    double GS;
+    double gs;
 
 };
 

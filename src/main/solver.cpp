@@ -169,7 +169,7 @@ int main(int argc, char** argv){
   // Objective function
   args::Group objfunct (parser, "Objective function:");
   args::ValueFlag<string> _objective (objfunct , "string",
-                                      "Objective function used in the search (mpse: mean positive square error|gs: global score|relu_gs: gs with relu activation)",
+                                      "Objective function used in the search (mpse: mean positive square error|gs: global score|gs_relu: gs with relu activation)",
                                       {"obj"});
   args::ValueFlag<string> _scores (objfunct, "string",
                                  "Scores for the global score objective function (only if obj in {gs|relu_gs})", 
@@ -178,7 +178,7 @@ int main(int argc, char** argv){
                                       "Secondary objective function (just for information) (mpse|gs|relu_gs)",
                                       {"obj2"});
   args::ValueFlag<string> _scores2 (objfunct, "string",
-                                 "Scores for the secondary objective function (only if obj2 in {gs|relu_gs})", 
+                                 "Scores for the secondary objective function (only if obj2 in {gs|gs_relu})", 
                                  {"scores2-file"});
 
 
@@ -414,13 +414,23 @@ int main(int argc, char** argv){
   list<Evaluator*> evaluators; //just for information
 
   if(_scores){
-    evaluator = new EvaluatorGS(fm,w,Zmin,Zmax, scores, _objective.Get()!="gs_relu");
+    EvaluatorGS::Type t;
+    if( _objective.Get() == "gs_relu") t=EvaluatorGS::GS_RELU;
+    else if( _objective.Get() == "gs") t=EvaluatorGS::GS;
+    else if( _objective.Get() == "gs_sqr") t=EvaluatorGS::GS_SQUARED;
+
+    evaluator = new EvaluatorGS(fm,w,Zmin,Zmax, scores, t);
     evaluators.push_back(new EvaluatorF(fm,w,Zmin,Zmax));
   }else 
     evaluator = new EvaluatorF(fm,w,Zmin,Zmax);
 
-  if(_scores2)
-    evaluators.push_back(new EvaluatorGS(*evaluator, scores2,  _objective2.Get()!="gs_relu" )); //RELU GS
+  if(_scores2){
+    EvaluatorGS::Type t;
+    if( _objective2.Get() == "gs_relu") t=EvaluatorGS::GS_RELU;
+    else if( _objective2.Get() == "gs") t=EvaluatorGS::GS;
+    else if( _objective2.Get() == "gs_sqr") t=EvaluatorGS::GS_SQUARED;
+    evaluators.push_back(new EvaluatorGS(*evaluator, scores2, t )); //RELU GS
+  }
   
  
 
@@ -557,6 +567,10 @@ int main(int argc, char** argv){
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file, 0, clock(), _verbose, evaluators);
     used_evaluations =  ils->used_evaluations;
+    cout << "scores:" ;
+    for (auto score : dynamic_cast<EvaluatorGS*>(evaluators.back())->scores)
+      cout << score.value << " ";
+    cout << endl;
   } else if(strategy=="mixedILS") {
     MixedILS mixed_ils(bsize, 0, prob_intensity, step_intensity);
     NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;

@@ -19,7 +19,14 @@ void load_scores(list<Score>& scores, string scores_file){
       double x, min_value, max_value, weight;
       int organ;
       Score::Type t;
-      indata >> type >> x >> organ >> min_value >> max_value >> weight;
+      indata >> type;
+      if (type=='#'){
+        string aux;
+        getline(indata,aux);
+        continue;
+      }
+
+      indata >>  x >> organ >> min_value >> max_value >> weight;
       //cout <<  type << " " << x  << " "<< organ << " " << min_value <<  " " << max_value << " " <<  weight << endl;
       if (type=='D') t = Score::D; 
       else t=Score::V;
