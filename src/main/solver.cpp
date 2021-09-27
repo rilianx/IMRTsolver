@@ -567,6 +567,8 @@ int main(int argc, char** argv){
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file, 0, clock(), _verbose, evaluators);
     used_evaluations =  ils->used_evaluations;
+    cout << evaluators.back()->eval(P) << endl; 
+
     cout << "scores:" ;
     for (auto score : dynamic_cast<EvaluatorGS*>(evaluators.back())->scores)
       cout << score.value << " ";
