@@ -6,7 +6,7 @@ import subprocess
 
 
 filename = "parameterized_scores"+str(random.randint(10000,99999))+".txt"
-f = open(filename, "w")
+f = open("../"+filename, "w")
 
 instance,seed,w1,w2,w3,w4,function,maxdmean = sys.argv[1:]
 
@@ -23,15 +23,15 @@ f.close()
 
 convergence_file= instance.split('/')[-1]+'-'.join(sys.argv[2:])
 
-result = subprocess.getoutput("./AS -s ibo_ls --setup=open_min --ls_sequential=aperture -s ibo_ls " \
-         "--maxeval=1000 --ls=first --perturbation-size=5 --seed="+seed+" --max-intensity=20 "\
+result = subprocess.getoutput("../AS -s ibo_ls --setup=open_min --ls_sequential=aperture -s ibo_ls " \
+         "--maxeval=10000 --ls=first --perturbation-size=5 --seed="+seed+" --max-intensity=20 "\
          "--file-coord=data/Equidistantes/equidist-coord.txt --initial-intensity=5 "\
          "--obj="+function+" --scores-file="+filename+" --obj2=gs_relu --scores2-file=target_scores68.txt "\
          "--path=/home/ignacio/IMRTsolver --file-dep="+instance+" --irace --convergence="+convergence_file)
 
 
-os.remove(filename)
-print(result)
+os.remove("../"+filename)
+#print(result)
 
 print(float(result.split("\n")[-1].split(",")[-1]))
 

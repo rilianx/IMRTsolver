@@ -18,7 +18,7 @@ error() {
 
 
 # Path to the target algorithm executable:
-EXE="~/IMRTsolver/python3 imrt4irace.py"
+EXE="/home/ignacio/IMRTsolver/imrt4irace.py"
 
 # Fixed parameters that should be always passed to the algorithm.
 FIXED_PARAMS=""
@@ -28,20 +28,17 @@ INSTANCE_ID="$2"
 SEED="$3"
 INSTANCE="$4"
 # All other parameters are the candidate parameters to be passed to program
-shift 5 || error "Not enough parameters"
+shift 4 || error "Not enough parameters"
 CONFIG_PARAMS=$*
 
 STDOUT=c${CONFIG_ID}-${INSTANCE_ID}-${SEED}.stdout
 STDERR=c${CONFIG_ID}-${INSTANCE_ID}-${SEED}.stderr
 
-if [ ! -x "${EXE}" ]; then
-    error "${EXE}: not found or not executable (pwd: $(pwd))"
-fi
-
-#echo "$EXE ${FIXED_PARAMS} $INSTANCE --seed $SEED ${CONFIG_PARAMS}"
+#echo python3 $EXE $INSTANCE $SEED ${CONFIG_PARAMS} 
 # Now we can call the target by building a command line with all parameters for it
-$EXE $INSTANCE $SEED ${CONFIG_PARAMS} 1> $STDOUT 2> $STDERR
+python3 $EXE $INSTANCE $SEED ${CONFIG_PARAMS} 1> $STDOUT 2> $STDERR
 
+cat $STDERR
 # The output of the candidate $CONFIG_ID should be written in the file
 # c${CONFIG_ID}.stdout.
 # Does this file exist?
@@ -55,8 +52,10 @@ fi
 # This script should return a single numerical value, the best objective
 # value found by this run. The following line is to extract
 # this value from the file containing the output.
-COST=$(tail -20 ${STDOUT} | grep -o -E 'Best solution found: [-+0-9.e]+' | cut -d ':' -f2)
+COST=$(cat ${STDOUT} | grep -o -E '[-+0-9.e]+' | cut -d ':' -f2)
+#COST=${STDOUT}
 COST=${COST//' '/''}
+
 if ! [[ "$COST" =~ ^[-+0-9.e]+$ ]] ; then
     error "${STDOUT}: Output is not a number. (${COST})"
 fi
