@@ -18,7 +18,7 @@ error() {
 
 
 # Path to the target algorithm executable:
-EXE="~/imrt/python3 imrt4irace.py"
+EXE="~/IMRTsolver/python3 imrt4irace.py"
 
 # Fixed parameters that should be always passed to the algorithm.
 FIXED_PARAMS=""

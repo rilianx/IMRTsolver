@@ -27,7 +27,7 @@ result = subprocess.getoutput("./AS -s ibo_ls --setup=open_min --ls_sequential=a
          "--maxeval=1000 --ls=first --perturbation-size=5 --seed="+seed+" --max-intensity=20 "\
          "--file-coord=data/Equidistantes/equidist-coord.txt --initial-intensity=5 "\
          "--obj="+function+" --scores-file="+filename+" --obj2=gs_relu --scores2-file=target_scores68.txt "\
-         "--path=/home/ignacio/imrt --file-dep="+instance+" --irace --convergence="+convergence_file)
+         "--path=/home/ignacio/IMRTsolver --file-dep="+instance+" --irace --convergence="+convergence_file)
 
 
 os.remove(filename)
