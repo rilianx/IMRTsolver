@@ -353,11 +353,11 @@ int main(int argc, char** argv){
 
    string mkdir = "mkdir output";
    system(mkdir.c_str());
-   mkdir = "mkdir " + base_name;
-   system(mkdir.c_str());
+   //mkdir = "mkdir " + base_name;
+   //system(mkdir.c_str());
 
 
-   if(base_name=="")
+   if(base_name==""){
        base_name = string("output/") + basename(file.c_str()) + "_" + basename(file2.c_str()) + "_"
           + strategy+"_"+to_string(maxtime)+"_"+to_string(maxeval)+"_"+to_string(neighborhood)
           + "_"+to_string(initial_setup)+"_"+to_string(perturbation_type)+"_"+to_string(perturbation_size)
@@ -365,12 +365,14 @@ int main(int argc, char** argv){
           + "_"+to_string(step_intensity)+"_"+to_string(max_intensity)+"_"+to_string(ls_type)+"_"+to_string(tabu_size);
 
 
-   base_name = base_name + "/" + basename(file.c_str()) + "_" + to_string(seed);
+       base_name = base_name + "/" + basename(file.c_str()) + "_" + to_string(seed);
+   }
 
    convergence_file = base_name + ".conv";
    output_file = base_name+".out";
    json_file = base_name+".json";
 
+  cout << convergence_file << endl;
   cout << "##**************************************************************************"
        << endl;
   cout << "##**************************************************************************"
@@ -573,6 +575,7 @@ int main(int argc, char** argv){
     for (auto score : dynamic_cast<EvaluatorGS*>(evaluators.back())->scores)
       cout << score.value << " ";
     cout << endl;
+    cout << "best_eval2:" << ils->best_eval2 << endl;
   } else if(strategy=="mixedILS") {
     MixedILS mixed_ils(bsize, 0, prob_intensity, step_intensity);
     NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;
@@ -596,7 +599,7 @@ int main(int argc, char** argv){
   cout << "##**************************************************************************"
        << endl;
   cout << "##"<<endl;
-  cout << "## Best solution found: " <<  cost << endl; //<< " "<< P.eval() << endl;
+  cout << "## Best solution found: " <<  cost << "," << ils->best_eval2 << endl; //<< " "<< P.eval() << endl;
 
    if(_irace) exit(0); //to avoid free corruption error :( 
 

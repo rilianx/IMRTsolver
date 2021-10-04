@@ -1,0 +1,7 @@
+## name		switch		     type	values			[conditions (using R syntax)]
+w1  ""  r   (0.05,1.0)
+w2  ""  r   (0.05,1.0)
+w3  ""  r   (0.05,1.0)
+w4  ""  r   (0.05,1.0)
+function  "" c (gs,gs_relu)
+maxdmean  "" r (10,80)

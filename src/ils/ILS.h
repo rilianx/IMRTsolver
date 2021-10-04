@@ -179,6 +179,9 @@ public:
 
   int used_evaluations;
 
+  //best evaluation of the second objective
+  double best_eval2=10000.0;
+
   double iteratedLocalSearch (Plan& current_plan, Evaluator& evaluator, int max_time, int max_evaluations,
                               LSType ls_type, bool continuous, NeighborhoodType ls_neighborhood,
                               LSTargetType ls_target_type, PerturbationType perturbation_type,
@@ -205,7 +208,7 @@ public:
        t_file.open (trajectory_file.c_str(), ios::app);
        if (evaluations == 0) {
          t_file << "evalutions;time;quality" << endl;
-         t_file << "0;0"  << ";" << best_eval << "\n";
+         //t_file << "0;0"  << ";" << best_eval << "\n";
        }
        t_file.close();
      }
@@ -417,6 +420,7 @@ public:
     if (trajectory_file!="") {
       t_file.open(trajectory_file.c_str(), ios::app);
     }
+    
 
     //Start time
     std::clock_t time_end;
@@ -474,26 +478,9 @@ public:
         used_evaluations++;
 
         // Check if there is an improvement
-        if (delta_eval < -0.001) {
+        if (delta_eval < -0.0001) {
             applyMove(current_plan, move); //NO llama a incremental_eval
             current_eval = evaluator.incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
-            
-        
-        if(verbose){
-          cout << used_evaluations <<",";
-          cout << current_eval << ",";
-          //these evalutaors compute the evaluation using the already updated z structure
-          for(auto ev:evaluators){
-            cout << ev->incremental_eval() << ",";
-          }
-          cout <<current_neighborhood << endl;
-        }
-
-        if(false)
-            cout << "    neighbor: " << n_neighbors  << "; "
-              << "(" << move.station_id <<   "," << move.beamlet_id << "," << move.action
-              << "); improvement: " << evaluator.get_evaluation() << ";";
-            // cout  << current_eval << endl; //evalGS.incremental_eval(changes,current_plan.get_station(move.station_id)->getAngle()) <<endl;
 
             improvement = true;
 
@@ -517,8 +504,20 @@ public:
           if (tabu_size > 0)
             addUndoTabu(tabu_list, move, tabu_size);
 
+
+          //Compute the evaluation of obj2
+          double ev2 = evaluators.back()->incremental_eval();
+          if (ev2 < best_eval2) {
+            best_eval2 = ev2;
+            //delete best_plan2;
+            //best_plan = new Plan(current_plan);
+          }
+
             n_neighbors = 0;
             break;
+
+
+
 
         } else {
           //no improvement
@@ -544,7 +543,14 @@ public:
 	      time_end = clock();
         used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
         if (t_file.is_open())
-           t_file << used_evaluations << ";" << used_time << ";" << current_eval << "\n";
+            t_file <<  used_evaluations <<";";
+            t_file <<  used_time <<";";
+            t_file << current_eval << ";";
+            //these evalutaors compute the evaluation using the already updated z structure
+            for(auto ev:evaluators){
+              t_file << ev->incremental_eval() << ";";
+            }
+            t_file <<current_neighborhood << endl;
 
       }
 
@@ -662,7 +668,7 @@ public:
         used_evaluations++;
 
         // Check if there is an improvement
-        if ( evaluator.get_evaluation() < (current_eval-0.001)) {
+        if ( evaluator.get_evaluation() < (current_eval-0.0001)) {
           if(verbose)
             cout << "; neighbor: " << n_neighbors  << "(" << move.station_id <<
               "," << move.aperture_id << "," << move.action << "); Improvement: " <<

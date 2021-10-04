@@ -42,7 +42,7 @@ class Plan;
 class Score{
     public: 
 
-    enum Type{D,V,H};
+    enum Type{D,V,H, Dmean};
     Score(Type t, double x, int organ, double min_value, double max_value, double weight) : t(t), x(x), organ(organ), 
     min_value(min_value), max_value(max_value), weight(weight) { }
 
@@ -64,6 +64,13 @@ class EvaluatorGS : public Evaluator{
 public:
 
     list<Score> scores;
+
+    double computeDmean(vector<double>& sortedFM) const{
+        double mean=0.0;
+        for (auto d : sortedFM) mean+=d;
+        mean/= (double) sortedFM.size();
+        return mean;
+    }
 
     double computeD(vector<double>& sortedFM, double x) const{
         x/=100.0;
@@ -91,20 +98,22 @@ public:
         //identify if the solution is addmisible
         bool admissible = true;
         for(const Score& score:scores){
-            if(score.t == Score::D){
+            if(score.t == Score::D)
                 score.value= computeD(sortedFM[score.organ], score.x);
-                if(score.max_value >0){
-                    if (score.value > score.max_value){
-                        admissible&=false;
-                    }
-                }else if (score.value < score.min_value){
-                        admissible&=false;
-                    }
-                }
+            else if(score.t == Score::Dmean)
+                score.value= computeDmean(sortedFM[score.organ]);
+            
+            if(score.max_value >0){
+                if (score.value > score.max_value)
+                    admissible&=false;
+            }else if (score.value < score.min_value){
+                    admissible&=false;
+            }
         }
 
+
         for(const Score& score:scores){
-            if(score.t == Score::D){
+            if(score.t == Score::D || score.t == Score::Dmean){
                 if(score.max_value>0.0){
                     if(type==GS) s+=score.weight *  score.value/score.max_value;
                     else if(type==GS_SQUARED) s+=score.weight *  pow(score.value/score.max_value,2);
