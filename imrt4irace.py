@@ -5,7 +5,7 @@ import subprocess
 
 
 
-filename = "parameterized_scores"+str(random.randint(10000,99999))+".txt"
+filename = "parameterized_scores"+str(random.randint(100000,999999))+".txt"
 f = open("../"+filename, "w")
 
 instance,seed,w1,w2,w3,w4,function,maxdmean = sys.argv[1:]
@@ -30,7 +30,10 @@ result = subprocess.getoutput("../AS -s ibo_ls --setup=open_min --ls_sequential=
          "--path=/home/ignacio/IMRTsolver --file-dep="+instance+" --irace --convergence="+convergence_file)
 
 
-os.remove("../"+filename)
+try:
+    os.remove("../"+filename)
+except FileNotFoundError:
+    pass
 #print(result)
 
 print(float(result.split("\n")[-1].split(",")[-1]))
