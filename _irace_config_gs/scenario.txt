@@ -14,6 +14,10 @@ parameterFile = "./parameters.txt"
 trainInstancesDir = ""
 trainInstancesFile = "instances.txt"
 
+
+testInstancesDir = ""
+testInstancesFile = "instances.txt"
+
 ## The maximum number of runs (invocations of targetRunner) that will performed. It
 ## determines the (maximum) budget of experiments for the tuning.
 maxExperiments = 2000
