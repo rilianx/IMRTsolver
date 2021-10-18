@@ -1,5 +1,3 @@
-## name		switch		     type	values			[conditions (using R syntax)]
-
 ## Initial candidate configuration for irace
 w1 w2 w3 w4 function maxdmean
-0.5 0.25 0.125 0.125 50.0
+0.5 0.25 0.125 0.125 gs_relu 50.0
