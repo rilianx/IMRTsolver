@@ -5,7 +5,7 @@
 ## the parameter (comment it out in this file, and do not give any
 ## value on the command line).
 
-configurationsFile = "./configuration.txt"
+configurationsFile = "./configurations.txt"
 
 ## File that contains the description of the parameters.
 parameterFile = "./parameters.txt"
