@@ -4,87 +4,43 @@ mintime = 0.0001
 maxtime = 40
 factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
-max_seeds = 30
-min_seeds = 30
-algo_names = ibo_ls-setup
+max_seeds = 20
+min_seeds = 20
+algo_names = gs_relu gs gs_relu_irace gs_relu5
 
-[ibo_ls-setup]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=smixed
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+
+[gs_relu_irace]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED 0.66 0.77 0.11 0.09 gs_relu 27.24 write_file 76 0
 outputpos_times = 0
 outputpos_boxes = 0
 
-[dao_ls-default]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+[gs_relu5]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs_relu 50.0 write_file 76 5
 outputpos_times = 0
 outputpos_boxes = 0
 
-[ibo_ls-default]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=0 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+[gs_relu]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs_relu 50.0 write_file 76 0
 outputpos_times = 0
 outputpos_boxes = 0
 
-[dao_ls-psize3]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=3 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+[gs]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs 50.0 write_file 76 0
 outputpos_times = 0
 outputpos_boxes = 0
 
-[ibo_ls-psize3]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=3 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+[gs_irace]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs 50.0 write_file 76 0
 outputpos_times = 0
 outputpos_boxes = 0
 
-[dao_ls-psize5]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
-outputpos_times = 0
-outputpos_boxes = 0
-
-[ibo_ls-psize5]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=5 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
-outputpos_times = 0
-outputpos_boxes = 0
-
-[dao_ls-psize7]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE -s dao_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=7 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
-outputpos_times = 0
-outputpos_boxes = 0
-
-[ibo_ls-psize7]
-description = "Primera mejora, Vecindario mixto, openmin, Perturbación mixta"
-tuning_param = NEIGHBOURHOOD
-tuning_values = --ls_simple=mixed --ls_sequential=intensity --ls_sequential=aperture
-exec = "../AS"
-params = --file-dep=_INSTANCE  -s ibo_ls --maxeval=10000 --ls=first _NEIGHBOURHOOD --setup=open_min --perturbation-size=7 --seed=_SEED  --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --path=.. --convergence=default
+[mpse]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 mpse 50.0 write_file 76 0
 outputpos_times = 0
 outputpos_boxes = 0

@@ -217,7 +217,7 @@ public:
      while (true) {
        // Apply local search
        if (ls_type == LSType::first) {
-         aux_eval = FILocalSearch(current_plan, evaluator, max_time, max_evaluations,
+         aux_eval = FILocalSearch(current_plan, &evaluator, max_time, max_evaluations,
                     used_evaluations, ls_neighborhood, ls_target_type,
 		    tabu_size, trajectory_file, continuous, verbose, evaluators);
        } else {
@@ -256,8 +256,9 @@ public:
        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
        if (perturbation_size == 0)  break;
 
-       cout << 0 << endl;
+       //cout << 0 << endl;
        current_plan.newCopy(*best_plan);
+
        //Perturbation
        perturbation(current_plan, evaluator, perturbation_type, perturbation_size, verbose);
 
@@ -266,9 +267,9 @@ public:
      if (c_file.is_open()) {
        c_file.close();
      }
-     cout << 1 << endl;
+     //cout << 1 << endl;
      current_plan.newCopy(*best_plan);
-     cout << 2 << endl;
+     //cout << 2 << endl;
      delete best_plan;
      return(best_eval);
   };
@@ -385,13 +386,16 @@ public:
     return(false);
   };
 
-  double FILocalSearch (Plan& current_plan, Evaluator& evaluator, int max_time, int max_evaluations,
+
+
+  double FILocalSearch (Plan& current_plan, Evaluator* evaluator, int max_time, int max_evaluations,
                         int& used_evaluations, NeighborhoodType ls_neighborhood,
                         LSTargetType ls_target_type, int tabu_size,
                         string trajectory_file, bool continuous, bool verbose=false, list<Evaluator*> evaluators=list<Evaluator*>()) {
 
     vector <NeighborMove> neighborhood;
-    double current_eval = evaluator.get_evaluation();
+    double current_eval = evaluator->get_evaluation();
+    //double prev_gs = dynamic_cast<EvaluatorGS*>(evaluator)->compute_admissible_gscore();
     NeighborMove best_move = {0,0,0,0,0};
     NeighborhoodType current_neighborhood;
     LSTarget ls_target = {ls_target_type, best_move};
@@ -399,6 +403,7 @@ public:
     vector <NeighborMove> tabu_list;
     NeighborMove move;
 
+    int count=0;
     int id_neighbor = 0;
     int n_neighbors = 1;
     bool generate_neighborhood = true;
@@ -432,6 +437,8 @@ public:
       cout << "evals, obj, fmo, obj2, neigh_id" << endl;
     }
 
+    
+
     while (improvement) {
       if (generate_neighborhood){
         //Select the neighborhood (done for the cases in which sequenced neighborhoods are chosen)
@@ -447,56 +454,60 @@ public:
       }
 
       improvement = false;
+      
 
-      //if(verbose)
-      //  cout << " -neighborhood: " << current_neighborhood << "; size: " <<
-      //       neighborhood.size() << "; curren best: " << current_eval << endl;;
+      //We select the move
+      NeighborMove move = {0,0,0,0,0};
+      list<pair<int, double> > changes;
 
-      while (n_neighbors < neighborhood.size()) {
-
+      n_neighbors = 0;
+      while (n_neighbors < neighborhood.size()){
         move = neighborhood[id_neighbor];
 
         //Counter updates
         n_neighbors++; id_neighbor++;
         if (id_neighbor >= neighborhood.size()) id_neighbor = 0;
 
+        
         //Skip neighbor if its marked as tabu
         if (tabu_size > 0 && isTabu(move, tabu_list))  continue;
+      
+        changes = get_changes_in_fm(current_plan,move); //changes in fluence_map
+        double delta_eval = evaluator->get_delta_eval (changes, current_plan.get_station(move.station_id)->getAngle());
+        //double delta_eval2 = dynamic_cast<EvaluatorGS*>(evaluator)->compute_admissible_gscore()-prev_gs;
         
-        list<pair<int, double> > changes = get_changes_in_fm(current_plan,move); //changes in fluence_map
-        //double delta_eval = current_plan.get_delta_eval (move.station_id, changes);
-        double delta_eval = evaluator.get_delta_eval (changes, current_plan.get_station(move.station_id)->getAngle());
-
-        //Update delta_eval (eliminar 3 lineas)
-        //list<pair<int, double> > diff;
-        //double delta_eval = get_delta_eval(current_plan, move, diff);
-        //Station *s = current_plan.get_station(move.station_id);
-
         if(changes.empty()) continue;
 
         //Evaluation updates
         used_evaluations++;
 
-        // Check if there is an improvement
-        if (delta_eval < -0.0001) {
-            applyMove(current_plan, move); //NO llama a incremental_eval
-            current_eval = evaluator.incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
+ 
+        double max=0.001;
+        double min=0.0001;
+        double alpha = pow(min/max,1.0/(double)max_evaluations);
+        
+        double threshold_delta_eval = -max*pow(alpha,used_evaluations);
+        //cout << threshold_delta_eval << endl;
 
-            improvement = true;
+        if(  delta_eval < threshold_delta_eval ) {
+          improvement = true;
+          break;
+        }else{
+            if (tabu_size > 0) 
+              addTabu(tabu_list, move, tabu_size);
+        }
+        
+      }
 
-            if (ls_neighborhood==NeighborhoodType::smixed_i && move.type==2) {
-              ls_neighborhood=NeighborhoodType::smixed_a;
-              generate_neighborhood = true;
-            } else {
-              if (ls_neighborhood==NeighborhoodType::smixed_a && move.type==1) {
-                ls_neighborhood=NeighborhoodType::smixed_i;
-                generate_neighborhood = true;
-              }
-          }
+      // Check if there is an improvement
+      if (improvement) {
+          applyMove(current_plan, move); //NO llama a incremental_eval
+          current_eval = evaluator->incremental_eval (changes,  current_plan.get_station(move.station_id)->getAngle());
 
-          if (!continuous)
-              generate_neighborhood = true;
           
+
+          generate_neighborhood = true;
+        
           ls_target.target_type = ls_target_type;
           ls_target.target_move = move;
 
@@ -505,39 +516,31 @@ public:
             addUndoTabu(tabu_list, move, tabu_size);
 
 
-          //Compute the evaluation of obj2
-          double ev2 = evaluators.back()->incremental_eval();
-          if (ev2 < best_eval2) {
-            best_eval2 = ev2;
-            //delete best_plan2;
-            //best_plan = new Plan(current_plan);
-          }
-
-            n_neighbors = 0;
-            break;
-
-
-
-
-        } else {
-          //no improvement
-
-          //Update delta_eval (eliminar)
-          //s->undoLast();
-          //s->diff_undo(diff);
-
-
-	        // Add the non-improving movement as tabu
-          if (tabu_size > 0)
-            addTabu(tabu_list, move, tabu_size);
+        //Compute the evaluation of obj2
+        //Convergence of scores
+        double ev2 = evaluators.back()->incremental_eval();
+        //prev_gs = dynamic_cast<EvaluatorGS*>(evaluators.back())->compute_admissible_gscore();
+        //if (ev2 < best_eval2) {
+          best_eval2 = ev2;
+          cout << "Scores: " << used_evaluations << " " ;
+          for (auto score : dynamic_cast<EvaluatorGS*>(evaluators.back())->scores)
+              cout << score.value << " ";
+          cout << ev2 << " " << current_eval << endl;
+        //}
+          if(ev2<0.0 && evaluator!=evaluators.back()){ 
+            cout << "switch evaluator" << endl;
+            evaluator = evaluators.back();
+            current_eval = evaluator->get_evaluation();
         }
-
-        // Termination criterion
-        time_end = clock();
-        used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
-        if (max_time!=0 && used_time >= max_time) break;
-        if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
       }
+
+
+      // Termination criterion
+      time_end = clock();
+      used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
+      if (max_time!=0 && used_time >= max_time) break;
+      if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
+      
 
       if (improvement) {
 	      time_end = clock();
@@ -569,9 +572,9 @@ public:
           // improvement we allow to check also the next neighborhood
           // Note: this should be coordinated with the select neighborhood
           // function.
-	  sequential_flag = true;
+	        sequential_flag = true;
           improvement = true;
-	  generate_neighborhood = true;
+	        generate_neighborhood = true;
         } else {
           sequential_flag = false;
         }

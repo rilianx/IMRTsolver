@@ -92,11 +92,30 @@ public:
         }
     }
 
+
+    double compute_admissible_gscore() const{
+        double s=0.0;
+        for(const Score& score:scores){
+            if(score.t == Score::D || score.t == Score::Dmean){
+                if(score.max_value>0.0){
+                    if(type==GS) s+=score.weight *  score.value/score.max_value;
+                    else if(type==GS_SQUARED) s+=score.weight *  pow(score.value/score.max_value,2);
+                    else if (type==GS_RELU) s+=score.weight * (score.value/score.max_value-1.0);
+                }else{
+                    if(type==GS) s+=score.weight *  score.min_value/score.value;
+                    else if(type==GS_SQUARED) s+=score.weight *  pow(score.min_value/score.value,2);
+                }
+            }
+        }
+        return s;
+    }
+
     double compute_gscore(vector<vector<double>>& sortedFM) const{
         double s=0.0;
 
         //identify if the solution is addmisible
         bool admissible = true;
+
         for(const Score& score:scores){
             if(score.t == Score::D)
                 score.value= computeD(sortedFM[score.organ], score.x);
@@ -121,6 +140,7 @@ public:
                     else if (type==GS_RELU && admissible) s+=score.weight * (score.value/score.max_value-1.0);
                 }else{
                     if(type==GS) s+=score.weight *  score.min_value/score.value;
+                    //else if(type==GS && admissible) s+= score.weight;
                     else if(type==GS_SQUARED) s+=score.weight *  pow(score.min_value/score.value,2);
                     else if (type==GS_RELU) s+=score.weight * max(score.min_value/score.value-1.0,0.0);
                 }

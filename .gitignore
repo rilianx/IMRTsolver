@@ -19,6 +19,7 @@ plotter/organ_xls0.dat
 plotter/organ_xls1.dat
 plotter/organ_xls2.dat
 /data/Equidistantes
+/data/TRT00X
 /fwk4exps/as
 data/equidistant-instances.tar.gz
 /AS
@@ -31,6 +32,8 @@ fwk4exps/as2/
 /output.png
 fwk4exps/dao/
 fwk4exps/ibo/
+extras/toPNG/*.png
+
 *~
 .*
 #*

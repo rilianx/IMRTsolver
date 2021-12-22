@@ -62,6 +62,7 @@ int main(int argc, char** argv){
   int bsize = 20;
   double min_improvement=0.05;
 
+
   // Perturbation
   PerturbationType perturbation_type = PerturbationType::p_mixed;
   int perturbation_size = 0;
@@ -239,8 +240,10 @@ int main(int argc, char** argv){
 	if(_bsize) bsize = _bsize.Get();
 	if(_vsize) vsize = _vsize.Get();
   if(_min_improvement) min_improvement=_min_improvement.Get();
+
   IntensityILS2::vsize=vsize;
   IntensityILS2::min_improvement=min_improvement;
+  
 
   if(_max_apertures) max_apertures=_max_apertures.Get();
   if(_initial_intensity) initial_intensity=_initial_intensity.Get();
@@ -569,13 +572,13 @@ int main(int argc, char** argv){
 				    target_type, perturbation_type, perturbation_size,
 				    tabu_size, convergence_file, 0, clock(), _verbose, evaluators);
     used_evaluations =  ils->used_evaluations;
-    cout << evaluators.back()->eval(P) << endl; 
+    //cout << evaluators.back()->eval(P) << endl; 
 
     cout << "scores:" ;
     for (auto score : dynamic_cast<EvaluatorGS*>(evaluators.back())->scores)
       cout << score.value << " ";
     cout << endl;
-    cout << "best_eval2:" << ils->best_eval2 << endl;
+    //cout << "best_eval2:" << ils->best_eval2 << endl;
   } else if(strategy=="mixedILS") {
     MixedILS mixed_ils(bsize, 0, prob_intensity, step_intensity);
     NeighborhoodType neighborhood_DAO =NeighborhoodType::sequential_i; //mixed;
@@ -587,18 +590,8 @@ int main(int argc, char** argv){
   }
 
   EvaluatorF ev(fm,w,Zmin,Zmax);
-  cout << "FMO:" << ev.eval(P) << endl;;
+  //cout << "FMO:" << ev.eval(P) << endl;;
 
-
-
-
-  cout << "##**************************************************************************"
-       << endl;
-  cout << "##******************************* RESULTS **********************************"
-       << endl;
-  cout << "##**************************************************************************"
-       << endl;
-  cout << "##"<<endl;
   cout << "## Best solution found: " <<  cost << "," << ils->best_eval2 << endl; //<< " "<< P.eval() << endl;
 
    if(_irace) exit(0); //to avoid free corruption error :( 
