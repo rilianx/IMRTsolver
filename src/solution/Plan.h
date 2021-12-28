@@ -24,7 +24,7 @@ namespace imrt {
 class Plan {
 public:
 
-  Plan(Evaluator& ev, Collimator& collimator, vector<Volume>& volumes, int max_apertures,
+  Plan(Collimator& collimator, vector<Volume>& volumes, int max_apertures,
        int max_intensity, int initial_intensity, int step_intensity=2,
        StationSetup setup = open_all_min, istringstream* fm_stream=NULL, vector<int> bac = vector<int>());
 
@@ -32,6 +32,7 @@ public:
 
 	virtual ~Plan() {};
 
+  Plan& operator=(Plan& p);
 	void newCopy(Plan& p);
 
 	// Adds a new station to the plan
@@ -95,7 +96,6 @@ public:
      return(stations.size()) ;
   }
 
-  Evaluator& get_evaluator(){return ev;}
 
 
   map<int, Station*> angle2station;
@@ -109,9 +109,6 @@ private:
   Station* last_changed;
 	list< pair< int, double > > last_diff;
 
-
-
-	Evaluator& ev;
 	
 };
 

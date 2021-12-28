@@ -20,19 +20,17 @@ public:
   static double vsize;
   static double min_improvement;
 
-  IntensityILS2() : ILS() { };
+  IntensityILS2(vector<Evaluator*>& evaluators, int sf_eval=0, int of_eval=0) : ILS(evaluators, sf_eval, of_eval) { };
 
-  IntensityILS2(const IntensityILS2 & ils) : ILS(ils) {
-  };
+
 
   virtual ~IntensityILS2() {};
 
   vector <NeighborMove> getNeighborhood(Plan& current_plan,
                                         NeighborhoodType ls_neighborhood,
-                                        LSTarget ls_target);
+                                        LSTarget ls_target= {LSTargetType::target_none, {0,0,0,0,0}});
   vector < NeighborMove > getShuffledIntensityNeighbors(Plan &P);
   vector < NeighborMove > getShuffledApertureNeighbors(Plan &P);
-  vector < NeighborMove > getShuffledApertureNeighbors_target(Plan &P, double vsize=0.01);
   vector < NeighborMove > getOrderedApertureNeighbors(Plan &P);
   vector < NeighborMove > getShuffledNeighbors(Plan &P);
 

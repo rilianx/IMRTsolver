@@ -6,14 +6,14 @@
  */
 
 #include "Plan.h"
-#include "Evaluator.h"
+
 
 namespace imrt {
 
 
-  Plan::Plan(Evaluator& ev, Collimator& collimator, vector<Volume>& volumes, int max_apertures,
+  Plan::Plan(Collimator& collimator, vector<Volume>& volumes, int max_apertures,
              int max_intensity, int initial_intensity,
-             int step_intensity, StationSetup setup, istringstream* fm_stream, vector<int> bac) : ev(ev){
+             int step_intensity, StationSetup setup, istringstream* fm_stream, vector<int> bac) {
 
       cout << "##Initilizing plan."<< endl;
 
@@ -33,7 +33,7 @@ namespace imrt {
 
   };
 
-  Plan::Plan(const Plan &p) : ev(p.ev) {
+  Plan::Plan(const Plan &p)  {
 
     for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
       Station* aux = new Station(**it);
@@ -43,6 +43,20 @@ namespace imrt {
       //real_stations.push_back(*aux);
     }
     n_stations= stations.size();
+  }
+
+  Plan& Plan::operator=(Plan& p){
+    for( auto station :stations ) delete station;
+    stations.clear();
+
+    for (list<Station*>::const_iterator it=p.stations.begin();it!=p.stations.end();it++) {
+      
+      Station* aux = new Station (**it);
+      add_station(*aux);
+      angle2station[aux->getAngle()]=aux;
+    }
+    n_stations= stations.size();    
+    return *this;
   }
 
   void Plan::newCopy(Plan& p) {

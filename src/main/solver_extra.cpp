@@ -4,16 +4,29 @@
 #include <stack>
 #include <unistd.h>
 #include <string.h>
+#include "Collimator.h"
+#include "Volume.h"
+#include "IntensityGenerator.h"
 
 using namespace std;
 using namespace imrt;
 
 namespace imrt{
 
-void load_scores(list<Score>& scores, string scores_file){
-    ifstream indata; // indata is like cin
-    indata.open(scores_file); 
+vector<std::string> split(const std::string& s, char delimiter)
+{
+   std::vector<std::string> tokens;
+   std::string token;
+   std::istringstream tokenStream(s);
+   while (std::getline(tokenStream, token, delimiter))
+   {
+      tokens.push_back(token);
+   }
+   return tokens;
+}
 
+
+void load_scores(list<Score>& scores, ifstream& indata){
     while ( !indata.eof() ) {
       string type;
       double x, min_value, max_value, weight;
@@ -34,6 +47,12 @@ void load_scores(list<Score>& scores, string scores_file){
 
       scores.push_back(Score(t,x,organ,min_value,max_value,weight));
     }
+}
+
+void load_scores(list<Score>& scores, string scores_file){
+    ifstream indata; // indata is like cin
+    indata.open(scores_file); 
+    load_scores(scores, indata);
 }
 
 

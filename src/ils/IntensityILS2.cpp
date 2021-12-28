@@ -41,44 +41,6 @@ vector < NeighborMove > IntensityILS2::getShuffledIntensityNeighbors(Plan &P){
   return(moves);
 };
 
-vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors_target(Plan &P, double vsize){
-  vector < NeighborMove > best_moves;
-  vector < NeighborMove > shuffled_moves;
-  multimap < double, pair<int, int>, MagnitudeCompare2> beamlets =
-    P.get_evaluator().sorted_beamlets(P, vsize);
-  bool first=true;
-  for(auto b : beamlets){
-    Station *s = P.get_station(b.second.first);
-    pair<int,int> ij = s->beam2pos[b.second.second];
-    int i=ij.first, j=ij.second;
-    double intensity=s->I(i,j);
-    if(b.first > 0) {
-      intensity=s->next_intensity(i,j);
-        NeighborMove move = {1,b.second.first,0,+1,b.second.second};
-        if(b.first>=abs(min_improvement)) best_moves.push_back(move);
-        else shuffled_moves.push_back(move);
-
-        move = {1,b.second.first,0,-1,b.second.second};
-        shuffled_moves.push_back(move);
-    }else if(b.first <= 0) {
-      intensity=s->prev_intensity(i,j);
-        NeighborMove move = {1,b.second.first,0,-1,b.second.second};
-        if(b.first<=-abs(min_improvement)) best_moves.push_back(move);
-        else shuffled_moves.push_back(move);
-
-        move = {1,b.second.first,0,+1,b.second.second};
-        shuffled_moves.push_back(move);
-    }
-  }
-
-  if(min_improvement < 0.0)
-    std::random_shuffle ( best_moves.begin(), best_moves.end(), myrandom);
-  std::random_shuffle ( shuffled_moves.begin(), shuffled_moves.end(), myrandom);
-  best_moves.insert(best_moves.end(), shuffled_moves.begin(), shuffled_moves.end());
-
-  return best_moves;
-}
-
 vector < NeighborMove > IntensityILS2::getShuffledApertureNeighbors(Plan &P){
 
    list<Station*> stations = P.get_stations();
@@ -171,8 +133,6 @@ vector < NeighborMove> IntensityILS2::getNeighborhood(Plan& current_plan,
   } else if (ls_neighborhood == aperture) {
     if(ls_target.target_type!=LSTargetType::target_friends)
        neighborList = getShuffledApertureNeighbors(current_plan);
-    else
-       neighborList = getShuffledApertureNeighbors_target(current_plan,vsize);
   }else if (ls_neighborhood == mixed) {
     //mixed
     neighborList = getShuffledNeighbors(current_plan);
