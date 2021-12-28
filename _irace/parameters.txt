@@ -1,0 +1,9 @@
+## name		switch		     type	values			[conditions (using R syntax)]
+mode    ""  c   (of76)
+min_delta   ""  c   (0.002, 0.001, 0.0005, 0.0002, 0.0001, 0.00005)
+pr_first_neigh   ""  c   (1.0)
+pert_size   ""  i   (3, 15)
+switch_patience   ""  c   (1)
+#mode    ""  c   (gs76, of76)
+#pr_first_neigh   ""  r   (0.05, 1.0)
+#switch_patience   ""  i   (1, 100)

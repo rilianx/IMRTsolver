@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/iaraya/imrt/_irace/imrt4irace.py", line 27, in <module>
+    result = subprocess.getoutput(command)
+  File "/usr/local/lib/python3.9/subprocess.py", line 647, in getoutput
+    return getstatusoutput(cmd)[1]
+  File "/usr/local/lib/python3.9/subprocess.py", line 628, in getstatusoutput
+    data = check_output(cmd, shell=True, text=True, stderr=STDOUT)
+  File "/usr/local/lib/python3.9/subprocess.py", line 424, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+  File "/usr/local/lib/python3.9/subprocess.py", line 507, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "/usr/local/lib/python3.9/subprocess.py", line 1121, in communicate
+    stdout = self.stdout.read()
+KeyboardInterrupt
