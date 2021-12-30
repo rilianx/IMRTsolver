@@ -22,8 +22,8 @@ command = "../AS \
     --file-dep="+instance+ \
     " --path=.. --output-file="+conv_file+" --seed="+seed
 
-#print(command)
+print(command)
 
 result = subprocess.getoutput(command)
 
-print(float(result.split("\n")[-2]))
+print(float(result.split("\n")[-1].split(":")[1]))
