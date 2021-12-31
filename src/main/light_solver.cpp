@@ -313,7 +313,10 @@ int main(int argc, char** argv){
     
   
     EvaluatorF ev(fm,w,Zmin,Zmax);
-    cout << "## Best solution found: " << ils->best_evals[of_eval] << endl;
+    if (ils->best_evals[of_eval]<0.0) //addmisible
+        cout << "## Best solution found: " << ils->best_evals[of_eval] << endl;
+    else
+        cout << "## Best solution found: " << 100.0 << endl;
     
 
     if (output_stream.is_open()){
