@@ -159,11 +159,14 @@ public:
   vector<Evaluator*> evaluators;
   vector<double> best_evals;
 
+
   //Search Function
   Evaluator* SF_evaluator;
 
   //Objective Function
   Evaluator* OF_evaluator;
+  Plan* best_planOF=NULL;
+
 
 
 };

@@ -117,11 +117,20 @@ double ILS::FILocalSearch (Plan& current_plan, int max_evaluations,
                 if(best_OF == 0.0 || OF < best_OF) {
                     OF_no_improv=0;
                     best_OF=OF;
+                    //guardar solucion best_OF
+                    if(best_planOF) *best_planOF=current_plan;
+                    else best_planOF=new Plan(current_plan);
                 }else OF_no_improv++;  
 
                 if (switch_patience>0 && OF_no_improv>=switch_patience){
                     cout << "switch evaluator" << endl;
                     SF_evaluator=OF_evaluator;
+                     //comenzar con solucion best_OF
+                     if(best_planOF){
+                         current_plan=*best_planOF;
+                         SF_evaluator->eval(current_plan);
+                         OF_evaluator->incremental_eval();
+                     }
                     current_eval = SF_evaluator->get_evaluation();
                 }
             }
