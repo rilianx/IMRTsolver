@@ -12,7 +12,8 @@ namespace imrt {
 double ILS::iteratedLocalSearch (Plan& current_plan, int max_evaluations,
                               vector<NeighborhoodType>& ls_neighborhoods, int perturbation_size, ofstream& output_stream,
 			                  int& used_evaluations, std::clock_t time_begin, bool verbose, 
-                              double min_delta_eval, double alpha, int switch_patience, double pr_first_neigh) {
+                              double min_delta_eval, double alpha, int switch_patience, 
+                              vector<double>& pr_neigh, double pr_first_neigh) {
 
     cout << "Starting iterated local search " << endl;
 
@@ -22,7 +23,8 @@ double ILS::iteratedLocalSearch (Plan& current_plan, int max_evaluations,
     while (true) {
         // Apply local search
         double eval = FILocalSearch(current_plan, max_evaluations,
-                ls_neighborhoods, output_stream, used_evaluations, time_begin, verbose, min_delta_eval, alpha, switch_patience, pr_first_neigh);
+                ls_neighborhoods, output_stream, used_evaluations, time_begin, verbose, min_delta_eval, alpha, switch_patience, pr_neigh, pr_first_neigh);
+        pr_first_neigh=1.0;
 
         cout << SF_evaluator->eval(current_plan) << endl;
         if (eval < best_eval) {
@@ -34,7 +36,6 @@ double ILS::iteratedLocalSearch (Plan& current_plan, int max_evaluations,
         }
 
         current_plan=*best_plan; 
-        pr_first_neigh=1.0;
 
         // Termination criterion
         if (max_evaluations!=0 && used_evaluations>=max_evaluations) break;
@@ -54,7 +55,8 @@ double ILS::iteratedLocalSearch (Plan& current_plan, int max_evaluations,
 double ILS::FILocalSearch (Plan& current_plan, int max_evaluations,
                               vector<NeighborhoodType>& ls_neighborhoods, ofstream& output_stream,
 			                  int& used_evaluations, std::clock_t time_begin, bool verbose, 
-                              double& min_delta_eval, double alpha, int switch_patience,  double pr_first_neigh) {
+                              double& min_delta_eval, double alpha, int switch_patience,  
+                              vector<double>& pr_neigh, double pr_first_neigh) {
     cout << "Starting first improvement local search " << endl;
     vector <NeighborMove> neighborhood;
     double current_eval = SF_evaluator->eval(current_plan);
@@ -77,7 +79,8 @@ double ILS::FILocalSearch (Plan& current_plan, int max_evaluations,
         bool improvement = false;
         list<pair<int, double>> changes;
         NeighborMove move;
-        for(int n = 0; n< (double) neighborhood.size()*pr_first_neigh; n++){
+        double pr = std::min(pr_neigh[id_neigh],pr_first_neigh);
+        for(int n = 0; n<(double)neighborhood.size()*pr; n++){
             move = neighborhood[n];
 
             //get the changes required by the move

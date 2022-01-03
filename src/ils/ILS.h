@@ -148,13 +148,14 @@ public:
 
   double iteratedLocalSearch (Plan& current_plan, int max_evaluations,
                               vector<NeighborhoodType>& ls_neighborhoods, int perturbation_size, ofstream& output_stream,
-			                        int& used_evaluations, std::clock_t time_begin = clock(), bool verbose=false, 
-                              double min_delta_eval=0.001, double alpha=1.0, int switch_patience=5, double pr_first_neigh=1.0);
+			                        int& used_evaluations, std::clock_t time_begin, bool verbose, 
+                              double min_delta_eval, double alpha, int switch_patience, 
+                              vector<double>& pr_neigh, double pr_first_neigh);
 
   double FILocalSearch (Plan& current_plan, int max_evaluations,
                               vector<NeighborhoodType>& ls_neighborhoods, ofstream& output_stream,
 			                        int& used_evaluations, std::clock_t time_begin, bool verbose, 
-                              double& min_delta_eval, double alpha=1.0, int switch_patience=5, double pr_first_neigh=1.0);
+                              double& min_delta_eval, double alpha, int switch_patience, vector<double>& pr_neigh, double pr_first_neigh);
 
   vector<Evaluator*> evaluators;
   vector<double> best_evals;

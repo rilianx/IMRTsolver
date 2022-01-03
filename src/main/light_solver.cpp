@@ -102,8 +102,11 @@ int main(int argc, char** argv){
                                             "Reduction factor of min-delta after each evaluation",
                                             {"min-delta-red"});
     args::ValueFlag<double> _pr_first_neigh (accargs, "double",
-                                            "Prob. of selecting moves in the first neighbourhood",
+                                            "Prop. of elements from the first neighbourhood",
                                             {"pr-first-neigh"});
+    args::ValueFlag<string> _pr_neigh (accargs, "string",
+                                            "Prop. of elements of each neighbourhood",
+                                            {"pr-neigh"});
 
 
     // Perturbation parameters
@@ -182,7 +185,6 @@ int main(int argc, char** argv){
     //Acceptation improvement
     if(_min_delta_eval) min_delta_eval=_min_delta_eval.Get();
     if(_alpha) alpha=_alpha.Get();
-    if(_pr_first_neigh) pr_first_neigh=_pr_first_neigh.Get();
 
     // Neighborhood
     if(_neighborhoods){
@@ -196,6 +198,19 @@ int main(int argc, char** argv){
             
         }
     }
+
+
+    // Neighborhood pr
+    vector<double> pr_neigh(neighborhoods.size(),1.0);
+    if(_pr_neigh){
+        pr_neigh.clear();
+        vector<std::string> neigh = split(_pr_neigh.Get(), ',');
+        for(auto nn : neigh){
+            pr_neigh.push_back(stod(nn));
+        }
+    }
+
+    if(_pr_first_neigh) pr_first_neigh=_pr_first_neigh.Get();
   
     if (_perturbation_size) perturbation_size = _perturbation_size.Get();
 
@@ -308,7 +323,8 @@ int main(int argc, char** argv){
     std::clock_t begin_time = clock();
     int used_evaluations=0;
     double cost = ils->iteratedLocalSearch(P, maxeval, neighborhoods, perturbation_size, 
-                    output_stream,used_evaluations, begin_time, _verbose, min_delta_eval, alpha, switch_patience, pr_first_neigh);
+                    output_stream,used_evaluations, begin_time, _verbose, min_delta_eval, alpha, 
+                    switch_patience, pr_neigh, pr_first_neigh);
     
     
   
