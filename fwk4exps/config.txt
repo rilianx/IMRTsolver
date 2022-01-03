@@ -4,43 +4,31 @@ mintime = 0.0001
 maxtime = 40
 factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
-max_seeds = 20
-min_seeds = 20
-algo_names = gs_relu gs gs_relu_irace gs_relu5
+max_seeds = 10
+min_seeds = 10
+algo_names = of76 gs76_0 gs76_1 gs76_2
 
 
-[gs_relu_irace]
-exec = python3 imrt4irace.py
-params = _INSTANCE _SEED 0.66 0.77 0.11 0.09 gs_relu 27.24 write_file 76 0
+[of76]
+exec = "python3 imrt4irace.py"
+params = _INSTANCE _SEED of76 0.0001 1.0 0 0
 outputpos_times = 0
 outputpos_boxes = 0
 
-[gs_relu5]
-exec = python3 imrt4irace.py
-params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs_relu 50.0 write_file 76 5
+[gs76_0]
+exec = "python3 imrt4irace.py"
+params = _INSTANCE _SEED gs76 0.0001 1.0 0 0
 outputpos_times = 0
 outputpos_boxes = 0
 
-[gs_relu]
-exec = python3 imrt4irace.py
-params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs_relu 50.0 write_file 76 0
+[gs76_1]
+exec = "python3 imrt4irace.py"
+params = _INSTANCE _SEED gs76 0.0001 1.0 0 20
 outputpos_times = 0
 outputpos_boxes = 0
 
-[gs]
-exec = python3 imrt4irace.py
-params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs 50.0 write_file 76 0
-outputpos_times = 0
-outputpos_boxes = 0
-
-[gs_irace]
-exec = python3 imrt4irace.py
-params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 gs 50.0 write_file 76 0
-outputpos_times = 0
-outputpos_boxes = 0
-
-[mpse]
-exec = python3 imrt4irace.py
-params = _INSTANCE _SEED 0.5 0.25 0.125 0.125 mpse 50.0 write_file 76 0
+[gs76_2]
+exec = "python3 imrt4irace.py"
+params = _INSTANCE _SEED gs76 0.0001 0.2 0 20
 outputpos_times = 0
 outputpos_boxes = 0
