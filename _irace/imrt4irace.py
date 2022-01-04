@@ -17,6 +17,10 @@ if mode=="gs76_4":
 
 
 conv_file= "output/"+instance.split('/')[-1]+'-'+'-'.join(sys.argv[2:])
+file_coord = "--file-coord=data/Equidistantes/equidist-coord.txt"
+
+if "file-coord" in instance:
+    file_coord = ""
 
 command = "../AS \
     --maxeval="+max_iter+ \
@@ -26,8 +30,8 @@ command = "../AS \
     " --perturbation-size="+pert_size+ \
     pr_neigh_str+ \
     param+ \
-    "--file-coord=data/Equidistantes/equidist-coord.txt \
-    --file-dep="+instance+ \
+    file_coord+ \
+    " --file-dep="+instance+ \
     " --path=.. --output-file="+conv_file+" --seed="+seed
 
 #print(command)
