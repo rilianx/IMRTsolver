@@ -6,8 +6,8 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 10
 min_seeds = 10
-algo_names = gs76_3
-# of76 gs76_0 gs76_1 gs76_2 
+algo_names = gs76_4
+# of76 gs76_0 gs76_1 gs76_2 gs76_3
 
 
 [of76]
@@ -37,5 +37,11 @@ outputpos_boxes = 0
 [gs76_3]
 exec = python3 imrt4irace.py
 params = _INSTANCE _SEED gs76 0.0002 0.09 5 54
+outputpos_times = 0
+outputpos_boxes = 0
+
+[gs76_4]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED gs76_4 0.0001 0.10 3 41
 outputpos_times = 0
 outputpos_boxes = 0
