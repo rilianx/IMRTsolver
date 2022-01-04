@@ -6,7 +6,7 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 10
 min_seeds = 10
-algo_names = gs76_2
+algo_names = of76 gs76_0 gs76_2
 # of76 gs76_0 gs76_1 gs76_2 gs76_3
 
 
