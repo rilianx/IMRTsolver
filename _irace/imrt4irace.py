@@ -3,6 +3,7 @@ import random
 import os
 import subprocess
 
+
 instance,seed,mode,min_delta,pr_first_neigh,pert_size,switch_patience = sys.argv[1:]
 
 if mode=="of76": param=" --evals=scores/of76.txt,scores/of76.txt --sf=0 --of=0 "
@@ -22,6 +23,21 @@ file_coord = "--file-coord=data/Equidistantes/equidist-coord.txt"
 if "file-coord" in instance:
     file_coord = ""
 
+if "TRT001" in instance:
+    file_coord="--file-coord=data/TRT00X/TRT001-coord.txt"
+
+if "TRT002" in instance:
+    file_coord="--file-coord=data/TRT00X/TRT002-coord.txt"
+
+if "TRT003" in instance:
+    file_coord="--file-coord=data/TRT00X/TRT003-coord.txt"
+
+if "TRT004" in instance:
+    file_coord="--file-coord=data/TRT00X/TRT004-coord.txt"
+
+if "TRT005" in instance:
+    file_coord="--file-coord=data/TRT00X/TRT005-coord.txt"
+
 command = "../AS \
     --maxeval="+max_iter+ \
     " --neighborhoods=aperture,intensity \
@@ -35,6 +51,7 @@ command = "../AS \
     " --path=.. --output-file="+conv_file+" --seed="+seed
 
 #print(command)
+
 
 result = subprocess.getoutput(command)
 
