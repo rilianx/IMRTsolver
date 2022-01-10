@@ -61,13 +61,12 @@ public:
 	
 	const vector< vector<double> >& getFM() {return FM;}
 
+	vector< vector<double> > FM;
+
 private:
 	//dose distribution vectors for each organ
-	vector< vector<double> > FM;
+	
 	mutable std::vector<list < pair<int, double>>> deltaFM;
-
-	//voxel_dose[o][d] indicates the number of voxels in organ o with a dose between d and d+1
-	vector<vector<double> > voxel_dose;
 
   	vector<Volume>& volumes;
 

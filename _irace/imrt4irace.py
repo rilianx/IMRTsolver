@@ -18,6 +18,7 @@ if mode=="gs76_4":
 
 
 conv_file= "output/"+instance.split('/')[-1]+'-'+'-'.join(sys.argv[2:])
+sol_file= "output/"+instance.split('/')[-1]+'-'+'-'.join(sys.argv[2:])+".sol"
 file_coord = "--file-coord=data/Equidistantes/equidist-coord.txt"
 
 if "file-coord" in instance:
@@ -48,7 +49,7 @@ command = "../AS \
     param+ \
     file_coord+ \
     " --file-dep="+instance+ \
-    " --path=.. --output-file="+conv_file+" --seed="+seed
+    " --path=.. --output-file="+conv_file+ " --output-fm=" +sol_file" --seed=" + seed
 
 #print(command)
 

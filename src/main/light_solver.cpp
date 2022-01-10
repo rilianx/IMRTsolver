@@ -152,7 +152,9 @@ int main(int argc, char** argv){
     args::ValueFlag<string> _output_file (io_opt, "string",
                                     "File to output all indicators for each iteration", 
                                     {"output-file"});
-
+    args::ValueFlag<string> _fm_output (io_opt, "string",
+                                    "File to output the fluence map of voxels", 
+                                    {"output-fm"});
 
                                 
 	try
@@ -350,6 +352,18 @@ int main(int argc, char** argv){
         output_stream.close();
     }
 
+    ofstream output_fm_stream;
+    if(_fm_output) {
+        string file=_fm_output.Get();
+        output_fm_stream.open (file.c_str(), ios::out);
+    }
+
+    for(int o=0; o< evaluators[0]->FM.size(); o++){
+        for(int i=0; i<evaluators[0]->FM[o].size(); i++){
+            output_fm_stream << evaluators[0]->FM[o][i] << ",";
+        }
+        output_fm_stream << endl;
+    }
 
 
 
