@@ -49,7 +49,7 @@ command = "../AS \
     param+ \
     file_coord+ \
     " --file-dep="+instance+ \
-    " --path=.. --output-file="+conv_file+ " --output-fm=" +sol_file" --seed=" + seed
+    " --path=.. --output-file="+conv_file+ " --output-fm=" +sol_file+" --seed=" + seed
 
 #print(command)
 
