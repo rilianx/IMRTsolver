@@ -1,7 +1,7 @@
-algos:mixedILS2 
+algos:gs2_76 
 gains (average relative times):1.000000 
 gains (total time)            :1.000000 
 compared instances:  0 
-runs    :420 
+runs    :140 
 L:  0 
 W:  0 
