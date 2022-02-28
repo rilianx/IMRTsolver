@@ -256,6 +256,7 @@ int main(int argc, char** argv){
             cout << function << endl;
             if( function == "gs_relu") t=EvaluatorGS::GS_RELU;
             else if( function == "gs") t=EvaluatorGS::GS;
+            else if( function == "gs2") t=EvaluatorGS::GS2;
             
             evaluators.push_back(new EvaluatorGS(fm,w,Zmin,Zmax, scores, t));
         }

@@ -122,35 +122,41 @@ public:
             else if(score.t == Score::Dmean)
                 score.value= computeDmean(sortedFM[score.organ]);
             
-            if(score.max_value >0){
+            //tumor under-irradiated
+            if(score.min_value && score.value < score.min_value)
+                admissible&=false;
+            
+            /*if(score.max_value >0){
                 if (score.value > score.max_value)
                     admissible&=false;
             }else if (score.value < score.min_value){
                     admissible&=false;
-            }
+            }*/
         }
 
 
         for(const Score& score:scores){
             if(score.t == Score::D || score.t == Score::Dmean){
-                if(score.max_value>0.0){
-                    if(type==GS) s+=score.weight *  score.value/score.max_value;
+                if(score.max_value>0.0){ //organs
+                    if(type==GS || type==GS2) s+=score.weight *  score.value/score.max_value;
                     else if(type==GS_SQUARED) s+=score.weight *  pow(score.value/score.max_value,2);
-                    else if (type==GS_RELU && !admissible) s+=score.weight *  max(score.value/score.max_value-1.0,0.0);
+                    //else if (type==GS_RELU && !admissible) s+=score.weight *  max(score.value/score.max_value-1.0,0.0);
                     else if (type==GS_RELU && admissible) s+=score.weight * (score.value/score.max_value-1.0);
-                }else{
-                    if(type==GS) s+=score.weight *  score.min_value/score.value;
+                }else{ //tumor
+                    if(type==GS || (type==GS2 && !admissible) ) s+=score.weight *  score.min_value/score.value;
                     //else if(type==GS && admissible) s+= score.weight;
                     else if(type==GS_SQUARED) s+=score.weight *  pow(score.min_value/score.value,2);
                     else if (type==GS_RELU) s+=score.weight * max(score.min_value/score.value-1.0,0.0);
                 }
             }
         }
+        if(!admissible) s+=1.0;
+
         return s;
     }
 
 	//Constructor of the evaluator.
-    enum Type{GS, GS_RELU, GS_SQUARED};
+    enum Type{GS, GS2, GS_RELU, GS_SQUARED};
     Type type;
 
 	EvaluatorGS(FluenceMap& fm_structure, vector<double>& w, 
