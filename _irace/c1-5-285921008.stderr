@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "/home/iaraya/imrt/_irace/imrt4irace.py", line 29, in <module>
-    print(float(result.split("\n")[-2]))
-ValueError: could not convert string to float: '    --maxeval=15000 --ls=first --perturbation-size=5 --seed=1 --max-intensity=20'
