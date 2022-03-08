@@ -14,11 +14,11 @@ parameterFile = "./parameters.txt"
 ## Directory where tuning instances are located, either absolute path or
 ## relative to current directory.
 trainInstancesDir = ""
-trainInstancesFile = "instancesTRT4.txt"
+trainInstancesFile = "instances.txt"
 
 
 testInstancesDir = ""
-testInstancesFile = "instancesTRT4.txt"
+testInstancesFile = "instances.txt"
 
 ## The maximum number of runs (invocations of targetRunner) that will performed. It
 ## determines the (maximum) budget of experiments for the tuning.
