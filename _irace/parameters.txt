@@ -2,7 +2,7 @@
 mode    ""  c   (mse76)
 min_delta   ""  c   (0.001)
 pr_first_neigh   ""  r   (0.05, 1.0)
-pert_size   ""  i   (3)
+pert_size   ""  c   (3)
 switch_patience   ""  c   (10000)
 w1   ""  i   (1)
 w2   ""  i   (1)
