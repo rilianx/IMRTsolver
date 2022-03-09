@@ -2,6 +2,6 @@ algos:gs2_76_irace
 gains (average relative times):1.000000 
 gains (total time)            :1.000000 
 compared instances:  0 
-runs    : 23 
+runs    : 28 
 L:  0 
 W:  0 
