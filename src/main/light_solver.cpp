@@ -133,6 +133,15 @@ int main(int argc, char** argv){
                                             "Number of movements that does not improve OF  before switching the search function to OF.",
                                             {"switch-patience"});
 
+    args::ValueFlag<string> _w (objfunct, "vector",
+                                            "Weights of organs and tumor (for the mse evaluator) separated by (,)",
+                                            {"w"});
+
+    args::ValueFlag<string> _z (objfunct, "vector",
+                                            "prescripted doses for organs and tumor (for the mse evaluator) separated by (,)",
+                                            {"z"});
+
+
     
 
 
@@ -228,10 +237,25 @@ int main(int argc, char** argv){
     // Iniciar generador de numeros aleatorios
     srand(seed);
 
-    // Create colimator object and volumes
+
     vector<double> w={1,1,5};
     vector<double> Zmin={0,0,76};
     vector<double> Zmax={65,65,76};
+
+    // Create colimator object and volumes
+    string w_str="1,1,1";
+    string z_str="65,65,76,76";
+
+    if(_w) w_str=_w.Get();
+    if(_z) z_str=_z.Get();
+
+    std::replace( w_str.begin(), w_str.end(), ',', ' ');
+    std::replace( z_str.begin(), z_str.end(), ',', ' ');
+    std::istringstream stm(w_str) ;
+    stm >> w[0] >> w[1] >> w[2];
+    std::istringstream stm2(z_str) ;
+    stm2 >> Zmax[0] >> Zmax[1] >> Zmin[2] >> Zmax[2];
+
     Collimator collimator (file2, get_angles(file, 5));
     vector<Volume> volumes = createVolumes (file, collimator);
 
@@ -260,6 +284,9 @@ int main(int argc, char** argv){
             
             evaluators.push_back(new EvaluatorGS(fm,w,Zmin,Zmax, scores, t));
         }
+
+        evaluators.push_back(new EvaluatorF(fm,w,Zmin,Zmax));
+        
     }
 
     if(_sf_eval) sf_eval=_sf_eval.Get();

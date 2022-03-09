@@ -1,9 +1,18 @@
 ## name		switch		     type	values			[conditions (using R syntax)]
-mode    ""  c   (gs2_76_4)
-min_delta   ""  c   (0.002, 0.001, 0.0005, 0.0002, 0.0001, 0.00005)
+mode    ""  c   (mse76)
+min_delta   ""  c   (0.001)
 pr_first_neigh   ""  r   (0.05, 1.0)
-pert_size   ""  i   (1, 15)
+pert_size   ""  i   (3)
 switch_patience   ""  c   (10000)
+w1   ""  i   (1)
+w2   ""  i   (1)
+w3   ""  i   (1,5)
+z1   ""  i   (50,70)
+z2   ""  i   (50,70)
+z3a   ""  c   (76)
+z3b   ""  i   (76,85)
+
+
 #mode    ""  c   (gs76, of76)
 #pr_first_neigh   ""  r   (0.05, 1.0)
 #switch_patience   ""  i   (1, 100)
