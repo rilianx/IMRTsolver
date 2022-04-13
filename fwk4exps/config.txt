@@ -6,14 +6,32 @@ factors = 1 0.833 0.665 0.5 0.2 0.1
 sig_gain = 1.2
 max_seeds = 10
 min_seeds = 10
-algo_names = gs2_76_irace
+algo_names = gs_relu gs2 gs2-sampl_N1 gs2-pert
 # of76 gs76_0 gs76_2 gs2_76
 # of76 gs76_0 gs76_1 gs76_2 gs76_3
 
 
-[of76]
+[gs_relu]
 exec = python3 imrt4irace.py
 params = _INSTANCE _SEED of76 0.0001 1.0 0 0
+outputpos_times = 0
+outputpos_boxes = 0
+
+[gs2]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED gs2_76_4 0.0001 1.0 0 0
+outputpos_times = 0
+outputpos_boxes = 0
+
+[gs2-sampl_N1]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED gs2_76_4 0.0001 0.2 0 0
+outputpos_times = 0
+outputpos_boxes = 0
+
+[gs2-pert]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED gs2_76_4 0.0001 0.2 3 10000
 outputpos_times = 0
 outputpos_boxes = 0
 
@@ -62,5 +80,11 @@ outputpos_boxes = 0
 [mse76]
 exec = python3 imrt4irace.py
 params = _INSTANCE _SEED mse76 0.001 0.20 3 10000 1 1 5 65 65 76 76
+outputpos_times = 0
+outputpos_boxes = 0
+
+[mse76_irace]
+exec = python3 imrt4irace.py
+params = _INSTANCE _SEED mse76 0.001 0.63 3 10000 1 1 3 68 59 76 80
 outputpos_times = 0
 outputpos_boxes = 0

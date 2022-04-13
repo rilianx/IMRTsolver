@@ -1,7 +1,7 @@
-algos:gs2_76_irace 
-gains (average relative times):1.000000 
-gains (total time)            :1.000000 
-compared instances:  0 
-runs    : 28 
-L:  0 
-W:  0 
+algos:gs_relu gs2 gs2-sampl_N1 gs2-pert 
+gains (average relative times):1.000000 1.000000 1.000000 1.000000 
+gains (total time)            :1.000000 1.000000 1.000000 1.000000 
+compared instances:  0   0   0   0 
+runs    :140 140 140 140 
+L:  0   0   0   0 
+W:  0   0   0   0 
