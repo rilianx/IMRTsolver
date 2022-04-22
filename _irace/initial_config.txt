@@ -1,0 +1,2 @@
+mode    min_delta   pr_first_neigh  pert_size   switch_patience w1  w2  w3  z1  z2  z3a z3b
+mse76   0.001       0.2             3           10000           1   1   5   65  65  76  76

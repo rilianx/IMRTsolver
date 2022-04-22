@@ -10,6 +10,8 @@
 ## File that contains the description of the parameters.
 parameterFile = "./parameters.txt"
 
+configurationsFile = "./initial_config.txt"
+
 
 ## Directory where tuning instances are located, either absolute path or
 ## relative to current directory.
