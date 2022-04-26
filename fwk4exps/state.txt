@@ -1,4 +1,4 @@
-algos:gs2-irace 
+algos:mse76_irace 
 gains (average relative times):1.000000 
 gains (total time)            :1.000000 
 compared instances:  0 
