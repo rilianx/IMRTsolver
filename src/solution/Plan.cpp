@@ -13,7 +13,7 @@ namespace imrt {
 
   Plan::Plan(Collimator& collimator, vector<Volume>& volumes, int max_apertures,
              int max_intensity, int initial_intensity,
-             int step_intensity, StationSetup setup, istringstream* fm_stream, vector<int> bac) {
+             int step_intensity, StationSetup setup, istringstream* fm_stream, list<int> bac) {
 
       cout << "##Initilizing plan."<< endl;
 
@@ -22,7 +22,7 @@ namespace imrt {
 
       for (int i=0;i<n_stations;i++) {
         int angle=collimator.getAngle(i);
-        if(bac.size()>0) angle=bac[i];
+        if(bac.size()>0) {angle=bac.front(); bac.pop_front();}
 
         Station* station = new Station(collimator, volumes, angle,
                                       max_apertures, max_intensity, initial_intensity,

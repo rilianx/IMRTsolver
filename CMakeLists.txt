@@ -31,9 +31,9 @@ ADD_LIBRARY(imrt ${SOURCES})
 
 #ADD_EXECUTABLE(TEST src/main/test.cpp)
 #ADD_EXECUTABLE(AS src/main/solver.cpp)
-# ADD_EXECUTABLE(DAO_ILS src/main/daoils.cpp)
+ADD_EXECUTABLE(AS_SERVER src/main/light_server.cpp)
 ADD_EXECUTABLE(AS src/main/light_solver.cpp)
 
 #target_link_libraries(TEST imrt)
+target_link_libraries(AS_SERVER imrt)
 target_link_libraries(AS imrt)
-#target_link_libraries(DAO_ILS imrt)

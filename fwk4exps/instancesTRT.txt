@@ -1,70 +1,70 @@
-"data/TRT00X/TRT001_00.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_01.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_02.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_03.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_04.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_05.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_06.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_07.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_08.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_09.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_10.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_11.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_12.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT001_13.txt  --file-coord=data/TRT00X/TRT001-coord.txt"
-"data/TRT00X/TRT002_00.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_01.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_02.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_03.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_04.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_05.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_06.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_07.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_08.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_09.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_10.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_11.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_12.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT002_13.txt --file-coord=data/TRT00X/TRT002-coord.txt"
-"data/TRT00X/TRT003_00.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_01.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_02.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_03.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_04.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_05.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_06.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_07.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_08.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_09.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_10.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_11.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_12.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT003_13.txt --file-coord=data/TRT00X/TRT003-coord.txt"
-"data/TRT00X/TRT004_00.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_01.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_02.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_03.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_04.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_05.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_06.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_07.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_08.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_09.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_10.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_11.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_12.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT004_13.txt --file-coord=data/TRT00X/TRT004-coord.txt"
-"data/TRT00X/TRT005_00.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_01.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_02.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_03.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_04.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_05.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_06.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_07.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_08.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_09.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_10.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_11.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_12.txt --file-coord=data/TRT00X/TRT005-coord.txt"
-"data/TRT00X/TRT005_13.txt --file-coord=data/TRT00X/TRT005-coord.txt"
+data/TRT00X/TRT001_00.txt
+data/TRT00X/TRT001_01.txt
+data/TRT00X/TRT001_02.txt
+data/TRT00X/TRT001_03.txt
+data/TRT00X/TRT001_04.txt
+data/TRT00X/TRT001_05.txt
+data/TRT00X/TRT001_06.txt
+data/TRT00X/TRT001_07.txt
+data/TRT00X/TRT001_08.txt
+data/TRT00X/TRT001_09.txt
+data/TRT00X/TRT001_10.txt
+data/TRT00X/TRT001_11.txt
+data/TRT00X/TRT001_12.txt
+data/TRT00X/TRT001_13.txt
+data/TRT00X/TRT002_00.txt
+data/TRT00X/TRT002_01.txt
+data/TRT00X/TRT002_02.txt
+data/TRT00X/TRT002_03.txt
+data/TRT00X/TRT002_04.txt
+data/TRT00X/TRT002_05.txt
+data/TRT00X/TRT002_06.txt
+data/TRT00X/TRT002_07.txt
+data/TRT00X/TRT002_08.txt
+data/TRT00X/TRT002_09.txt
+data/TRT00X/TRT002_10.txt
+data/TRT00X/TRT002_11.txt
+data/TRT00X/TRT002_12.txt
+data/TRT00X/TRT002_13.txt
+data/TRT00X/TRT003_00.txt
+data/TRT00X/TRT003_01.txt
+data/TRT00X/TRT003_02.txt
+data/TRT00X/TRT003_03.txt
+data/TRT00X/TRT003_04.txt
+data/TRT00X/TRT003_05.txt
+data/TRT00X/TRT003_06.txt
+data/TRT00X/TRT003_07.txt
+data/TRT00X/TRT003_08.txt
+data/TRT00X/TRT003_09.txt
+data/TRT00X/TRT003_10.txt
+data/TRT00X/TRT003_11.txt
+data/TRT00X/TRT003_12.txt
+data/TRT00X/TRT003_13.txt
+data/TRT00X/TRT004_00.txt
+data/TRT00X/TRT004_01.txt
+data/TRT00X/TRT004_02.txt
+data/TRT00X/TRT004_03.txt
+data/TRT00X/TRT004_04.txt
+data/TRT00X/TRT004_05.txt
+data/TRT00X/TRT004_06.txt
+data/TRT00X/TRT004_07.txt
+data/TRT00X/TRT004_08.txt
+data/TRT00X/TRT004_09.txt
+data/TRT00X/TRT004_10.txt
+data/TRT00X/TRT004_11.txt
+data/TRT00X/TRT004_12.txt
+data/TRT00X/TRT004_13.txt
+data/TRT00X/TRT005_00.txt
+data/TRT00X/TRT005_01.txt
+data/TRT00X/TRT005_02.txt
+data/TRT00X/TRT005_03.txt
+data/TRT00X/TRT005_04.txt
+data/TRT00X/TRT005_05.txt
+data/TRT00X/TRT005_06.txt
+data/TRT00X/TRT005_07.txt
+data/TRT00X/TRT005_08.txt
+data/TRT00X/TRT005_09.txt
+data/TRT00X/TRT005_10.txt
+data/TRT00X/TRT005_11.txt
+data/TRT00X/TRT005_12.txt
+data/TRT00X/TRT005_13.txt

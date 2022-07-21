@@ -49,8 +49,8 @@ public:
 
 
 	//Constructor of the evaluator.
-	EvaluatorF(FluenceMap& fm_structure, vector<double>& w, 
-    vector<double>& Zmin, vector<double>& Zmax) : Evaluator(fm_structure,w,Zmin,Zmax), F(0.0){
+	EvaluatorF(FluenceMap& fm_structure, vector<double> w, 
+    vector<double> Zmin, vector<double> Zmax) : Evaluator(fm_structure,w,Zmin,Zmax), F(0.0){
 		for(int i=0; i<FM.size(); i++)
 			D.insert(D.end(), vector<double>(FM[i].size()));
 	 };

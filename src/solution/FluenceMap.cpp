@@ -28,6 +28,7 @@ namespace imrt {
 	void FluenceMap::create_voxel2beamlet_list(vector<Volume>& volumes, const Collimator& collimator){
 	    cout << "creating maps: voxel2beamlet and beamlet2voxel" << endl;
 	    for (int i=0;i<collimator.getNbAngles();i++){
+            cout << "angle:" << collimator.getAngle(i) << endl;
             for(int o=0; o<nb_organs; o++){
                 int angle = collimator.getAngle(i);
                 if( !volumes[o].valid_angle(angle)) continue;
@@ -37,7 +38,7 @@ namespace imrt {
                     for(int b=0; b<collimator.getNangleBeamlets(angle); b++)
                         if(D(k,b) > 0.0) {
                             voxel2beamlet_list[angle][make_pair(o,k)].push_back(b);
-                            beamlet2voxel_list[angle][b].insert(make_pair(-abs(D(k,b)), make_pair(o,k)));
+                            //beamlet2voxel_list[angle][b].insert(make_pair(-abs(D(k,b)), make_pair(o,k)));
                         }
                 }
             }

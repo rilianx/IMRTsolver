@@ -80,7 +80,7 @@ private:
   	unordered_map < int, unordered_map < pair<int, int>, list <int> , pair_hash > > voxel2beamlet_list;
 
   	//beamlet [angle][b] --> lista de voxels (o,k)
-  	unordered_map < int, unordered_map <int, multimap<double, pair<int,int> > > > beamlet2voxel_list;
+  	//unordered_map < int, unordered_map <int, multimap<double, pair<int,int> > > > beamlet2voxel_list;
 
 };
 
@@ -114,16 +114,16 @@ class Evaluator{
 public:
 
 	//Constructor of the evaluator.
-	Evaluator(FluenceMap& fm_structure, vector<double>& w, vector<double>& Zmin, 
-    vector<double>& Zmax) : fm_structure(fm_structure), Zmin(Zmin), Zmax(Zmax), w(w), FM(fm_structure.getFM()) { };
+	Evaluator(FluenceMap& fm_structure, vector<double> w, vector<double> Zmin, 
+    vector<double> Zmax) : fm_structure(fm_structure), Zmin(Zmin), Zmax(Zmax), w(w), FM(fm_structure.getFM()) { };
 
 
     FluenceMap& fm_structure;
     const vector< vector<double> >& FM;
 
-    vector<double>& w;
-    vector<double>& Zmin;
-    vector<double>& Zmax;
+    vector<double> w;
+    vector<double> Zmin;
+    vector<double> Zmax;
 
 
 	virtual ~Evaluator() { }

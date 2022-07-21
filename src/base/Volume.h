@@ -28,6 +28,8 @@ using namespace maths;
 
 namespace imrt {
 
+  list<int> get_angles(string str);
+
   /**
    * Information of a volume (organ):
    * - Dose deposition matrices for each angle
@@ -55,6 +57,7 @@ namespace imrt {
 
     public:
       Volume(Collimator& collimator, string deposition_file, int max_voxels_per_organ=100000);
+      void add_data(string file);
       void set_data(string file, int max_voxels_per_organ=100000, list<int> angles = list<int>());
       void print_deposition();
       void print_coordinates();

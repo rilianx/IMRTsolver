@@ -62,6 +62,7 @@ double ILS::FILocalSearch (Plan& current_plan, int max_evaluations,
     double current_eval = SF_evaluator->eval(current_plan);
     double best_OF = OF_evaluator->incremental_eval(); int OF_no_improv=0;
 
+
     int count=0;
 
     // Select initial neighborhood
@@ -140,8 +141,11 @@ double ILS::FILocalSearch (Plan& current_plan, int max_evaluations,
             
 
             cout << "Scores: " << used_evaluations << " " ;
-            for (auto score : dynamic_cast<EvaluatorGS*>(OF_evaluator)->scores )
-                cout << score.value << " ";
+            if(dynamic_cast<EvaluatorGS*>(OF_evaluator)){
+                for (auto score : dynamic_cast<EvaluatorGS*>(OF_evaluator)->scores )
+                    cout << score.value << " ";
+            }
+            
             for(int i=0; i<evaluators.size(); i++){
                 double ev=evaluators[i]->get_evaluation();
                 cout << ev << ";";
@@ -158,8 +162,12 @@ double ILS::FILocalSearch (Plan& current_plan, int max_evaluations,
             double used_time = double(time_end - time_begin) / CLOCKS_PER_SEC;
             output_stream <<  used_evaluations <<";";
             output_stream <<  used_time <<";";
-            for (auto score : dynamic_cast<EvaluatorGS*>(OF_evaluator)->scores )
-                output_stream << score.value << ";";
+            if(dynamic_cast<EvaluatorGS*>(OF_evaluator)){
+
+                for (auto score : dynamic_cast<EvaluatorGS*>(OF_evaluator)->scores )
+                    output_stream << score.value << ";";
+            }
+
             for(auto ev:evaluators)
                 output_stream << ev->get_evaluation() << ";";
             output_stream << current_neighborhood << ";";

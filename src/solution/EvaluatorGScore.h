@@ -93,22 +93,6 @@ public:
     }
 
 
-    double compute_admissible_gscore() const{
-        double s=0.0;
-        for(const Score& score:scores){
-            if(score.t == Score::D || score.t == Score::Dmean){
-                if(score.max_value>0.0){
-                    if(type==GS) s+=score.weight *  score.value/score.max_value;
-                    else if(type==GS_SQUARED) s+=score.weight *  pow(score.value/score.max_value,2);
-                    else if (type==GS_RELU) s+=score.weight * (score.value/score.max_value-1.0);
-                }else{
-                    if(type==GS) s+=score.weight *  score.min_value/score.value;
-                    else if(type==GS_SQUARED) s+=score.weight *  pow(score.min_value/score.value,2);
-                }
-            }
-        }
-        return s;
-    }
 
     double compute_gscore(vector<vector<double>>& sortedFM) const{
         double s=0.0;
@@ -124,8 +108,9 @@ public:
             
             //tumor under-irradiated
             if(score.min_value && score.value < score.min_value)
-                admissible&=false;
+                admissible=false;
             
+            //organs over-irradiated (not taken into account for admissibility)
             /*if(score.max_value >0){
                 if (score.value > score.max_value)
                     admissible&=false;
@@ -159,8 +144,8 @@ public:
     enum Type{GS, GS2, GS_RELU, GS_SQUARED};
     Type type;
 
-	EvaluatorGS(FluenceMap& fm_structure, vector<double>& w, 
-    vector<double>& Zmin, vector<double>& Zmax, list<Score>& scores, Type t) : Evaluator(fm_structure,w,Zmin,Zmax), 
+	EvaluatorGS(FluenceMap& fm_structure, vector<double> w, 
+    vector<double> Zmin, vector<double> Zmax, list<Score> scores, Type t) : Evaluator(fm_structure,w,Zmin,Zmax), 
         gs(0.0), scores(scores), type(t) {
 
 	}

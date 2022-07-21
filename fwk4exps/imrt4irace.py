@@ -6,20 +6,20 @@ import subprocess
 instance,seed,mode = sys.argv[1:4]
 
 if mode=="mse76":
-    instance,seed,mode,min_delta,pr_first_neigh,pert_size,switch_patience,w1,w2,w3,z1,z2,z3min,z3max = sys.argv[1:]
+    instance,seed,mode,min_delta,pr_first_neigh,pert_size,switch_patience = sys.argv[1:] #,w1,w2,w3,z1,z2,z3min,z3max
 else:
     instance,seed,mode,min_delta,pr_first_neigh,pert_size,switch_patience = sys.argv[1:]
 
 if mode=="of76": param=" --evals=scores/of76.txt,scores/of76.txt --sf=0 --of=0 "
 if mode=="gs76" or mode=="gs76_4": param=" --evals=scores/gs76.txt,scores/of76.txt --sf=0 --of=1 "
 if mode=="gs2_76_4": param=" --evals=scores/gs2-76.txt,scores/of76.txt --sf=0 --of=1 "
-if mode=="mse76": param=" --evals=scores/gs2-76.txt,scores/of76.txt --sf=2 --of=1 --w={},{},{} --z={},{},{}.{} ".format(w1,w2,w3,z1,z2,z3min,z3max)
+if mode=="mse76": param=" --evals=scores/gs2-76.txt,scores/of76.txt --sf=2 --of=1 " #--w={},{},{} --z={},{},{}.{} ".format(w1,w2,w3,z1,z2,z3min,z3max)
 
 max_iter="10000"
 if pert_size=="0": max_iter="0"
 
 pr_neigh_str=" --pr-first-neigh="+pr_first_neigh
-if mode=="gs76_4" or mode=="gs2_76_4" or mode=="mse76": 
+if mode=="gs76_4" or mode=="gs2_76_4" or mode=="mse76" or mode=="gs76": 
     pr_neigh_str=" --pr-neigh="+pr_first_neigh+",1.0"
 
 
@@ -57,7 +57,7 @@ command = "../AS \
     " --file-dep="+instance+ \
     " --path=.. --output-file="+conv_file+ " --output-fm=" +sol_file+" --seed=" + seed
 
-#print(command)
+print(command)
 
 
 result = subprocess.getoutput(command)

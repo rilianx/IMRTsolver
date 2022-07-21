@@ -80,7 +80,7 @@ private:
 
 public:
   Collimator(){};
-  Collimator(string coord_filename, set<int> angles);
+  Collimator(string coord_filename, set<int> angles=set<int>());
   Collimator(vector< pair<int, string> >& coord_files);
   Collimator(const Collimator& c);
   Collimator& operator=(Collimator& c);

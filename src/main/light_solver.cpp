@@ -41,7 +41,6 @@ int main(int argc, char** argv){
     int step_intensity = 1;
 
     // Type of local search
-    LSType ls_type = LSType::first;
     vector<NeighborhoodType> neighborhoods;
     neighborhoods.push_back(NeighborhoodType::sequential_a);
     neighborhoods.push_back(NeighborhoodType::sequential_i);
@@ -60,7 +59,6 @@ int main(int argc, char** argv){
     double min_delta_eval = 0.0001;
     double alpha = 1.0;
     int switch_patience=5;
-    double pr_first_neigh=1.0;
 
     //evaluator index
     int sf_eval=0;
@@ -101,9 +99,6 @@ int main(int argc, char** argv){
     args::ValueFlag<double> _alpha (accargs, "double",
                                             "Reduction factor of min-delta after each evaluation",
                                             {"min-delta-red"});
-    args::ValueFlag<double> _pr_first_neigh (accargs, "double",
-                                            "Prop. of elements from the first neighbourhood",
-                                            {"pr-first-neigh"});
     args::ValueFlag<string> _pr_neigh (accargs, "string",
                                             "Prop. of elements of each neighbourhood",
                                             {"pr-neigh"});
@@ -132,15 +127,6 @@ int main(int argc, char** argv){
     args::ValueFlag<int> _switch_patience (objfunct, "int",
                                             "Number of movements that does not improve OF  before switching the search function to OF.",
                                             {"switch-patience"});
-
-    args::ValueFlag<string> _w (objfunct, "vector",
-                                            "Weights of organs and tumor (for the mse evaluator) separated by (,)",
-                                            {"w"});
-
-    args::ValueFlag<string> _z (objfunct, "vector",
-                                            "prescripted doses for organs and tumor (for the mse evaluator) separated by (,)",
-                                            {"z"});
-
 
     
 
@@ -221,7 +207,6 @@ int main(int argc, char** argv){
         }
     }
 
-    if(_pr_first_neigh) pr_first_neigh=_pr_first_neigh.Get();
   
     if (_perturbation_size) perturbation_size = _perturbation_size.Get();
 
@@ -237,64 +222,16 @@ int main(int argc, char** argv){
     // Iniciar generador de numeros aleatorios
     srand(seed);
 
-
-    vector<double> w={1,1,5};
-    vector<double> Zmin={0,0,76};
-    vector<double> Zmax={65,65,76};
-
     // Create colimator object and volumes
-    string w_str="1,1,1";
-    string z_str="65,65,76,76";
-
-    if(_w) w_str=_w.Get();
-    if(_z) z_str=_z.Get();
-
-    std::replace( w_str.begin(), w_str.end(), ',', ' ');
-    std::replace( z_str.begin(), z_str.end(), ',', ' ');
-    std::istringstream stm(w_str) ;
-    stm >> w[0] >> w[1] >> w[2];
-    std::istringstream stm2(z_str) ;
-    stm2 >> Zmax[0] >> Zmax[1] >> Zmin[2] >> Zmax[2];
-
-    Collimator collimator (file2, get_angles(file, 5));
+    Collimator collimator (file2);  //, get_angles(file, 5));
     vector<Volume> volumes = createVolumes (file, collimator);
-
-    FluenceMap fm(volumes, collimator);
-
-    vector<Evaluator*> evaluators;
-    
-    
-    if(_evaluators){
-        vector<std::string> files = split(_evaluators.Get(), ',');
-
-        for (string file: files){
-            cout << "reading:" << file << endl;
-            ifstream indata; // indata is like cin
-            indata.open(file); 
-
-            string function; indata >> function;
-            list<Score> scores;
-            load_scores(scores, indata);
-
-            EvaluatorGS::Type t;
-            cout << function << endl;
-            if( function == "gs_relu") t=EvaluatorGS::GS_RELU;
-            else if( function == "gs") t=EvaluatorGS::GS;
-            else if( function == "gs2") t=EvaluatorGS::GS2;
-            
-            evaluators.push_back(new EvaluatorGS(fm,w,Zmin,Zmax, scores, t));
-        }
-
-        evaluators.push_back(new EvaluatorF(fm,w,Zmin,Zmax));
-        
-    }
+    vector<Evaluator*> evaluators = createEvaluators(collimator, volumes, _evaluators.Get());
 
     if(_sf_eval) sf_eval=_sf_eval.Get();
     if(_of_eval) of_eval=_of_eval.Get();
     
     if(_switch_patience) switch_patience=_switch_patience.Get();
 
-    
     //output file
 
     ofstream output_stream;
@@ -314,9 +251,9 @@ int main(int argc, char** argv){
 
     cout << "##   Neighborhoods:";
     for(auto neighborhood:neighborhoods){
-        if (neighborhood == NeighborhoodType::sequential_i)
+        if (neighborhood == NeighborhoodType::intensity)
             cout << "intensity - ";
-        else if (neighborhood == NeighborhoodType::sequential_a)
+        else if (neighborhood == NeighborhoodType::aperture)
             cout << "aperture - ";
     }
 
@@ -340,33 +277,33 @@ int main(int argc, char** argv){
 
     cout << "##********************************** SEARCH ********************************" << endl;
 
-    // Create an initial plan
-    Plan P (collimator, volumes, max_apertures,
-            max_intensity, 0, step_intensity,
-            initial_setup);
+    ifstream _ang_file(file.c_str(), ios::in);
+    string angles_str;
+    getline(_ang_file, angles_str);
+    _ang_file.close();
+    list<int> bac = get_angles(angles_str);
 
-    double best_eval = evaluators[sf_eval]->eval(P);
-    cout << "## Initial solution: " << best_eval << endl;
- 
-    //IBO_LS
-    ILS* ils = new IntensityILS2(evaluators, sf_eval, of_eval);
+    cout << "pr_neigh: " ;
+    for(double b:pr_neigh) cout << b << " ";
+    cout << endl;
+
+
     std::clock_t begin_time = clock();
     int used_evaluations=0;
-    double cost = ils->iteratedLocalSearch(P, maxeval, neighborhoods, perturbation_size, 
-                    output_stream,used_evaluations, begin_time, _verbose, min_delta_eval, alpha, 
-                    switch_patience, pr_neigh, pr_first_neigh);
-    
-    
-  
-    EvaluatorF ev(fm,w,Zmin,Zmax);
-    //if (ils->best_evals[of_eval]<0.0) //addmisible
-    cout << "## Best solution found: " << ils->best_evals[of_eval] << endl;
-    //else
-    //   cout << "## Best solution found: " << 100.0 << endl;
+
+
+    double cost = iterated_local_search(collimator, volumes, 
+            max_apertures, max_intensity, step_intensity, 
+            initial_setup, bac, 
+            evaluators, sf_eval, of_eval, 
+            maxeval, used_evaluations, neighborhoods, perturbation_size,
+            output_stream, begin_time, min_delta_eval, alpha,
+            switch_patience, pr_neigh, _verbose );
+
     
 
+    
     if (output_stream.is_open()){
-        evaluators[0]->eval(P);
         for(auto ev:evaluators) ev->incremental_eval() ;
         clock_t time_end = clock();
         double used_time = double(time_end - begin_time) / CLOCKS_PER_SEC;

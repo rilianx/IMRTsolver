@@ -25,9 +25,9 @@ namespace imrt {
       if (line.empty()) continue;
       aux   = line.substr(0, line.find(delimiter));
       angle = atoi(aux.c_str());
-      if (angles.find(angle) == angles.end()) continue;
+      if (angles.size()>0 && angles.find(angle) == angles.end()) continue;
       line.erase(0, line.find(delimiter) + delimiter.length());
-      cout << "##  " << line << " a:" << angle << endl;
+      //cout << "##  " << line << " a:" << angle << endl;
       coord_files.push_back(make_pair(angle,line));
     }
     coord_file.close();

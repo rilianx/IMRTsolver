@@ -26,7 +26,7 @@ public:
 
   Plan(Collimator& collimator, vector<Volume>& volumes, int max_apertures,
        int max_intensity, int initial_intensity, int step_intensity=2,
-       StationSetup setup = open_all_min, istringstream* fm_stream=NULL, vector<int> bac = vector<int>());
+       StationSetup setup = open_all_min, istringstream* fm_stream=NULL, list<int> bac = list<int>());
 
   Plan(const Plan &p);
 

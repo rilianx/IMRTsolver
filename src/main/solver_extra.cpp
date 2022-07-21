@@ -13,6 +13,33 @@ using namespace imrt;
 
 namespace imrt{
 
+double iterated_local_search(Collimator& collimator, vector<Volume>& volumes, int max_apertures,
+       int max_intensity, int step_intensity,
+       StationSetup setup, list<int> bac, vector<Evaluator*>& evaluators, int sf_eval, int of_eval,
+      int maxeval, int& used_evaluations, vector<NeighborhoodType>& neighborhoods, int perturbation_size,
+      ofstream& output_stream, std::clock_t begin_time, double min_delta_eval, double alpha,
+      int switch_patience, vector<double> pr_neigh, bool _verbose){
+
+    // Create an initial plan
+    Plan P (collimator, volumes, max_apertures,
+            max_intensity, 0, step_intensity,
+            setup, NULL, bac); 
+
+    double best_eval = evaluators[sf_eval]->eval(P);
+    cout << "## Initial solution: " << best_eval << endl;
+ 
+    //IBO_LS
+    ILS* ils = new IntensityILS2(evaluators, sf_eval, of_eval);
+    
+    double cost = ils->iteratedLocalSearch(P, maxeval, neighborhoods, perturbation_size, 
+                    output_stream,used_evaluations, begin_time, _verbose, min_delta_eval, alpha, 
+                    switch_patience, pr_neigh, 1.0);
+    
+    cout << "## Best solution found: " << ils->best_evals[of_eval] << endl;
+    evaluators[0]->eval(P);
+    return ils->best_evals[of_eval];
+}
+
 vector<std::string> split(const std::string& s, char delimiter)
 {
    std::vector<std::string> tokens;
@@ -56,34 +83,114 @@ void load_scores(list<Score>& scores, string scores_file){
 }
 
 
-set<int> get_angles(string file, int n){
-  ifstream _file(file.c_str(), ios::in);
-  string line;
+string get_organ_name(string str) 
+{
+    list<int> angles;
+    std::replace(str.begin(), str.end(), '_', ' ');
+    std::replace(str.begin(), str.end(), '-', ' ');
+    std::replace(str.begin(), str.end(), '/', ' ');
+    stringstream ss;     
+    string organ_name;
+  
+    /* Storing the whole string into string stream */
+    ss << str; 
+  
+    /* Running loop till the end of the stream */
+    string temp; 
+    int found; 
+    bool flag=false;
+    while (!ss.eof()) { 
+  
+        /* extracting word by word from stream */
+        ss >> temp; 
+  
+        /* Checking the given word is integer or not */
+        if (stringstream(temp) >> found) { 
+            flag=true;
+        }else if(flag==true){
+          stringstream(temp) >> organ_name;
+          
+        }
+  
+        /* To save from space at the end of string */
+        temp = ""; 
+    }
 
-  if (! _file)
-    cerr << "ERROR: unable to open instance file: " << file << ", stopping! \n";
+    return organ_name;
+} 
 
-  //cout << "##Reading volume files." << endl;
-  getline(_file, line);
-  _file.close();
+vector<Evaluator*> createEvaluators(Collimator& collimator,  vector<Volume>& volumes, string evaluators_str ){
+    vector<double> w={1,1,5};
+    vector<double> Zmin={0,0,76};
+    vector<double> Zmax={65,65,76};
 
-  set<int> angles;
-  stack<string> q;
-  char delim=' ';
-  std::size_t current, previous = 0;
-  current = line.find(delim);
-  //cout << line << endl;
-  while (current != std::string::npos) {
-    angles.insert(atoi(line.substr(previous, current - previous).c_str()));
-    previous = current + 1;
-    current = line.find(delim, previous);
-  }
-  angles.insert(atoi(line.substr(previous, current - previous).c_str()));
+    FluenceMap* fm = new FluenceMap(volumes, collimator);
 
-  return angles;
+    vector<Evaluator*> evaluators;
+    vector<std::string> files = split(evaluators_str, ',');
+
+    for (string file: files){
+        cout << "reading:" << file << endl;
+        ifstream indata; // indata is like cin
+        indata.open(file); 
+
+        string function; indata >> function;
+        list<Score> scores;
+        load_scores(scores, indata);
+
+        EvaluatorGS::Type t;
+        cout << function << endl;
+        if( function == "gs_relu") t=EvaluatorGS::GS_RELU;
+        else if( function == "gs") t=EvaluatorGS::GS;
+        else if( function == "gs2") t=EvaluatorGS::GS2;
+        
+        evaluators.push_back(new EvaluatorGS(*fm,w,Zmin,Zmax, scores, t));
+    }
+    evaluators.push_back(new EvaluatorF(*fm,w,Zmin,Zmax));
+
+    return evaluators;
 }
 
 
+vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
+  ifstream organ_file(organ_filename.c_str(), ios::in);
+  vector<string> depo_files;
+  string line;
+
+  if (! organ_file)
+    cerr << "ERROR: unable to open instance file: " <<
+             organ_filename << ", stopping! \n";
+
+  cout << "##Reading volume files." << endl;
+  getline(organ_file, line); //line of initial angles
+  while (organ_file) {
+    getline(organ_file, line);
+    if (line.empty()) continue;
+    cout << "##  " << line << endl;
+    //Assuming one data point
+    depo_files.push_back(line);
+  }
+  organ_file.close();
+  cout << "##  Read " << depo_files.size() << " files"<< endl;
+
+  map< string, Volume*> volumes_map;
+  vector<Volume> volumes;
+
+  for (int i=0; i<depo_files.size(); i++){
+    string organ_name = get_organ_name(depo_files[i]);
+    if (volumes_map.find(organ_name)!=volumes_map.end()) volumes_map[organ_name]->add_data(depo_files[i]);
+    else {
+      volumes.push_back(Volume(collimator, "", 0));
+      volumes_map.insert(make_pair(organ_name, &volumes.back() ));
+      volumes_map[organ_name]->add_data(depo_files[i]);
+    }
+  }
+    
+  return(volumes);
+}
+
+
+/*
 vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
   ifstream organ_file(organ_filename.c_str(), ios::in);
   vector<string> organ_files;
@@ -111,4 +218,5 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
 
   return(volumes);
 }
+*/
 }
