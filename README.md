@@ -30,8 +30,6 @@ tar -xzf TRT00X-instances.tar.gz
 ### Ejemplo
 
 ```bash
-#in fwk4exp
-#python3 imrt4irace.py instance seed obj epsilon n_bi pert_size n_evals
 ./AS --maxeval=10000 --path=. --seed=2 \
 --neighborhoods=aperture,intensity     \
 --epsilon=0.0001 \
