@@ -69,7 +69,7 @@ int main(int argc, char** argv){
     args::ArgumentParser parser("********* IMRT-Light Solver *********",
                                 std::string("Example.\n ./AS --maxeval=10000 --path=. --seed=2 \\ \n")+
                                 "--neighborhoods=aperture,intensity     \\ \n"+
-                                "--min-delta=0.0001 \\ \n"+
+                                "--epsilon=0.0001 \\ \n"+
                                 "--perturbation-size=3 \\ \n"+
                                 "--pr-neigh=0.2,1.0 \\ \n"+
                                 "--evals=eval_functions/gs76.txt,eval_functions/gs_oar76.txt --sf=0 --of=1 \\ \n"+
@@ -104,9 +104,9 @@ int main(int argc, char** argv){
 
 
     args::Group accargs (parser, "Acceptation improvement:");
-    args::ValueFlag<double> _min_delta_eval (accargs, "int",
+    args::ValueFlag<double> _min_delta_eval (accargs, "double",
                                             "Minimum delta eval for accepting the change",
-                                            {"min-delta"});
+                                            {"epsilon", "min-delta"});
     //args::ValueFlag<double> _alpha (accargs, "double",
     //                                        "Reduction factor of min-delta after each evaluation",
     //                                        {"min-delta-red"});

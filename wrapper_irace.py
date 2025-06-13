@@ -46,7 +46,7 @@ command = "./AS \
     " --file-dep="+instance+ \
     " --path=. --output-file="+conv_file+ " --output-fm=" +sol_file+" --seed=" + seed
 
-print(command)
+#print(command)
 
 result = subprocess.getoutput(command)
 
