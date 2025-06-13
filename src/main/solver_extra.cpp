@@ -141,9 +141,9 @@ vector<Evaluator*> createEvaluators(Collimator& collimator,  vector<Volume>& vol
 
         EvaluatorGS::Type t;
         cout << function << endl;
-        if( function == "gs_relu") t=EvaluatorGS::GS_RELU;
+        if( function == "gs_relu" || function == "gs_oar") t=EvaluatorGS::GS_RELU;
         else if( function == "gs") t=EvaluatorGS::GS;
-        else if( function == "gs2") t=EvaluatorGS::GS2;
+        else if( function == "gs2" || function == "gs_ils" ) t=EvaluatorGS::GS2;
         
         evaluators.push_back(new EvaluatorGS(*fm,w,Zmin,Zmax, scores, t));
     }

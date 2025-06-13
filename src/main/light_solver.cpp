@@ -57,8 +57,9 @@ int main(int argc, char** argv){
 
     //Acceptation 
     double min_delta_eval = 0.0001;
-    double alpha = 1.0;
-    int switch_patience=5;
+    double alpha = 1.0; // Reduction factor of min-delta after each evaluation (1.0 means no reduction)
+
+    int switch_patience=10000; // Number of movements that does not improve OF before switching the search function to OF.
 
     //evaluator index
     int sf_eval=0;
@@ -66,7 +67,17 @@ int main(int argc, char** argv){
 
 
     args::ArgumentParser parser("********* IMRT-Light Solver *********",
-                                "Example.\n ./AS -s ibo_ls --setup=open_min --ls_sequential=aperture -s ibo_ls --maxeval=15000 --ls=first --perturbation-size=5 --seed=1 --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --initial-intensity=5");
+                                std::string("Example.\n ./AS --maxeval=10000 --path=. --seed=2 \\ \n")+
+                                "--neighborhoods=aperture,intensity     \\ \n"+
+                                "--min-delta=0.0001 \\ \n"+
+                                "--perturbation-size=3 \\ \n"+
+                                "--pr-neigh=0.2,1.0 \\ \n"+
+                                "--evals=eval_functions/gs76.txt,eval_functions/gs_oar76.txt --sf=0 --of=1 \\ \n"+
+                                "--file-coord=data/Equidistantes/equidist-coord.txt \\ \n"+
+                                "--file-dep=data/Equidistantes/equidist00.txt \\ \n"+
+                                "--output-file=convergence_file.txt \\ \n"+
+                                "--output-fm=output/fluence_map_solution.txt" 
+                            );
 
     args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
     args::ValueFlag<int>    _seed     (parser, "int", "Seed  (" + 
@@ -88,7 +99,7 @@ int main(int argc, char** argv){
     // Neighborhood parameters
     args::Group neighborhoodsel (parser, "Neighborhood selection:");     
     args::ValueFlag<string> _neighborhoods (neighborhoodsel , "string",
-                                "neighborhoods in local search",
+                                "comma separated neighborhoods in local search (intensity|aperture)",
                                 {"neighborhoods"});
 
 
@@ -96,11 +107,11 @@ int main(int argc, char** argv){
     args::ValueFlag<double> _min_delta_eval (accargs, "int",
                                             "Minimum delta eval for accepting the change",
                                             {"min-delta"});
-    args::ValueFlag<double> _alpha (accargs, "double",
-                                            "Reduction factor of min-delta after each evaluation",
-                                            {"min-delta-red"});
+    //args::ValueFlag<double> _alpha (accargs, "double",
+    //                                        "Reduction factor of min-delta after each evaluation",
+    //                                        {"min-delta-red"});
     args::ValueFlag<string> _pr_neigh (accargs, "string",
-                                            "Prop. of elements of each neighbourhood",
+                                            "Prop. of elements of each neighbourhood (1.0 by default)",
                                             {"pr-neigh"});
 
 
@@ -117,22 +128,22 @@ int main(int argc, char** argv){
                                     "Files with function+scores. ",
                                     {"evals"});
     args::ValueFlag<int> _sf_eval (objfunct, "int",
-                                    "index of the search function",
+                                    "index of the objective function used in ILS (z funct -> last index+1)",
                                     {"sf"});
     args::ValueFlag<int> _of_eval (objfunct, "int",
-                                    "index of the objective function",
+                                    "index of the objective function (z funct -> last index+1)",
                                     {"of"});
 
 
-    args::ValueFlag<int> _switch_patience (objfunct, "int",
-                                            "Number of movements that does not improve OF  before switching the search function to OF.",
-                                            {"switch-patience"});
+    //args::ValueFlag<int> _switch_patience (objfunct, "int",
+    //                                       "Number of movements that does not improve OF  before switching the search function to OF.",
+    //                                        {"switch-patience"});
 
     
 
 
     // Problem file parameters
-    args::Group io_opt (parser, "Input output options:");
+    args::Group io_opt (parser, "Input/Output options:");
     args::ValueFlag<string> _file  (io_opt, "string",
                                     "File with the deposition matrix", {"file-dep"});
     args::ValueFlag<string> _file2 (io_opt, "string",
@@ -140,17 +151,17 @@ int main(int argc, char** argv){
     args::ValueFlag<string> _path  (io_opt, "string",
                                     string("Absolute path of the executable ") +
                                     "(if it is executed from other directory)", {"path"});
-    args::Flag _verbose               (io_opt, "bool",
-                                    "Verbose", {"verbose"});
 
     // Output file parameters
     args::ValueFlag<string> _output_file (io_opt, "string",
-                                    "File to output all indicators for each iteration", 
+                                    "File to output all indicators for each iteration (convergence)", 
                                     {"output-file"});
     args::ValueFlag<string> _fm_output (io_opt, "string",
-                                    "File to output the fluence map of voxels", 
+                                    "File to output the fluence map of voxels (best solution)", 
                                     {"output-fm"});
 
+    args::Flag _verbose               (io_opt, "bool",
+                                    "Verbose", {"verbose"});
                                 
 	try
 	{
@@ -181,7 +192,7 @@ int main(int argc, char** argv){
 
     //Acceptation improvement
     if(_min_delta_eval) min_delta_eval=_min_delta_eval.Get();
-    if(_alpha) alpha=_alpha.Get();
+    //if(_alpha) alpha=_alpha.Get();
 
     // Neighborhood
     if(_neighborhoods){
@@ -230,7 +241,7 @@ int main(int argc, char** argv){
     if(_sf_eval) sf_eval=_sf_eval.Get();
     if(_of_eval) of_eval=_of_eval.Get();
     
-    if(_switch_patience) switch_patience=_switch_patience.Get();
+    //if(_switch_patience) switch_patience=_switch_patience.Get();
 
     //output file
 
