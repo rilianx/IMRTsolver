@@ -1,7 +1,0 @@
-algos:gs-ils-n1.0 
-gains (average relative times):1.000000 
-gains (total time)            :1.000000 
-compared instances:  1 
-runs    :140 
-L:  0 
-W:  0 
