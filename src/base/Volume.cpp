@@ -49,42 +49,6 @@ list<int> get_angles(string str)
 } 
 
 
-list<int> get_angles(string str) 
-{ 
-    list<int> angles;
-    std::replace(str.begin(), str.end(), '_', ' ');
-    std::replace(str.begin(), str.end(), '-', ' ');
-    std::replace(str.begin(), str.end(), '/', ' ');
-    stringstream ss;     
-  
-    /* Storing the whole string into string stream */
-    ss << str; 
-  
-    /* Running loop till the end of the stream */
-    string temp; 
-    int found; 
-    bool flag=false;
-    while (!ss.eof()) { 
-  
-        /* extracting word by word from stream */
-        ss >> temp; 
-  
-        /* Checking the given word is integer or not */
-        if (stringstream(temp) >> found) {
-            angles.push_back(found); 
-            flag=true;
-        }else if(flag==true){
-          //stringstream(temp) >> organ_name;
-          //flag=false;
-        }
-  
-        /* To save from space at the end of string */
-        temp = ""; 
-    } 
-    return angles;
-} 
-
-
 Volume::Volume(Collimator& collimator, string deposition_file, int max_voxels_per_organ) :
 		collimator(collimator) {
 
@@ -121,7 +85,6 @@ void Volume::set_data(string file, string file_map_voxels, int max_voxels_per_or
   string line, linec;
   ifstream myfile (file);
   ifstream indexfile (file_map_voxels);
-  ifstream indexfile (file_map_voxels);
   stringstream ss;
   double aux1, aux2;
   vector <pair<double,double> >::iterator it;
@@ -132,7 +95,6 @@ void Volume::set_data(string file, string file_map_voxels, int max_voxels_per_or
   //nb_beamlets=-1;
   nb_voxels=-1;
 
-  if (!myfile.is_open() || !indexfile.is_open())
   if (!myfile.is_open() || !indexfile.is_open())
     throw runtime_error("error reading file.");
 
@@ -148,24 +110,15 @@ void Volume::set_data(string file, string file_map_voxels, int max_voxels_per_or
     indexfile >> lin; indexfile >> id; indexfile >> row; 
     line2row[row]=lin-1;
     //cout << lin << "," << row << endl;
-
-  map<int,int> line2row;
-  while (getline (myfile,line) ){
-    int lin, id, row;
-    indexfile >> lin; indexfile >> id; indexfile >> row; 
-    line2row[row]=lin-1;
-    //cout << lin << "," << row << endl;
-
     lines.push_back(line);
   }
-  }
+  
   myfile.close();
   nb_voxels = lines.size()-1;
   //cout << nb_voxels << endl;
 
   
   double step=1;
-  if(max_voxels_per_organ > 0 && max_voxels_per_organ < nb_voxels){
   if(max_voxels_per_organ > 0 && max_voxels_per_organ < nb_voxels){
     step = (double) nb_voxels/ (double) max_voxels_per_organ;
     nb_voxels = max_voxels_per_organ;
@@ -207,12 +160,12 @@ void Volume::set_data(string file, string file_map_voxels, int max_voxels_per_or
   }
 
   //print some cells
-  cout << "Matrix of deposition for angle " << *angles.begin() << endl;
-  for (int i=1000;i<1010;i++) {
-    for (int j=0;j<20;j++)
-      cout << D[*angles.begin()](i,j) << ",";
-    cout << endl;
-  }
+  // cout << "Matrix of deposition for angle " << *angles.begin() << endl;
+  // for (int i=1000;i<1010;i++) {
+  //   for (int j=0;j<20;j++)
+  //     cout << D[*angles.begin()](i,j) << ",";
+  //   cout << endl;
+  // }
 
 }
 
