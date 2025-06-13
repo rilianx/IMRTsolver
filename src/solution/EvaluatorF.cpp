@@ -18,6 +18,7 @@ double EvaluatorF::eval(const Plan& p){
 	voxels.clear();
 	fm_structure.computeFM(p);
 	F=0.0;
+	
 	for(int o=0; o<FM.size(); o++){
 		double pen=0.0;
 		for(int k=0; k<FM[o].size(); k++){

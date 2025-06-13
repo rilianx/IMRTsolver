@@ -1,21 +1,17 @@
-import ConfigParser
+import configparser
 import subprocess
 import multiprocessing
 import itertools
-from thread import start_new_thread, allocate_lock
+from _thread import start_new_thread, allocate_lock
 from multiprocessing import Process, Value, Lock
 import ctypes
-import copy_reg
-import types
 import random
-import time
 import numpy as np
 import math
 from random import shuffle
 from scipy.stats import t
 from scipy import stats
 import os
-from sets import Set
 import sys
 
 lock = Lock()
@@ -48,21 +44,22 @@ class Algo:
 	def run(self, inst, seed):
 		run_exec = self.ex + " " + self.params.replace('_INSTANCE', inst)
 		run_exec = run_exec.replace('_SEED', str(seed))
-		print run_exec
+		print (run_exec)
 		output = subprocess.check_output(run_exec,shell=True,)
-		print output
+		output = output.decode().strip()
+		print (output)
 		output = output.splitlines()[-1]
 
 		try:
 			return (float(output.split()[int(self.outputpos_times)]), float(output.split()[int(self.outputpos_boxes)]), output)
 		except ValueError:
-			print "error with instance " + inst.split('/')[-1] + "\n" + output
+			print ("error with instance " + inst.split('/')[-1] + "\n" + output)
 			return -2.0
 
 
 class Config:
 	def __init__(self, filename):
-		configParser = ConfigParser.RawConfigParser()
+		configParser = configparser.RawConfigParser()
 		configParser.read(filename)
 		self.instances = configParser.get('base', 'test_instances')
 		self.mintimes = []
@@ -80,8 +77,10 @@ class Config:
 		f = open(self.instances)
 		self.instances = f.read().splitlines()
 		f.close()
-		self.idx2inst = range(len(self.instances))
-		for i in range(len(self.instances)): self.idx2inst[i]=i
+		#self.idx2inst = range(len(self.instances))
+		#for i in range(len(self.instances)): self.idx2inst[i]=i
+		self.idx2inst = list(range(len(self.instances)))
+
 		random.seed(0)
 		shuffle(self.idx2inst)
 
@@ -185,7 +184,7 @@ def final_tables(config):
 		times=np.zeros(shape=(len(config.algos)))
 		nb_inst=np.zeros(shape=(len(config.algos), len(config.factors)))
 		nb_inst2=np.zeros(shape=(len(config.algos), len(config.factors)))
-		instances=Set()
+		instances=set()
 		for i in range(len(config.instances)):
 			if config.instances[i].endswith('*'): continue
 			for id_algo in range(len(config.algos)):
@@ -329,9 +328,9 @@ def update_all(config):
 	#~ for id_inst in range(len(config.instances)):
 		#~ update_inst(config,id_inst)
 
-	print shared_gains
-	print shared_run
-	print shared_nb_comp
+	print (shared_gains)
+	print (shared_run)
+	print (shared_nb_comp)
 
 
 
@@ -520,7 +519,7 @@ def next_run(config):
 		else:
 			#se selecciona el algoritmo con menor tiempo promedio
 			sorted_idx = sorted(range(len(config.algos)), key=lambda k: av_rel_time(k,config))
-			print "gains:", shared_gains
+			print ("gains:", shared_gains)
 			for id_algo in (j for j in sorted_idx if shared_run[j] < len(config.instances)*config.max_seeds):
 				break
 
@@ -533,7 +532,7 @@ def next_run(config):
 					choices.append(0.0)
 
 			#se escoge usando la ruleta segun las probabilidades obtenidas
-			print choices
+			print (choices)
 			max=sum(choices)
 			pick=random.uniform(0,max)
 			current=0
@@ -545,7 +544,7 @@ def next_run(config):
 				id_algo2+=1
 
 			#el algoritmo con menor promedio es escogido si ha sido corrido un menor o igual numero de veces
-			print config.algos[id_algo].name," ", config.algos[id_algo2].name
+			print (config.algos[id_algo].name," ", config.algos[id_algo2].name)
 			if shared_run[id_algo2] < shared_run[id_algo]: id_algo=id_algo2
 
 
@@ -575,13 +574,16 @@ def next_run(config):
 	import os.path
 	if not os.path.isfile("%(dir)s/%(name)s_output.out" % {"dir":config.algos[id_algo].output_dir,"name":config.algos[id_algo].name}):
 		open("%(dir)s/%(name)s_output.out" % {"dir":config.algos[id_algo].output_dir,"name":config.algos[id_algo].name}, "w")
- 	lines = open("%(dir)s/%(name)s_output.out" % {"dir":config.algos[id_algo].output_dir,"name":config.algos[id_algo].name}).read().splitlines()
- 	while len(lines)<len(config.instances):
- 	 	lines.append( '' );
- 	lines[config.idx2inst[idx]] = output
+	
+	lines = open("%(dir)s/%(name)s_output.out" % {"dir":config.algos[id_algo].output_dir,"name":config.algos[id_algo].name}).read().splitlines()
+	
+	while len(lines)<len(config.instances):
+		lines.append( '' )
+	
+	lines[config.idx2inst[idx]] = output
 	open("%(dir)s/%(name)s_output.out" % {"dir":config.algos[id_algo].output_dir,"name":config.algos[id_algo].name}, "w").write('\n'.join(lines))
 
-	print config.algos[id_algo].name, inst, output_time
+	print (config.algos[id_algo].name, inst, output_time)
 	update_share(config,id_algo,len(config.instances)*(seed-1)+config.idx2inst[idx])
 	write_times(config.algos[id_algo].name,id_algo,config)
 	lock.release()

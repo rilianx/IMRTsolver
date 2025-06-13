@@ -7,6 +7,8 @@
 
 
 #include <regex>
+
+#include <regex>
 #include "Volume.h"
 
 namespace imrt {
@@ -47,26 +49,78 @@ list<int> get_angles(string str)
 } 
 
 
+list<int> get_angles(string str) 
+{ 
+    list<int> angles;
+    std::replace(str.begin(), str.end(), '_', ' ');
+    std::replace(str.begin(), str.end(), '-', ' ');
+    std::replace(str.begin(), str.end(), '/', ' ');
+    stringstream ss;     
+  
+    /* Storing the whole string into string stream */
+    ss << str; 
+  
+    /* Running loop till the end of the stream */
+    string temp; 
+    int found; 
+    bool flag=false;
+    while (!ss.eof()) { 
+  
+        /* extracting word by word from stream */
+        ss >> temp; 
+  
+        /* Checking the given word is integer or not */
+        if (stringstream(temp) >> found) {
+            angles.push_back(found); 
+            flag=true;
+        }else if(flag==true){
+          //stringstream(temp) >> organ_name;
+          //flag=false;
+        }
+  
+        /* To save from space at the end of string */
+        temp = ""; 
+    } 
+    return angles;
+} 
+
+
 Volume::Volume(Collimator& collimator, string deposition_file, int max_voxels_per_organ) :
 		collimator(collimator) {
+
+    string file_map_voxels=deposition_file;
+    file_map_voxels = std::regex_replace(file_map_voxels, std::regex("_DDM_"), "_voxelIndex");
+    file_map_voxels = std::regex_replace(file_map_voxels, std::regex("-DDM_"), "-voxelIndex_");
+    file_map_voxels = std::regex_replace(file_map_voxels, std::regex(".dat"), ".txt");
+
     if(deposition_file!="")
-      set_data(deposition_file, max_voxels_per_organ);
+      set_data(deposition_file, file_map_voxels, max_voxels_per_organ);
 }
 
 void Volume::add_data(string file){
   list<int> angles = get_angles(file);
-  set_data(file, 0, angles);
-}
 
-void Volume::set_data(string file, int max_voxels_per_organ, list<int> angles) {
-  
+
   string file_map_voxels=file;
   file_map_voxels = std::regex_replace(file_map_voxels, std::regex("_DDM_"), "_voxelIndex");
   file_map_voxels = std::regex_replace(file_map_voxels, std::regex("-DDM_"), "-voxelIndex_");
   file_map_voxels = std::regex_replace(file_map_voxels, std::regex(".dat"), ".txt");
+  
+  set_data(file, file_map_voxels, 0 , angles);
+}
 
+void Volume::add_data(string depo_file, string map_voxels_file, int angle){
+  list<int> angles;
+  angles.push_back(angle);
+  set_data(depo_file, map_voxels_file, 0 , angles);
+}
+
+void Volume::set_data(string file, string file_map_voxels, int max_voxels_per_organ, list<int> angles) {
+  cout << "reading file " << file << "..." <<endl;
+  cout << "reading file " << file_map_voxels << "..." <<endl;
   string line, linec;
   ifstream myfile (file);
+  ifstream indexfile (file_map_voxels);
   ifstream indexfile (file_map_voxels);
   stringstream ss;
   double aux1, aux2;
@@ -78,6 +132,7 @@ void Volume::set_data(string file, int max_voxels_per_organ, list<int> angles) {
   //nb_beamlets=-1;
   nb_voxels=-1;
 
+  if (!myfile.is_open() || !indexfile.is_open())
   if (!myfile.is_open() || !indexfile.is_open())
     throw runtime_error("error reading file.");
 
@@ -94,7 +149,15 @@ void Volume::set_data(string file, int max_voxels_per_organ, list<int> angles) {
     line2row[row]=lin-1;
     //cout << lin << "," << row << endl;
 
+  map<int,int> line2row;
+  while (getline (myfile,line) ){
+    int lin, id, row;
+    indexfile >> lin; indexfile >> id; indexfile >> row; 
+    line2row[row]=lin-1;
+    //cout << lin << "," << row << endl;
+
     lines.push_back(line);
+  }
   }
   myfile.close();
   nb_voxels = lines.size()-1;
@@ -103,35 +166,52 @@ void Volume::set_data(string file, int max_voxels_per_organ, list<int> angles) {
   
   double step=1;
   if(max_voxels_per_organ > 0 && max_voxels_per_organ < nb_voxels){
+  if(max_voxels_per_organ > 0 && max_voxels_per_organ < nb_voxels){
     step = (double) nb_voxels/ (double) max_voxels_per_organ;
     nb_voxels = max_voxels_per_organ;
   }
   
   ss.str(lines[0]);
 
-  for(auto angle:angles){
-    cout << angle << endl;
+  for(auto angle:angles)
     D[angle]=Matrix(nb_voxels, collimator.getNangleBeamlets(angle));
-  }
+  
 
   auto ang = angles.begin();
   for (int i=0; i<nb_voxels; i++) {
+    
     
     int ii = step* (double) i;
     ss.clear(); ss.str(lines[ii]);
     getline(ss, line, '\t');
     int a=0, j=0;
     ang = angles.begin();
-    int count=0;
+    int count=0; 
+    bool flag=false;
+
+    
+
     while (getline(ss, line, '\t') ) {
+      flag=true;
       if (j >= collimator.getNangleBeamlets( *ang )) {
          a++; ang++; j=0; 
       }
 
       D[ *ang ](line2row[i],j)=atof(line.c_str());
+
+      D[ *ang ](line2row[i],j)=atof(line.c_str());
       j++;
     }
     
+    
+  }
+
+  //print some cells
+  cout << "Matrix of deposition for angle " << *angles.begin() << endl;
+  for (int i=1000;i<1010;i++) {
+    for (int j=0;j<20;j++)
+      cout << D[*angles.begin()](i,j) << ",";
+    cout << endl;
   }
 
 }

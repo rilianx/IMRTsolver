@@ -118,8 +118,7 @@ public:
                     admissible&=false;
             }*/
         }
-
-
+        
         for(const Score& score:scores){
             if(score.t == Score::D || score.t == Score::Dmean){
                 if(score.max_value>0.0){ //organs
@@ -137,6 +136,8 @@ public:
         }
         if(!admissible) s+=1.0;
 
+
+        
         return s;
     }
 

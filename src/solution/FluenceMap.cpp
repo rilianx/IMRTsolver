@@ -47,7 +47,9 @@ namespace imrt {
 
 	// Generate the dose distribution matrices Z for each organ
 	void FluenceMap::computeFM(const Plan& p){
+        cout << "computing FM" << endl;
         const list<Station*>& stations=p.get_stations();
+           
 
 	    for(int o=0; o<nb_organs; o++)
 	 	    std::fill(FM[o].begin(), FM[o].end(), 0.0);
@@ -67,6 +69,7 @@ namespace imrt {
                 FM[o][k] += dose;
             }
         }
+        
     }
 
 	//Get deltaZ related to the list of changes

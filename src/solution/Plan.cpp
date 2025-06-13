@@ -20,6 +20,7 @@ namespace imrt {
       if(bac.size()>0) n_stations=bac.size();
       else n_stations = collimator.getNbAngles();
 
+      cout << "Stations:" << n_stations << endl;
       for (int i=0;i<n_stations;i++) {
         int angle=collimator.getAngle(i);
         if(bac.size()>0) {angle=bac.front(); bac.pop_front();}

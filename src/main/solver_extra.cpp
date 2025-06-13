@@ -36,6 +36,10 @@ double iterated_local_search(Collimator& collimator, vector<Volume>& volumes, in
                     switch_patience, pr_neigh, 1.0);
     
     cout << "## Best solution found: " << ils->best_evals[of_eval] << endl;
+<<<<<<< HEAD
+=======
+    exit(0);
+>>>>>>> 0f0a4b0a (last changes)
     evaluators[0]->eval(P);
     return ils->best_evals[of_eval];
 }
@@ -155,6 +159,7 @@ vector<Evaluator*> createEvaluators(Collimator& collimator,  vector<Volume>& vol
 vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
   ifstream organ_file(organ_filename.c_str(), ios::in);
   vector<string> depo_files;
+<<<<<<< HEAD
   string line;
 
   if (! organ_file)
@@ -195,12 +200,52 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
   ifstream organ_file(organ_filename.c_str(), ios::in);
   vector<string> organ_files;
   vector<Volume> volumes;
+=======
+>>>>>>> 0f0a4b0a (last changes)
   string line;
 
   if (! organ_file)
     cerr << "ERROR: unable to open instance file: " <<
              organ_filename << ", stopping! \n";
 
+  cout << "##Reading volume files." << endl;
+  getline(organ_file, line); //line of initial angles
+  while (organ_file) {
+    if(!getline(organ_file, line)) break;
+    if (line.empty()) continue;
+    cout << "##  " << line << endl;
+    //Assuming one data point
+    depo_files.push_back(line);
+  }
+  organ_file.close();
+  cout << "##  Read " << depo_files.size() << " files"<< endl;
+
+  map< string, Volume*> volumes_map;
+  vector<Volume> volumes;
+
+  for (int i=0; i<depo_files.size(); i++){
+    string organ_name = get_organ_name(depo_files[i]);
+    if (volumes_map.find(organ_name)!=volumes_map.end()) volumes_map[organ_name]->add_data(depo_files[i]);
+    else {
+      volumes.push_back(Volume(collimator, "", 0));
+      volumes_map.insert(make_pair(organ_name, &volumes.back() ));
+      volumes_map[organ_name]->add_data(depo_files[i]);
+    }
+  }
+    
+  return(volumes);
+}
+
+
+/*
+vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
+  ifstream organ_file(organ_filename.c_str(), ios::in);
+  vector<string> organ_files;
+  vector<Volume> volumes;
+  string line;
+  if (! organ_file)
+    cerr << "ERROR: unable to open instance file: " <<
+             organ_filename << ", stopping! \n";
   cout << "##Reading volume files." << endl;
   getline(organ_file, line);
   while (organ_file) {
@@ -212,10 +257,8 @@ vector<Volume> createVolumes (string organ_filename, Collimator& collimator){
   }
   organ_file.close();
   cout << "##  Read " << organ_files.size() << " files"<< endl;
-
   for (int i=0; i<organ_files.size(); i++)
     volumes.push_back(Volume(collimator, organ_files[i]));
-
   return(volumes);
 }
 */
