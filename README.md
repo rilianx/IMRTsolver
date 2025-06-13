@@ -1,98 +1,103 @@
-IMRT Solver
------------
+IMRTsolver (Global Score)
+==
 
-### Installation
+## Descarga e instalación
 
-
-````
-mkdir imrt
-cd imrt
+```
 git clone https://github.com/rilianx/IMRTsolver.git .
-git checkout -t origin/develop
+git checkout -t origin/gscore
 cmake .
 make
-````
+```
 
-Then, download CERR instances from [here](https://drive.google.com/open?id=1C4V0pAilKPJz0L5JIr4QrGsf1cnF2vH0) and uncompress them in the `data` folder.
+### Descarga de instancias de prueba
 
-Now you can run the solver, for example, 
-````
-./AS -s ibo_ls --setup=open_min --ls_sequential=aperture -s ibo_ls --maxeval=15000 --ls=first --perturbation-size=5 --seed=1 --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --initial-intensity=5 --obj=mpse  --file-dep=data/Equidistantes/equidist05.tx
-````
+Además puedes descargar instancias de prueba de aquí:
 
+- [Instancias TRT](https://drive.google.com/file/d/1b0SSVEScIgdbimNFrW1u8QvY_McogxLg/view?usp=sharing)
+- [Instancias CERR](https://drive.google.com/file/d/1C4V0pAilKPJz0L5JIr4QrGsf1cnF2vH0/view?usp=sharing)
 
-### Commands
+Descomprimelas dentro de la carpeta `data`
 
-````
-./AS {OPTIONS}
+```
+cd data
+tar -xzf equidistant-instances.tar.gz
+tar -xzf TRT00X-instances.tar.gz
+```
 
-    ********* IMRT-Solver (Aperture solver) *********
+## Comando ejecución
 
-  OPTIONS:
+### Ejemplo
 
-      -h, --help                        Display this help menu
-      --seed=[int]                      Seed (1627334539)
-      Strategy options:
-        -s[string], --strategy=[string]   Strategy (dao_ls|ibo_ls|mixedILS)
-        -l[string], --ls=[string]         Local search strategy (best|first)
-        --tabu-size=[int]                 Tabu list size(0)
-      Budget options:
-        --maxtime=[int]                   Maximum time in seconds (0)
-        --maxeval=[int]                   Number of evaluations (0)
-      Initial collimator setup:
-        -t[string], --setup=[string]      Initial setup
-                                          (open_max|open_min|closed_max|closed_min|
-                                          random|manual|open_min_min|open_min_k).
-                                          * open_min_k initializes intensity of
-                                          open apertures with the value of
-                                          initial-intensity 2
-        --max-apertures=[int]             Number of apertures per angle
-                                          (station) (5)
-        --initial-intensity=[int]         Initial value aperture intensity (2)
-      Intensity options:
-        --max-intensity=[int]             Max value aperture intensity (28)
-        --step-intensity=[int]            Step size for aperture intensity (1)
-      Neighborhood selection:
-        --ls_simple=[string]              Simple neighborhood in local search
-                                          (aperture|intensity|mixed|imixed)
-        --ls_sequential=[string]          Sequential neighborhood in local
-                                          search starting by
-                                          (intensity|aperture)
-        --ls_sequentialp=[double]         Probabilistic sequential neighborhood
-                                          in local search [0,1]
-      Heuristic options:
-        --targeted                        Apply targeted local search
-        --bsize=[int]                     Number of considered beamlets for
-                                          selection (20)
-        --vsize=[double]                  Percentage of considered worst voxels
-                                          (0.002000)
-        --min_impr=[double]               Minimum beamlet improvement
-                                          estimation(0.050000)
-      Perturbation:
-        --perturbation=[string]           Type of perturbation to be applied
-                                          (intensity|aperture|mixed)
-        --perturbation-size=[int]         Perturbation size (0)
-      Objective function:
-        --obj=[string]                    Objective function used in the search
-                                          (mpse: mean positive square error|gs:
-                                          global score|relu_gs: gs with relu
-                                          activation)
-        --scores-file=[string]            Scores for the global score objective
-                                          function (only if obj in {gs|relu_gs})
-        --obj2=[string]                   Secondary objective function (just for
-                                          information) (mpse|gs|relu_gs)
-        --scores2-file=[string]           Scores for the secondary objective
-                                          function (only if sec-obj in
-                                          {gs|relu_gs})
-      Input output options:
-        --file-dep=[string]               File with the deposition matrix
-        --file-coord=[string]             File with the beam coordinates
-        --path=[string]                   Absolute path of the executable (if it
-                                          is executed from other directory)
-        --plot                            Generate plot and save in file
-        --verbose                         Verbose
-        --irace                           To configure with irace
-        --convergence=[string]            File to output convergence
+```bash
+./AS --maxeval=10000 --path=. --seed=2 \
+--neighborhoods=aperture,intensity     \
+--epsilon=0.0001 \
+--perturbation-size=3 \
+--pr-neigh=0.2,1.0 \
+--evals=eval_functions/gs76.txt,eval_functions/gs_oar76.txt --sf=0 --of=1 \
+--file-coord=data/Equidistantes/equidist-coord.txt \
+--file-dep=data/Equidistantes/equidist00.txt \
+--output-file=convergence_file.txt \
+--output-fm=output/fluence_map_solution.txt
+```
 
-    Example.
-    ./AS -s ibo_ls --setup=open_min --ls_sequential=aperture -s ibo_ls --maxeval=15000 --ls=first --perturbation-size=5 --seed=1 --max-intensity=20 --file-coord=data/Equidistantes/equidist-coord.txt --initial-intensity=5 --obj=mpse  --file-dep=data/Equidistantes/equidist05.tx
+### Options
+
+```
+-h, --help                        Display this help menu
+--seed=[int]                      Seed (1749818971)
+**Budget options:**
+  --maxeval=[int]                   Number of evaluations (0)
+**Initial collimator setup:**
+  --max-apertures=[int]             Number of apertures per angle
+                                    (station) (5)
+**Neighborhood selection:**
+  --neighborhoods=[string]          neighborhoods in local search (intensity|aperture)
+**Acceptation improvement:**
+  --epsilon=[float]                 Minimum delta eval for accepting the
+                                    change
+  --pr-neigh=[string]               Prop. of elements of each
+                                    neighbourhood (1.0 by default)
+**Perturbation:**
+  --perturbation-size=[int]         Perturbation size (0)
+**Evaluators:**
+  --evals=[string]                  Files with evaluation functions (global score).
+  --sf=[int]                        index of the objective function used 
+																	  in ILS (last index=z funct)
+--of=[int]                        index of the objective function  (last index=z funct)
+**Input/Output options:**
+  --file-dep=[string]               File with the deposition matrix
+  --file-coord=[string]             File with the beam coordinates
+  --path=[string]                   Absolute path of the executable (if it
+                                    is executed from other directory)
+  --output-file=[string]            File to output all indicators for each
+                                    iteration (convergence)
+  --output-fm=[string]              File to output the fluence map of
+                                    voxels (best solution)
+  --verbose                         Verbose
+```
+
+### irace wrapper
+
+**Instalación**
+
+```
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+```
+
+**Ejecución**:
+
+```
+# python3 wrapper_irace.py <instance> <seed> <mode> <epsilon> <nbi> <psize> <max_eval>
+# Example: 
+python3 wrapper_irace.py data/Equidistantes/equidist00.txt 1 gs_ils76 0.0001 1.0 3 10000
+```
+
+Solo está implementado el modo gs_ils76:
+
+- **Función objetivo ILS**: gs_ils76
+- **Función objetivo final**: gs_oar76
